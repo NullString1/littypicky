@@ -21,7 +21,7 @@ pub struct LitterReport {
     pub latitude: f64,
     pub longitude: f64,
     pub description: Option<String>,
-    pub photo_before: String,
+    pub photo_before: Option<String>,
     pub status: ReportStatus,
     pub claimed_by: Option<Uuid>,
     pub claimed_at: Option<DateTime<Utc>>,
@@ -41,7 +41,7 @@ pub struct ReportResponse {
     pub latitude: f64,
     pub longitude: f64,
     pub description: Option<String>,
-    pub photo_before: String,
+    pub photo_before: Option<String>,
     pub status: ReportStatus,
     pub claimed_by: Option<Uuid>,
     pub claimed_at: Option<DateTime<Utc>>,
@@ -62,15 +62,15 @@ impl From<LitterReport> for ReportResponse {
             latitude: report.latitude,
             longitude: report.longitude,
             description: report.description,
-            // Convert base64 data URLs to image endpoint URLs
-            photo_before: format!("/api/images/reports/{}/before", report.id),
+            // Return S3 URL directly (or None if not set)
+            photo_before: report.photo_before,
             status: report.status,
             claimed_by: report.claimed_by,
             claimed_at: report.claimed_at,
             cleared_by: report.cleared_by,
             cleared_at: report.cleared_at,
-            // Convert base64 data URLs to image endpoint URLs
-            photo_after: report.photo_after.map(|_| format!("/api/images/reports/{}/after", report.id)),
+            // Return S3 URL directly (or None if not set)
+            photo_after: report.photo_after,
             city: report.city,
             country: report.country,
             created_at: report.created_at,

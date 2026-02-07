@@ -16,9 +16,10 @@ impl ImageService {
         Self { config }
     }
 
-    /// Process image: decode base64, validate, resize, convert to WebP, re-encode to base64
+    /// Process image: decode base64, validate, resize, convert to WebP, return raw bytes
     /// Uses spawn_blocking to avoid blocking the async runtime during CPU-intensive work
-    pub async fn process_image(&self, base64_input: String) -> Result<String> {
+    /// Returns WebP bytes ready for S3 upload
+    pub async fn process_image(&self, base64_input: String) -> Result<Vec<u8>> {
         let config = self.config.clone();
         
         // Move CPU-intensive work to blocking thread pool
@@ -30,7 +31,8 @@ impl ImageService {
     }
 
     /// Synchronous image processing implementation
-    fn process_image_sync(base64_input: &str, config: &ImageConfig) -> Result<String> {
+    /// Returns raw WebP bytes (not base64)
+    fn process_image_sync(base64_input: &str, config: &ImageConfig) -> Result<Vec<u8>> {
         // Validate base64 format first
         Self::validate_base64_sync(base64_input)?;
 
@@ -74,10 +76,8 @@ impl ImageService {
         // Convert to WebP
         let webp_data = Self::convert_to_webp_static(&resized_img, config)?;
 
-        // Encode back to base64
-        let encoded = general_purpose::STANDARD.encode(&webp_data);
-
-        Ok(encoded)
+        // Return raw bytes (not base64)
+        Ok(webp_data)
     }
 
     fn resize_image_static(img: DynamicImage, config: &ImageConfig) -> DynamicImage {

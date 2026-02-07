@@ -11,6 +11,7 @@ pub struct Config {
     pub rate_limit: RateLimitConfig,
     pub image: ImageConfig,
     pub scoring: ScoringConfig,
+    pub s3: S3Config,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -78,6 +79,16 @@ pub struct ScoringConfig {
     pub first_in_area_bonus: i32,
     pub verification_bonus: i32,
     pub verified_report_bonus: i32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct S3Config {
+    pub endpoint: String,
+    pub region: String,
+    pub bucket: String,
+    pub access_key: String,
+    pub secret_key: String,
+    pub public_url: String,
 }
 
 impl Config {
@@ -179,6 +190,20 @@ impl Config {
                 verified_report_bonus: env::var("VERIFIED_REPORT_BONUS")
                     .unwrap_or_else(|_| "10".to_string())
                     .parse()?,
+            },
+            s3: S3Config {
+                endpoint: env::var("S3_ENDPOINT")
+                    .unwrap_or_else(|_| "http://127.0.0.1:9000".to_string()),
+                region: env::var("S3_REGION")
+                    .unwrap_or_else(|_| "us-east-1".to_string()),
+                bucket: env::var("S3_BUCKET")
+                    .unwrap_or_else(|_| "littypicky-images".to_string()),
+                access_key: env::var("S3_ACCESS_KEY")
+                    .unwrap_or_else(|_| "minioadmin".to_string()),
+                secret_key: env::var("S3_SECRET_KEY")
+                    .unwrap_or_else(|_| "minioadmin123".to_string()),
+                public_url: env::var("S3_PUBLIC_URL")
+                    .unwrap_or_else(|_| "http://127.0.0.1:9000/littypicky-images".to_string()),
             },
         })
     }

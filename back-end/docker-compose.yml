@@ -28,8 +28,30 @@ services:
     networks:
       - littypicky-network
 
+  minio:
+    image: minio/minio:latest
+    container_name: littypicky-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # MinIO Console (Web UI)
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - littypicky-network
+
 volumes:
   postgres_data:
+    driver: local
+  minio_data:
     driver: local
 
 networks:

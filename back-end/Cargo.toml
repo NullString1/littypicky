@@ -31,6 +31,11 @@ lettre = { version = "0.11", features = ["tokio1-native-tls", "smtp-transport", 
 image = { version = "0.24", features = ["webp"] }
 webp = "0.2"
 
+# S3/Object Storage
+aws-sdk-s3 = "1.13"
+aws-config = "1.1"
+aws-credential-types = "1.1"
+
 # Utilities
 uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }

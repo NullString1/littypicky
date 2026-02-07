@@ -37,11 +37,16 @@ async fn main() -> anyhow::Result<()> {
     sqlx::migrate!("./migrations").run(&pool).await?;
     tracing::info!("Migrations completed");
 
+    // Initialize S3 service
+    let s3_service = services::S3Service::new(config.s3.clone()).await?;
+    s3_service.initialize().await?;
+    tracing::info!("S3 service initialized");
+
     // Initialize services
     let jwt_service = auth::JwtService::new(config.jwt.clone());
     let email_service = services::EmailService::new(config.email.clone())?;
     let image_service = services::ImageService::new(config.image.clone());
-    let report_service = services::ReportService::new(pool.clone(), image_service);
+    let report_service = services::ReportService::new(pool.clone(), image_service, s3_service.clone());
     let scoring_service = services::ScoringService::new(pool.clone(), config.scoring.clone());
     let oauth_service = Arc::new(services::OAuthService::new(config.oauth.clone()).await?);
 
@@ -79,6 +84,7 @@ async fn main() -> anyhow::Result<()> {
 
     let image_state = Arc::new(handlers::ImageHandlerState {
         report_service: report_service.clone(),
+        s3_service: s3_service.clone(),
     });
 
     tracing::info!("Services initialized");

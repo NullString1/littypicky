@@ -1,17 +1,18 @@
 use crate::error::AppError;
 use crate::services::report_service::ReportService;
+use crate::services::s3_service::S3Service;
 use axum::{
     extract::{Path, State},
     http::{header, StatusCode},
     response::IntoResponse,
 };
-use base64::{engine::general_purpose, Engine as _};
 use std::sync::Arc;
 use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct ImageHandlerState {
     pub report_service: ReportService,
+    pub s3_service: S3Service,
 }
 
 /// Get report before photo
@@ -24,7 +25,7 @@ pub struct ImageHandlerState {
         ("id" = Uuid, Path, description = "Report ID")
     ),
     responses(
-        (status = 200, description = "Returns image", content_type = "image/jpeg"),
+        (status = 200, description = "Returns image", content_type = "image/webp"),
         (status = 404, description = "Report or image not found")
     )
 )]
@@ -34,35 +35,19 @@ pub async fn get_report_before_photo(
 ) -> Result<impl IntoResponse, AppError> {
     let report = state.report_service.get_report_by_id(report_id).await?;
     
-    // Extract base64 data from data URL (e.g., "data:image/jpeg;base64,...")
-    let base64_data = if report.photo_before.starts_with("data:") {
-        report.photo_before
-            .split_once(",")
-            .map(|(_, data)| data)
-            .unwrap_or(&report.photo_before)
-    } else {
-        &report.photo_before
-    };
+    // Extract S3 key from URL
+    let key = state.s3_service.extract_key_from_url(&report.photo_before)
+        .ok_or_else(|| AppError::Internal(anyhow::anyhow!("Invalid S3 URL")))?;
     
-    // Decode base64
-    let image_data = general_purpose::STANDARD
-        .decode(base64_data)
-        .map_err(|_| AppError::BadRequest("Invalid image data".into()))?;
-    
-    // Detect content type from data URL
-    let content_type = if report.photo_before.starts_with("data:image/jpeg") {
-        "image/jpeg"
-    } else if report.photo_before.starts_with("data:image/png") {
-        "image/png"
-    } else if report.photo_before.starts_with("data:image/webp") {
-        "image/webp"
-    } else {
-        "image/jpeg" // default
-    };
+    // Get image data from S3
+    let image_data = state.s3_service.get_image(&key).await?;
     
     Ok((
         StatusCode::OK,
-        [(header::CONTENT_TYPE, content_type), (header::CACHE_CONTROL, "public, max-age=86400")],
+        [
+            (header::CONTENT_TYPE, "image/webp"),
+            (header::CACHE_CONTROL, "public, max-age=86400"),
+        ],
         image_data,
     ))
 }
@@ -77,7 +62,7 @@ pub async fn get_report_before_photo(
         ("id" = Uuid, Path, description = "Report ID")
     ),
     responses(
-        (status = 200, description = "Returns image", content_type = "image/jpeg"),
+        (status = 200, description = "Returns image", content_type = "image/webp"),
         (status = 404, description = "Report or image not found")
     )
 )]
@@ -90,35 +75,19 @@ pub async fn get_report_after_photo(
     let photo_after = report.photo_after
         .ok_or_else(|| AppError::NotFound("After photo not found".into()))?;
     
-    // Extract base64 data from data URL
-    let base64_data = if photo_after.starts_with("data:") {
-        photo_after
-            .split_once(",")
-            .map(|(_, data)| data)
-            .unwrap_or(&photo_after)
-    } else {
-        &photo_after
-    };
+    // Extract S3 key from URL
+    let key = state.s3_service.extract_key_from_url(&photo_after)
+        .ok_or_else(|| AppError::Internal(anyhow::anyhow!("Invalid S3 URL")))?;
     
-    // Decode base64
-    let image_data = general_purpose::STANDARD
-        .decode(base64_data)
-        .map_err(|_| AppError::BadRequest("Invalid image data".into()))?;
-    
-    // Detect content type
-    let content_type = if photo_after.starts_with("data:image/jpeg") {
-        "image/jpeg"
-    } else if photo_after.starts_with("data:image/png") {
-        "image/png"
-    } else if photo_after.starts_with("data:image/webp") {
-        "image/webp"
-    } else {
-        "image/jpeg"
-    };
+    // Get image data from S3
+    let image_data = state.s3_service.get_image(&key).await?;
     
     Ok((
         StatusCode::OK,
-        [(header::CONTENT_TYPE, content_type), (header::CACHE_CONTROL, "public, max-age=86400")],
+        [
+            (header::CONTENT_TYPE, "image/webp"),
+            (header::CACHE_CONTROL, "public, max-age=86400"),
+        ],
         image_data,
     ))
 }

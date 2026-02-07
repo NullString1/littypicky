@@ -1,6 +1,7 @@
 use crate::error::AppError;
 use crate::models::report::{CreateReportRequest, LitterReport, ReportStatus};
 use crate::services::image_service::ImageService;
+use crate::services::s3_service::S3Service;
 use chrono::Utc;
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -9,14 +10,16 @@ use uuid::Uuid;
 pub struct ReportService {
     pool: PgPool,
     image_service: ImageService,
+    s3_service: S3Service,
 }
 
 impl ReportService {
     #[must_use]
-    pub fn new(pool: PgPool, image_service: ImageService) -> Self {
+    pub fn new(pool: PgPool, image_service: ImageService, s3_service: S3Service) -> Self {
         Self {
             pool,
             image_service,
+            s3_service,
         }
     }
 
@@ -39,7 +42,10 @@ impl ReportService {
         }
 
         // Process the image (async to avoid blocking)
-        let processed_photo = self.image_service.process_image(request.photo_base64).await?;
+        let processed_image = self.image_service.process_image(request.photo_base64).await?;
+
+        // Upload to S3
+        let photo_url = self.s3_service.upload_image(processed_image, "reports/before").await?;
 
         // Create the report with PostGIS geometry
         let report = sqlx::query_as!(
@@ -64,7 +70,7 @@ impl ReportService {
             request.latitude,
             request.longitude,
             request.description,
-            processed_photo,
+            photo_url,
             ReportStatus::Pending as ReportStatus,
             request.city,
             request.country
@@ -247,7 +253,10 @@ impl ReportService {
         }
 
         // Process the after photo (async to avoid blocking)
-        let processed_photo = self.image_service.process_image(photo_base64).await?;
+        let processed_image = self.image_service.process_image(photo_base64).await?;
+
+        // Upload to S3
+        let photo_url = self.s3_service.upload_image(processed_image, "reports/after").await?;
 
         // Update the report
         let report = sqlx::query_as!(
@@ -267,8 +276,8 @@ impl ReportService {
             "#,
             ReportStatus::Cleared as ReportStatus,
             user_id,
-            Utc::now(),
-            processed_photo,
+            chrono::Utc::now(),
+            photo_url,
             report_id
         )
         .fetch_one(&self.pool)

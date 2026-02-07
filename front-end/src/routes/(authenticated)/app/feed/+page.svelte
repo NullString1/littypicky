@@ -3,11 +3,24 @@
   import { api, type Report } from '$lib/api';
   import { auth } from '$lib/stores/auth';
 
-  let reports: Report[] = [];
-  let loading = true;
-  let error = '';
-  let userLocation: { lat: number; lng: number } | null = null;
-  let distances: Record<string, string> = {};
+  let reports = $state<Report[]>([]);
+  let loading = $state(true);
+  let error = $state('');
+  let userLocation = $state<{ lat: number; lng: number } | null>(null);
+
+  // Use Svelte 5 $derived for automatic memoization
+  // Only recalculates when reports or userLocation changes
+  let reportsWithDistance = $derived(
+    userLocation 
+      ? reports.map(r => {
+          const loc = userLocation!; // Non-null assertion since we're in the truthy branch
+          return {
+            ...r,
+            distance: calculateDistance(loc.lat, loc.lng, r.latitude, r.longitude)
+          };
+        })
+      : reports.map(r => ({ ...r, distance: null }))
+  );
 
   // Helper to open Google Maps
   function openDirections(lat: number, lng: number) {
@@ -52,13 +65,6 @@
 
         const data = await api.reports.getNearby(lat, lng, 10, $auth.token); // 10km radius
         reports = data;
-
-        // Calculate distances
-        if (userLocation) {
-            reports.forEach(r => {
-                distances[r.id] = calculateDistance(userLocation!.lat, userLocation!.lng, r.latitude, r.longitude);
-            });
-        }
     } catch (e: any) {
         error = e.message || 'Failed to load reports';
     } finally {
@@ -134,12 +140,18 @@
     {:else}
         <!-- Feed Grid -->
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {#each reports as report}
+        {#each reportsWithDistance as report}
             <div class="bg-white overflow-hidden shadow rounded-lg border border-slate-200 flex flex-col transition hover:shadow-md">
             <!-- Photo -->
             {#if report.photo_before}
                 <div class="h-48 w-full bg-slate-200 overflow-hidden relative group">
-                   <img src={report.photo_before} alt="Litter report" class="w-full h-full object-cover" />
+                   <img 
+                     src={report.photo_before} 
+                     alt="Litter report" 
+                     class="w-full h-full object-cover"
+                     loading="lazy"
+                     decoding="async"
+                   />
                    <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none"></div>
                 </div>
             {:else}
@@ -153,8 +165,8 @@
                    <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(report.status)} uppercase tracking-wide`}>
                      {report.status}
                    </span>
-                   {#if distances[report.id]}
-                     <span class="text-xs text-slate-500 font-medium">{distances[report.id]} away</span>
+                   {#if report.distance}
+                     <span class="text-xs text-slate-500 font-medium">{report.distance} away</span>
                    {/if}
                 </div>
                 

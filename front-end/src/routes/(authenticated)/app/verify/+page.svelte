@@ -119,7 +119,13 @@
                         <div>
                             <span class="block text-sm font-medium text-slate-700 mb-2">Before</span>
                             <div class="aspect-video w-full rounded-lg bg-slate-100 overflow-hidden border-2 border-dashed border-red-200 relative group">
-                                <img src={report.photo_before} alt="Before" class="w-full h-full object-cover" />
+                                <img 
+                                  src={report.photo_before} 
+                                  alt="Before" 
+                                  class="w-full h-full object-cover"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
                             </div>
                         </div>
 
@@ -128,7 +134,13 @@
                             <span class="block text-sm font-medium text-slate-700 mb-2">After</span>
                             <div class="aspect-video w-full rounded-lg bg-slate-100 overflow-hidden border-2 border-dashed border-green-200 relative group">
                                 {#if report.photo_after}
-                                    <img src={report.photo_after} alt="After" class="w-full h-full object-cover" />
+                                    <img 
+                                      src={report.photo_after} 
+                                      alt="After" 
+                                      class="w-full h-full object-cover"
+                                      loading="lazy"
+                                      decoding="async"
+                                    />
                                 {:else}
                                     <div class="w-full h-full flex items-center justify-center text-slate-400">
                                         No Photo

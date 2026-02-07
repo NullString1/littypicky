@@ -190,7 +190,13 @@
             <h3 class="text-sm font-semibold text-slate-700">Before Photo</h3>
           </div>
           {#if report.photo_before}
-            <img src={report.photo_before} alt="Before cleanup" class="w-full h-64 object-cover" />
+            <img 
+              src={report.photo_before} 
+              alt="Before cleanup" 
+              class="w-full h-64 object-cover"
+              loading="lazy"
+              decoding="async"
+            />
           {:else}
             <div class="w-full h-64 bg-slate-100 flex items-center justify-center text-slate-400">
               <span class="text-4xl">📸</span>
@@ -204,7 +210,13 @@
             <div class="px-4 py-3 border-b border-slate-200">
               <h3 class="text-sm font-semibold text-slate-700">After Photo</h3>
             </div>
-            <img src={report.photo_after} alt="After cleanup" class="w-full h-64 object-cover" />
+            <img 
+              src={report.photo_after} 
+              alt="After cleanup" 
+              class="w-full h-64 object-cover"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
         {/if}
       </div>
@@ -289,7 +301,13 @@
 
           {#if clearPhotoPreview}
             <div class="mb-4">
-              <img src={clearPhotoPreview} alt="Preview" class="max-w-xs rounded-lg border border-slate-200" />
+              <img 
+                src={clearPhotoPreview} 
+                alt="Preview" 
+                class="max-w-xs rounded-lg border border-slate-200"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
           {/if}
 

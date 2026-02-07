@@ -2,10 +2,12 @@
   import { api } from '$lib/api';
   import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
+  import imageCompression from 'browser-image-compression';
 
   let isSubmitting = false;
   let photoPreview: string | null = null;
   let photoBase64: string | null = null;
+  let compressionStatus = '';
   
   let latitude: number | null = null;
   let longitude: number | null = null;
@@ -14,23 +16,49 @@
   let locationStatus = '';
   let error = '';
 
-  function handleFileSelect(e: Event) {
+  async function handleFileSelect(e: Event) {
     const input = e.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
       
-      // Limit size to 5MB
-      if (file.size > 5 * 1024 * 1024) {
-          error = 'File size must be less than 5MB';
+      // Limit original size to 10MB (will compress down)
+      if (file.size > 10 * 1024 * 1024) {
+          error = 'File size must be less than 10MB';
           return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        photoPreview = e.target?.result as string;
-        photoBase64 = photoPreview; // Data URL includes the prefix
-      };
-      reader.readAsDataURL(file);
+      error = '';
+      compressionStatus = 'Compressing image...';
+
+      try {
+        const originalSize = (file.size / 1024 / 1024).toFixed(2);
+        
+        // Compression options
+        const options = {
+          maxSizeMB: 1,              // Maximum size in MB
+          maxWidthOrHeight: 1920,    // Maximum width or height
+          useWebWorker: true,        // Use web worker for better performance
+          fileType: 'image/jpeg'     // Convert to JPEG
+        };
+
+        // Compress image
+        const compressedFile = await imageCompression(file, options);
+        const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2);
+        const reduction = (((file.size - compressedFile.size) / file.size) * 100).toFixed(0);
+        
+        compressionStatus = `Compressed ${originalSize}MB → ${compressedSize}MB (${reduction}% reduction)`;
+
+        // Convert to base64
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          photoPreview = e.target?.result as string;
+          photoBase64 = photoPreview;
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (err: any) {
+        error = err.message || 'Failed to process image';
+        compressionStatus = '';
+      }
     }
   }
 
@@ -134,6 +162,9 @@
           <!-- Photo Upload -->
           <div>
             <label for="photo" class="block text-sm font-medium text-slate-700">Photo Evidence</label>
+            {#if compressionStatus}
+              <p class="mt-1 text-xs text-green-600">{compressionStatus}</p>
+            {/if}
             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-md hover:border-primary-500 transition-colors cursor-pointer group relative">
               <input id="photo" name="photo" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange={handleFileSelect} />
               
@@ -150,7 +181,7 @@
                     </span>
                     <p class="pl-1">or drag and drop</p>
                     </div>
-                    <p class="text-xs text-slate-500">PNG, JPG, GIF up to 5MB</p>
+                    <p class="text-xs text-slate-500">PNG, JPG, GIF up to 10MB (auto-compressed)</p>
                 {/if}
               </div>
             </div>

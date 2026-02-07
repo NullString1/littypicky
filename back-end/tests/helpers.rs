@@ -26,6 +26,18 @@ pub async fn create_test_app() -> Router {
     // Clean up test data before each test
     cleanup_test_data(&pool).await;
 
+    build_test_router(config, pool).await
+}
+
+/// Helper to get a database pool for test helpers
+pub async fn get_test_pool() -> sqlx::PgPool {
+    dotenvy::from_filename(".env.test").ok();
+    let config = config::Config::from_env().expect("Failed to load config");
+    db::create_pool(&config).await.expect("Failed to create pool")
+}
+
+async fn build_test_router(config: config::Config, pool: sqlx::PgPool) -> Router {
+
     // Initialize services
     let jwt_service = auth::JwtService::new(config.jwt.clone());
     // Use real email service with MailHog for tests

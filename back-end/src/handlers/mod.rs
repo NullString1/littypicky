@@ -1,15 +1,15 @@
-pub mod auth;
-pub mod users;
-pub mod reports;
-pub mod leaderboards;
-pub mod verifications;
-pub mod oauth;
 pub mod admin;
+pub mod auth;
+pub mod leaderboards;
+pub mod oauth;
+pub mod reports;
+pub mod users;
+pub mod verifications;
 
-pub use auth::*;
-pub use users::*;
-pub use reports::*;
-pub use leaderboards::*;
-pub use verifications::*;
-pub use oauth::*;
 pub use admin::*;
+pub use auth::*;
+pub use leaderboards::*;
+pub use oauth::*;
+pub use reports::*;
+pub use users::*;
+pub use verifications::*;

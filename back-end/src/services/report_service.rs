@@ -12,6 +12,7 @@ pub struct ReportService {
 }
 
 impl ReportService {
+    #[must_use]
     pub fn new(pool: PgPool, image_service: ImageService) -> Self {
         Self {
             pool,
@@ -26,13 +27,10 @@ impl ReportService {
         request: CreateReportRequest,
     ) -> Result<LitterReport, AppError> {
         // Check if user's email is verified
-        let user = sqlx::query!(
-            "SELECT email_verified FROM users WHERE id = $1",
-            user_id
-        )
-        .fetch_optional(&self.pool)
-        .await?
-        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+        let user = sqlx::query!("SELECT email_verified FROM users WHERE id = $1", user_id)
+            .fetch_optional(&self.pool)
+            .await?
+            .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
 
         if !user.email_verified {
             return Err(AppError::Forbidden(
@@ -41,9 +39,7 @@ impl ReportService {
         }
 
         // Process the image
-        let processed_photo = self
-            .image_service
-            .process_image(&request.photo_base64)?;
+        let processed_photo = self.image_service.process_image(&request.photo_base64)?;
 
         // Create the report with PostGIS geometry
         let report = sqlx::query_as!(
@@ -79,7 +75,7 @@ impl ReportService {
         Ok(report)
     }
 
-    /// Get reports near a location using PostGIS
+    /// Get reports near a location using `PostGIS`
     pub async fn get_nearby_reports(
         &self,
         latitude: f64,

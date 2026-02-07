@@ -39,11 +39,13 @@ async fn create_verified_user_and_login(app: &axum::Router, email: &str) -> Stri
 
     // Get database pool and mark user as verified
     let pool = get_test_pool().await;
-    sqlx::query("UPDATE users SET email_verified = true, email_verified_at = NOW() WHERE email = $1")
-        .bind(email)
-        .execute(&pool)
-        .await
-        .expect("Failed to verify user");
+    sqlx::query(
+        "UPDATE users SET email_verified = true, email_verified_at = NOW() WHERE email = $1",
+    )
+    .bind(email)
+    .execute(&pool)
+    .await
+    .expect("Failed to verify user");
 
     // Now login
     let response = app
@@ -71,7 +73,10 @@ async fn create_verified_user_and_login(app: &axum::Router, email: &str) -> Stri
             .await
             .unwrap();
         let body_str = String::from_utf8_lossy(&body);
-        panic!("Login failed for {}: status={}, body={}", email, status, body_str);
+        panic!(
+            "Login failed for {}: status={}, body={}",
+            email, status, body_str
+        );
     }
 
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
@@ -141,14 +146,21 @@ async fn test_create_report_requires_email_verification() {
 
     // Since user is verified, this should work (or fail with image processing error, not auth error)
     let status = response.status();
-    if !(status == StatusCode::CREATED || status == StatusCode::BAD_REQUEST || status == StatusCode::INTERNAL_SERVER_ERROR) {
+    if !(status == StatusCode::CREATED
+        || status == StatusCode::BAD_REQUEST
+        || status == StatusCode::INTERNAL_SERVER_ERROR)
+    {
         let body = axum::body::to_bytes(response.into_body(), usize::MAX)
             .await
             .unwrap();
         let body_str = String::from_utf8_lossy(&body);
         eprintln!("Unexpected status: {}, body: {}", status, body_str);
     }
-    assert!(status == StatusCode::CREATED || status == StatusCode::BAD_REQUEST || status == StatusCode::INTERNAL_SERVER_ERROR);
+    assert!(
+        status == StatusCode::CREATED
+            || status == StatusCode::BAD_REQUEST
+            || status == StatusCode::INTERNAL_SERVER_ERROR
+    );
 }
 
 #[tokio::test]
@@ -173,9 +185,12 @@ async fn test_get_nearby_reports() {
             .await
             .unwrap();
         let body_str = String::from_utf8_lossy(&body);
-        eprintln!("Get nearby reports - Response status: {}, body: {}", status, body_str);
+        eprintln!(
+            "Get nearby reports - Response status: {}, body: {}",
+            status, body_str
+        );
     }
-    
+
     // This endpoint requires auth based on current implementation
     // If you want it public, remove the auth middleware from this route
     assert!(status == StatusCode::OK || status == StatusCode::UNAUTHORIZED);
@@ -257,7 +272,7 @@ async fn test_get_my_reports() {
 
     // Should return empty array for new user
     assert_eq!(response.status(), StatusCode::OK);
-    
+
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
@@ -285,7 +300,7 @@ async fn test_get_my_clears() {
 
     // Should return empty array for new user
     assert_eq!(response.status(), StatusCode::OK);
-    
+
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
@@ -326,7 +341,10 @@ async fn create_test_report(app: &axum::Router, token: &str) -> String {
             .await
             .unwrap();
         let body_str = String::from_utf8_lossy(&body);
-        panic!("Failed to create report: status={}, body={}", status, body_str);
+        panic!(
+            "Failed to create report: status={}, body={}",
+            status, body_str
+        );
     }
 
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
@@ -339,14 +357,14 @@ async fn create_test_report(app: &axum::Router, token: &str) -> String {
 #[tokio::test]
 async fn test_claim_report_success() {
     let app = create_test_app().await;
-    
+
     // Create reporter and create a report
     let reporter_token = create_verified_user_and_login(&app, "reporter@example.com").await;
     let report_id = create_test_report(&app, &reporter_token).await;
-    
+
     // Create claimer and claim the report
     let claimer_token = create_verified_user_and_login(&app, "claimer@example.com").await;
-    
+
     let response = app
         .clone()
         .oneshot(
@@ -361,7 +379,7 @@ async fn test_claim_report_success() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::OK);
-    
+
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
@@ -372,11 +390,11 @@ async fn test_claim_report_success() {
 #[tokio::test]
 async fn test_cannot_claim_own_report() {
     let app = create_test_app().await;
-    
+
     // Create reporter and create a report
     let reporter_token = create_verified_user_and_login(&app, "owner@example.com").await;
     let report_id = create_test_report(&app, &reporter_token).await;
-    
+
     // Try to claim own report
     let response = app
         .oneshot(
@@ -391,22 +409,25 @@ async fn test_cannot_claim_own_report() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-    
+
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
     let error: Value = serde_json::from_slice(&body).unwrap();
-    assert!(error["error"].as_str().unwrap().contains("Cannot claim your own report"));
+    assert!(error["error"]
+        .as_str()
+        .unwrap()
+        .contains("Cannot claim your own report"));
 }
 
 #[tokio::test]
 async fn test_cannot_claim_already_claimed_report() {
     let app = create_test_app().await;
-    
+
     // Create reporter and create a report
     let reporter_token = create_verified_user_and_login(&app, "reporter2@example.com").await;
     let report_id = create_test_report(&app, &reporter_token).await;
-    
+
     // First claimer claims it
     let claimer1_token = create_verified_user_and_login(&app, "claimer1@example.com").await;
     let response = app
@@ -422,7 +443,7 @@ async fn test_cannot_claim_already_claimed_report() {
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::OK);
-    
+
     // Second claimer tries to claim it
     let claimer2_token = create_verified_user_and_login(&app, "claimer2@example.com").await;
     let response = app
@@ -438,22 +459,25 @@ async fn test_cannot_claim_already_claimed_report() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-    
+
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
     let error: Value = serde_json::from_slice(&body).unwrap();
-    assert!(error["error"].as_str().unwrap().contains("not available for claiming"));
+    assert!(error["error"]
+        .as_str()
+        .unwrap()
+        .contains("not available for claiming"));
 }
 
 #[tokio::test]
 async fn test_clear_report_success() {
     let app = create_test_app().await;
-    
+
     // Create reporter and create a report
     let reporter_token = create_verified_user_and_login(&app, "reporter3@example.com").await;
     let report_id = create_test_report(&app, &reporter_token).await;
-    
+
     // Create claimer, claim the report
     let claimer_token = create_verified_user_and_login(&app, "claimer3@example.com").await;
     let claim_response = app
@@ -469,7 +493,7 @@ async fn test_clear_report_success() {
         .await
         .unwrap();
     assert_eq!(claim_response.status(), StatusCode::OK);
-    
+
     // Clear the report
     let response = app
         .oneshot(
@@ -490,7 +514,7 @@ async fn test_clear_report_success() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::OK);
-    
+
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
@@ -501,11 +525,11 @@ async fn test_clear_report_success() {
 #[tokio::test]
 async fn test_cannot_clear_unclaimed_report() {
     let app = create_test_app().await;
-    
+
     // Create reporter and create a report
     let reporter_token = create_verified_user_and_login(&app, "reporter4@example.com").await;
     let report_id = create_test_report(&app, &reporter_token).await;
-    
+
     // Create another user and try to clear without claiming
     let claimer_token = create_verified_user_and_login(&app, "claimer4@example.com").await;
     let response = app
@@ -527,22 +551,25 @@ async fn test_cannot_clear_unclaimed_report() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-    
+
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
     let error: Value = serde_json::from_slice(&body).unwrap();
-    assert!(error["error"].as_str().unwrap().contains("must be claimed before clearing"));
+    assert!(error["error"]
+        .as_str()
+        .unwrap()
+        .contains("must be claimed before clearing"));
 }
 
 #[tokio::test]
 async fn test_cannot_clear_report_claimed_by_another_user() {
     let app = create_test_app().await;
-    
+
     // Create reporter and create a report
     let reporter_token = create_verified_user_and_login(&app, "reporter5@example.com").await;
     let report_id = create_test_report(&app, &reporter_token).await;
-    
+
     // First claimer claims it
     let claimer1_token = create_verified_user_and_login(&app, "claimer5@example.com").await;
     let claim_response = app
@@ -558,7 +585,7 @@ async fn test_cannot_clear_report_claimed_by_another_user() {
         .await
         .unwrap();
     assert_eq!(claim_response.status(), StatusCode::OK);
-    
+
     // Different user tries to clear it
     let claimer2_token = create_verified_user_and_login(&app, "claimer6@example.com").await;
     let response = app
@@ -580,11 +607,13 @@ async fn test_cannot_clear_report_claimed_by_another_user() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
-    
+
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
     let error: Value = serde_json::from_slice(&body).unwrap();
-    assert!(error["error"].as_str().unwrap().contains("Only the user who claimed"));
+    assert!(error["error"]
+        .as_str()
+        .unwrap()
+        .contains("Only the user who claimed"));
 }
-

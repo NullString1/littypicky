@@ -2,7 +2,9 @@ use crate::auth::middleware::AuthUser;
 use crate::config::ScoringConfig;
 use crate::error::AppError;
 use crate::models::report::ReportStatus;
-use crate::models::verification::{CreateVerificationRequest, ReportVerification, VerificationResponse};
+use crate::models::verification::{
+    CreateVerificationRequest, ReportVerification, VerificationResponse,
+};
 use crate::services::report_service::ReportService;
 use crate::services::scoring_service::ScoringService;
 use axum::{
@@ -11,9 +13,9 @@ use axum::{
     response::IntoResponse,
     Json,
 };
+use sqlx::PgPool;
 use std::sync::Arc;
 use uuid::Uuid;
-use sqlx::PgPool;
 
 #[derive(Clone)]
 pub struct VerificationHandlerState {
@@ -50,7 +52,10 @@ pub async fn verify_report(
     Json(request): Json<CreateVerificationRequest>,
 ) -> Result<impl IntoResponse, AppError> {
     // Check if user can verify reports (has cleared enough)
-    let can_verify = state.scoring_service.can_verify_reports(auth_user.id).await?;
+    let can_verify = state
+        .scoring_service
+        .can_verify_reports(auth_user.id)
+        .await?;
     if !can_verify {
         return Err(AppError::Forbidden(format!(
             "You need to clear at least {} reports before you can verify others",
@@ -113,7 +118,10 @@ pub async fn verify_report(
     .await?;
 
     // Award points to the verifier
-    state.scoring_service.award_verification_points(auth_user.id).await?;
+    state
+        .scoring_service
+        .award_verification_points(auth_user.id)
+        .await?;
 
     // Check if we have enough positive verifications to mark report as verified
     if request.is_verified {
@@ -125,7 +133,7 @@ pub async fn verify_report(
         .await?
         .unwrap_or(0);
 
-        if positive_count >= state.scoring_config.min_verifications_needed as i64 {
+        if positive_count >= i64::from(state.scoring_config.min_verifications_needed) {
             // Update report to verified status
             sqlx::query!(
                 r#"UPDATE litter_reports SET status = $1 WHERE id = $2"#,
@@ -187,6 +195,9 @@ pub async fn get_report_verifications(
     .fetch_all(&state.pool)
     .await?;
 
-    let responses: Vec<VerificationResponse> = verifications.into_iter().map(|v| v.into()).collect();
+    let responses: Vec<VerificationResponse> = verifications
+        .into_iter()
+        .map(std::convert::Into::into)
+        .collect();
     Ok(Json(responses))
 }

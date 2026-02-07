@@ -1,16 +1,14 @@
-use back_end::{
-    auth, config, db, handlers, openapi::ApiDoc, rate_limit, services,
-};
+use back_end::{auth, config, db, handlers, openapi::ApiDoc, rate_limit, services};
 
 use axum::{
     routing::{delete, get, patch, post, put},
-    Json, Router,
+    Router,
 };
 use std::sync::Arc;
 use tower_http::{
+    catch_panic::CatchPanicLayer,
     cors::{Any, CorsLayer},
     trace::TraceLayer,
-    catch_panic::CatchPanicLayer,
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
@@ -46,7 +44,7 @@ async fn main() -> anyhow::Result<()> {
     let report_service = services::ReportService::new(pool.clone(), image_service);
     let scoring_service = services::ScoringService::new(pool.clone(), config.scoring.clone());
     let oauth_service = Arc::new(services::OAuthService::new(config.oauth.clone()).await?);
-    
+
     let auth_service = Arc::new(services::AuthService::new(
         pool.clone(),
         jwt_service.clone(),
@@ -55,9 +53,7 @@ async fn main() -> anyhow::Result<()> {
     ));
 
     // Handler states
-    let user_state = Arc::new(handlers::UserHandlerState {
-        pool: pool.clone(),
-    });
+    let user_state = Arc::new(handlers::UserHandlerState { pool: pool.clone() });
 
     let report_state = Arc::new(handlers::ReportHandlerState {
         report_service: report_service.clone(),
@@ -71,9 +67,7 @@ async fn main() -> anyhow::Result<()> {
         scoring_config: config.scoring.clone(),
     });
 
-    let leaderboard_state = Arc::new(handlers::LeaderboardHandlerState {
-        pool: pool.clone(),
-    });
+    let leaderboard_state = Arc::new(handlers::LeaderboardHandlerState { pool: pool.clone() });
 
     let oauth_state = Arc::new(handlers::OAuthHandlerState {
         oauth_service: oauth_service.clone(),
@@ -81,9 +75,7 @@ async fn main() -> anyhow::Result<()> {
         session_store: Arc::new(tokio::sync::RwLock::new(std::collections::HashMap::new())),
     });
 
-    let admin_state = Arc::new(handlers::AdminHandlerState {
-        pool: pool.clone(),
-    });
+    let admin_state = Arc::new(handlers::AdminHandlerState { pool: pool.clone() });
 
     tracing::info!("Services initialized");
 
@@ -94,12 +86,16 @@ async fn main() -> anyhow::Result<()> {
         .allow_headers(Any);
 
     // Create per-endpoint rate limiters
-    let auth_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.auth_per_min);
-    let reports_rate_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.reports_per_hour);
-    let verifications_rate_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.verifications_per_hour);
-    let general_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.general_per_min);
-    let email_verification_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.email_verification_per_hour);
-    let password_reset_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.password_reset_per_hour);
+    let _auth_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.auth_per_min);
+    let _reports_rate_limiter =
+        rate_limit::create_rate_limiter_per_hour(config.rate_limit.reports_per_hour);
+    let _verifications_rate_limiter =
+        rate_limit::create_rate_limiter_per_hour(config.rate_limit.verifications_per_hour);
+    let _general_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.general_per_min);
+    let _email_verification_limiter =
+        rate_limit::create_rate_limiter_per_hour(config.rate_limit.email_verification_per_hour);
+    let _password_reset_limiter =
+        rate_limit::create_rate_limiter_per_hour(config.rate_limit.password_reset_per_hour);
 
     // Build routers - Rate limiting disabled in development
     let auth_routes = Router::new()
@@ -109,24 +105,27 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/auth/refresh", post(handlers::refresh_token))
         .route("/api/auth/logout", post(handlers::logout))
         .with_state(auth_service.clone());
-        //.layer(auth_rate_limiter.clone()); // Disabled - causes "Unable To Extract Key!" error
-        
+    //.layer(auth_rate_limiter.clone()); // Disabled - causes "Unable To Extract Key!" error
+
     let auth_email_routes = Router::new()
-        .route("/api/auth/resend-verification", post(handlers::resend_verification))
+        .route(
+            "/api/auth/resend-verification",
+            post(handlers::resend_verification),
+        )
         .with_state(auth_service.clone());
-        //.layer(email_verification_limiter.clone()); // Disabled
-        
+    //.layer(email_verification_limiter.clone()); // Disabled
+
     let auth_password_routes = Router::new()
         .route("/api/auth/forgot-password", post(handlers::forgot_password))
         .route("/api/auth/reset-password", post(handlers::reset_password))
         .with_state(auth_service.clone());
-        //.layer(password_reset_limiter.clone()); // Disabled
+    //.layer(password_reset_limiter.clone()); // Disabled
 
     let oauth_routes = Router::new()
         .route("/api/auth/google", get(handlers::google_login))
         .route("/api/auth/google/callback", get(handlers::google_callback))
         .with_state(oauth_state);
-        //.layer(auth_rate_limiter.clone()); // Disabled
+    //.layer(auth_rate_limiter.clone()); // Disabled
 
     // User routes (authenticated)
     let user_routes = Router::new()
@@ -139,14 +138,20 @@ async fn main() -> anyhow::Result<()> {
             jwt_service.clone(),
             auth::middleware::require_auth,
         ));
-        
+
     // Report routes (authenticated)
     let report_routes = Router::new()
         .route("/api/reports", post(handlers::create_report))
         .route("/api/reports/nearby", get(handlers::get_nearby_reports))
-        .route("/api/reports/verification-queue", get(handlers::get_verification_queue))
+        .route(
+            "/api/reports/verification-queue",
+            get(handlers::get_verification_queue),
+        )
         .route("/api/reports/my-reports", get(handlers::get_my_reports))
-        .route("/api/reports/my-clears", get(handlers::get_my_cleared_reports))
+        .route(
+            "/api/reports/my-clears",
+            get(handlers::get_my_cleared_reports),
+        )
         .route("/api/reports/:id", get(handlers::get_report))
         .route("/api/reports/:id/claim", post(handlers::claim_report))
         .route("/api/reports/:id/clear", post(handlers::clear_report))
@@ -156,30 +161,39 @@ async fn main() -> anyhow::Result<()> {
             jwt_service.clone(),
             auth::middleware::require_auth,
         ));
-        
+
     // Verification routes (authenticated)
     let verification_routes = Router::new()
         .route("/api/reports/:id/verify", post(handlers::verify_report))
-        .route("/api/reports/:id/verifications", get(handlers::get_report_verifications))
+        .route(
+            "/api/reports/:id/verifications",
+            get(handlers::get_report_verifications),
+        )
         .with_state(verification_state)
         //.layer(verifications_rate_limiter.clone()) // Disabled
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
         ));
-        
+
     // Leaderboard routes (authenticated)
     let leaderboard_routes = Router::new()
         .route("/api/leaderboards", get(handlers::get_global_leaderboard))
-        .route("/api/leaderboards/city/:city", get(handlers::get_city_leaderboard))
-        .route("/api/leaderboards/country/:country", get(handlers::get_country_leaderboard))
+        .route(
+            "/api/leaderboards/city/:city",
+            get(handlers::get_city_leaderboard),
+        )
+        .route(
+            "/api/leaderboards/country/:country",
+            get(handlers::get_country_leaderboard),
+        )
         .with_state(leaderboard_state)
         //.layer(general_rate_limiter.clone()) // Disabled
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
         ));
-        
+
     // Admin routes (authenticated + admin role required)
     let admin_routes = Router::new()
         .route("/api/admin/users", get(handlers::list_users))
@@ -200,10 +214,8 @@ async fn main() -> anyhow::Result<()> {
         // Health check
         .route("/", get(|| async { "LittyPicky API v0.1.0" }))
         .route("/api/health", get(health_check))
-        
         // OpenAPI/Swagger documentation
         .merge(SwaggerUi::new("/swagger-ui").url("/api/openapi.json", ApiDoc::openapi()))
-        
         // Merge route groups
         .merge(auth_routes)
         .merge(auth_email_routes)
@@ -214,7 +226,6 @@ async fn main() -> anyhow::Result<()> {
         .merge(verification_routes)
         .merge(leaderboard_routes)
         .merge(admin_routes)
-        
         // Global layers
         .layer(TraceLayer::new_for_http())
         .layer(CatchPanicLayer::new())
@@ -223,7 +234,7 @@ async fn main() -> anyhow::Result<()> {
     // Start server
     let addr = format!("{}:{}", config.server.host, config.server.port);
     let listener = tokio::net::TcpListener::bind(&addr).await?;
-    
+
     tracing::info!("Server starting on {}", addr);
     tracing::info!("API endpoints:");
     tracing::info!("  Authentication (public):");
@@ -261,7 +272,7 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("  Documentation:");
     tracing::info!("    GET  /api/openapi.json - OpenAPI 3.0 specification");
     tracing::info!("    GET  /swagger-ui - Interactive API documentation");
-    
+
     axum::serve(listener, app).await?;
 
     Ok(())
@@ -269,9 +280,4 @@ async fn main() -> anyhow::Result<()> {
 
 async fn health_check() -> &'static str {
     "OK"
-}
-
-/// Returns the OpenAPI JSON specification
-async fn openapi_json() -> Json<utoipa::openapi::OpenApi> {
-    Json(ApiDoc::openapi())
 }

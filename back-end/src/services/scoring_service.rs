@@ -12,6 +12,7 @@ pub struct ScoringService {
 }
 
 impl ScoringService {
+    #[must_use]
     pub fn new(pool: PgPool, config: ScoringConfig) -> Self {
         Self { pool, config }
     }
@@ -20,7 +21,7 @@ impl ScoringService {
     pub async fn award_clear_points(
         &self,
         user_id: Uuid,
-        report_id: Uuid,
+        _report_id: Uuid,
         latitude: f64,
         longitude: f64,
     ) -> Result<UserScore, AppError> {
@@ -32,7 +33,7 @@ impl ScoringService {
 
         // Calculate streak bonus
         let today = Utc::now().date_naive();
-        let (new_streak, is_streak_continued) = self.calculate_streak(&user_score, today);
+        let (new_streak, _is_streak_continued) = self.calculate_streak(&user_score, today);
         let streak_bonus = new_streak * self.config.streak_bonus_points;
         points += streak_bonus;
 

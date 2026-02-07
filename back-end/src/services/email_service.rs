@@ -4,7 +4,7 @@ use crate::{
     templates,
 };
 use lettre::{
-    message::{header::ContentType, MultiPart, SinglePart},
+    message::{MultiPart, SinglePart},
     transport::smtp::authentication::Credentials,
     Message, SmtpTransport, Transport,
 };
@@ -16,10 +16,7 @@ pub struct EmailService {
 
 impl EmailService {
     pub fn new(config: EmailConfig) -> Result<Self> {
-        let creds = Credentials::new(
-            config.smtp_username.clone(),
-            config.smtp_password.clone(),
-        );
+        let creds = Credentials::new(config.smtp_username.clone(), config.smtp_password.clone());
 
         // Use builder_dangerous for localhost (MailHog), relay for production SMTP
         let mailer = if config.smtp_host == "localhost" || config.smtp_host == "127.0.0.1" {
@@ -28,7 +25,7 @@ impl EmailService {
                 .build()
         } else {
             SmtpTransport::relay(&config.smtp_host)
-                .map_err(|e| AppError::Email(format!("Failed to create SMTP transport: {}", e)))?
+                .map_err(|e| AppError::Email(format!("Failed to create SMTP transport: {e}")))?
                 .credentials(creds)
                 .port(config.smtp_port)
                 .build()
@@ -43,10 +40,8 @@ impl EmailService {
         user_name: &str,
         token: &str,
     ) -> Result<()> {
-        let verification_link = format!(
-            "{}/verify-email?token={}",
-            self.config.frontend_url, token
-        );
+        let verification_link =
+            format!("{}/verify-email?token={}", self.config.frontend_url, token);
 
         let html_template = templates::get_email_verification_html();
         let text_template = templates::get_email_verification_text();
@@ -117,11 +112,9 @@ impl EmailService {
         let html_template = templates::get_password_reset_confirmation_html();
         let text_template = templates::get_password_reset_confirmation_text();
 
-        let html_body =
-            templates::render_template(html_template, &[("{user_name}", user_name)]);
+        let html_body = templates::render_template(html_template, &[("{user_name}", user_name)]);
 
-        let text_body =
-            templates::render_template(text_template, &[("{user_name}", user_name)]);
+        let text_body = templates::render_template(text_template, &[("{user_name}", user_name)]);
 
         self.send_email(
             user_email,
@@ -141,27 +134,30 @@ impl EmailService {
     ) -> Result<()> {
         let email = Message::builder()
             .from(
-                format!("{} <{}>", self.config.smtp_from_name, self.config.smtp_from_email)
-                    .parse()
-                    .map_err(|e| AppError::Email(format!("Invalid from address: {}", e)))?,
+                format!(
+                    "{} <{}>",
+                    self.config.smtp_from_name, self.config.smtp_from_email
+                )
+                .parse()
+                .map_err(|e| AppError::Email(format!("Invalid from address: {e}")))?,
             )
             .to(to_email
                 .parse()
-                .map_err(|e| AppError::Email(format!("Invalid to address: {}", e)))?)
+                .map_err(|e| AppError::Email(format!("Invalid to address: {e}")))?)
             .subject(subject)
             .multipart(
                 MultiPart::alternative()
                     .singlepart(SinglePart::plain(text_body.to_string()))
                     .singlepart(SinglePart::html(html_body.to_string())),
             )
-            .map_err(|e| AppError::Email(format!("Failed to build email: {}", e)))?;
+            .map_err(|e| AppError::Email(format!("Failed to build email: {e}")))?;
 
         // Send email in a blocking task to avoid blocking async runtime
         let mailer = self.mailer.clone();
         let result = tokio::task::spawn_blocking(move || mailer.send(&email))
             .await
-            .map_err(|e| AppError::Email(format!("Task join error: {}", e)))?;
-            
+            .map_err(|e| AppError::Email(format!("Task join error: {e}")))?;
+
         match result {
             Ok(_) => {
                 tracing::info!("Email sent to {}: {}", to_email, subject);

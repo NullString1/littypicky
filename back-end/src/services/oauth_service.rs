@@ -1,6 +1,5 @@
 use crate::config::OAuthConfig;
 use crate::error::AppError;
-use anyhow::anyhow;
 use openidconnect::{
     core::{CoreClient, CoreProviderMetadata, CoreResponseType},
     reqwest::async_http_client,
@@ -30,11 +29,13 @@ impl OAuthService {
         // Discover Google's OpenID Connect configuration
         let provider_metadata = CoreProviderMetadata::discover_async(
             IssuerUrl::new(GOOGLE_ISSUER_URL.to_string())
-                .map_err(|e| AppError::Internal(anyhow::anyhow!("Invalid issuer URL: {}", e)))?,
+                .map_err(|e| AppError::Internal(anyhow::anyhow!("Invalid issuer URL: {e}")))?,
             async_http_client,
         )
         .await
-        .map_err(|e| AppError::Internal(anyhow::anyhow!("Failed to discover provider metadata: {}", e)))?;
+        .map_err(|e| {
+            AppError::Internal(anyhow::anyhow!("Failed to discover provider metadata: {e}"))
+        })?;
 
         // Create the OAuth2 client
         let client = CoreClient::from_provider_metadata(
@@ -44,7 +45,7 @@ impl OAuthService {
         )
         .set_redirect_uri(
             RedirectUrl::new(config.google_redirect_uri)
-                .map_err(|e| AppError::Internal(anyhow::anyhow!("Invalid redirect URI: {}", e)))?,
+                .map_err(|e| AppError::Internal(anyhow::anyhow!("Invalid redirect URI: {e}")))?,
         );
 
         Ok(Self { client })
@@ -78,9 +79,7 @@ impl OAuthService {
             .exchange_code(AuthorizationCode::new(code))
             .request_async(async_http_client)
             .await
-            .map_err(|e| {
-                AppError::Auth(format!("Failed to exchange authorization code: {}", e))
-            })?;
+            .map_err(|e| AppError::Auth(format!("Failed to exchange authorization code: {e}")))?;
 
         // Extract the ID token
         let id_token = token_response
@@ -91,7 +90,7 @@ impl OAuthService {
         // Verify the ID token
         let claims = id_token
             .claims(&self.client.id_token_verifier(), &nonce)
-            .map_err(|e| AppError::Auth(format!("Failed to verify ID token: {}", e)))?;
+            .map_err(|e| AppError::Auth(format!("Failed to verify ID token: {e}")))?;
 
         // Extract user information from claims
         let email = claims

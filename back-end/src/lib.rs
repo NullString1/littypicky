@@ -6,9 +6,9 @@ pub mod db;
 pub mod error;
 pub mod handlers;
 pub mod models;
+pub mod openapi;
+pub mod rate_limit;
 pub mod services;
 pub mod templates;
-pub mod rate_limit;
-pub mod openapi;
 
 pub use openapi::ApiDoc;

@@ -2,15 +2,15 @@ use crate::{
     auth::{generate_token, hash_token, JwtService},
     config::Config,
     error::{AppError, Result},
-    models::{User, UserRole, AuthTokens, UserResponse},
-    services::{EmailService, oauth_service::OAuthUserInfo},
+    models::{AuthTokens, User},
+    services::{oauth_service::OAuthUserInfo, EmailService},
 };
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
 use chrono::{DateTime, Duration, Utc};
-use sqlx::{PgPool, FromRow};
+use sqlx::{FromRow, PgPool};
 use uuid::Uuid;
 
 #[derive(FromRow)]
@@ -34,7 +34,13 @@ pub struct AuthService {
 }
 
 impl AuthService {
-    pub fn new(pool: PgPool, jwt_service: JwtService, email_service: EmailService, config: Config) -> Self {
+    #[must_use]
+    pub fn new(
+        pool: PgPool,
+        jwt_service: JwtService,
+        email_service: EmailService,
+        config: Config,
+    ) -> Self {
         Self {
             pool,
             jwt_service,
@@ -68,7 +74,7 @@ impl AuthService {
         let user_id = sqlx::query_scalar::<_, Uuid>(
             "INSERT INTO users (email, password_hash, full_name, city, country, email_verified) 
              VALUES ($1, $2, $3, $4, $5, false) 
-             RETURNING id"
+             RETURNING id",
         )
         .bind(email)
         .bind(password_hash)
@@ -79,12 +85,10 @@ impl AuthService {
         .await?;
 
         // Initialize user score
-        sqlx::query(
-            "INSERT INTO user_scores (user_id) VALUES ($1)"
-        )
-        .bind(user_id)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("INSERT INTO user_scores (user_id) VALUES ($1)")
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
 
         // Generate verification token
         let token = generate_token();
@@ -93,7 +97,7 @@ impl AuthService {
 
         sqlx::query(
             "INSERT INTO email_verification_tokens (user_id, token, expires_at) 
-             VALUES ($1, $2, $3)"
+             VALUES ($1, $2, $3)",
         )
         .bind(user_id)
         .bind(&token_hash)
@@ -111,18 +115,17 @@ impl AuthService {
 
     pub async fn login_user(&self, email: &str, password: &str) -> Result<AuthTokens> {
         // Get user
-        let user = sqlx::query_as::<_, User>(
-            "SELECT * FROM users WHERE email = $1 AND is_active = true"
-        )
-        .bind(email)
-        .fetch_optional(&self.pool)
-        .await?
-        .ok_or_else(|| AppError::Auth("Invalid credentials".to_string()))?;
+        let user =
+            sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1 AND is_active = true")
+                .bind(email)
+                .fetch_optional(&self.pool)
+                .await?
+                .ok_or_else(|| AppError::Auth("Invalid credentials".to_string()))?;
 
         // Check if email is verified
         if !user.email_verified {
             return Err(AppError::Forbidden(
-                "Please verify your email address before logging in".to_string()
+                "Please verify your email address before logging in".to_string(),
             ));
         }
 
@@ -130,7 +133,7 @@ impl AuthService {
         match &user.password_hash {
             Some(hash) => self.verify_password(password, hash)?,
             None => return Err(AppError::Auth("Please use OAuth to login".to_string())),
-        };
+        }
 
         // Generate tokens
         self.create_auth_tokens(user).await
@@ -139,11 +142,11 @@ impl AuthService {
     pub async fn verify_email(&self, token: &str) -> Result<AuthTokens> {
         // Hash the token for database lookup
         let token_hash = hash_token(token);
-        
+
         // Find and validate token
         let verification = sqlx::query_as::<_, TokenRecord>(
             "SELECT user_id, expires_at FROM email_verification_tokens 
-             WHERE token = $1"
+             WHERE token = $1",
         )
         .bind(&token_hash)
         .fetch_optional(&self.pool)
@@ -151,13 +154,15 @@ impl AuthService {
         .ok_or_else(|| AppError::BadRequest("Invalid or expired verification token".to_string()))?;
 
         if verification.expires_at < Utc::now() {
-            return Err(AppError::BadRequest("Verification token has expired".to_string()));
+            return Err(AppError::BadRequest(
+                "Verification token has expired".to_string(),
+            ));
         }
 
         // Update user
         sqlx::query(
             "UPDATE users SET email_verified = true, email_verified_at = NOW() 
-             WHERE id = $1"
+             WHERE id = $1",
         )
         .bind(verification.user_id)
         .execute(&self.pool)
@@ -179,13 +184,11 @@ impl AuthService {
     }
 
     pub async fn resend_verification(&self, email: &str) -> Result<String> {
-        let user = sqlx::query_as::<_, User>(
-            "SELECT * FROM users WHERE email = $1"
-        )
-        .bind(email)
-        .fetch_optional(&self.pool)
-        .await?
-        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+        let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
+            .bind(email)
+            .fetch_optional(&self.pool)
+            .await?
+            .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
 
         if user.email_verified {
             return Err(AppError::BadRequest("Email already verified".to_string()));
@@ -204,7 +207,7 @@ impl AuthService {
 
         sqlx::query(
             "INSERT INTO email_verification_tokens (user_id, token, expires_at) 
-             VALUES ($1, $2, $3)"
+             VALUES ($1, $2, $3)",
         )
         .bind(user.id)
         .bind(&token_hash)
@@ -222,14 +225,15 @@ impl AuthService {
 
     pub async fn forgot_password(&self, email: &str) -> Result<String> {
         // Always return success to prevent email enumeration
-        let user = match sqlx::query_as::<_, User>(
-            "SELECT * FROM users WHERE email = $1"
-        )
-        .bind(email)
-        .fetch_optional(&self.pool)
-        .await? {
+        let user = match sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
+            .bind(email)
+            .fetch_optional(&self.pool)
+            .await?
+        {
             Some(u) => u,
-            None => return Ok("If the email exists, a password reset link has been sent".to_string()),
+            None => {
+                return Ok("If the email exists, a password reset link has been sent".to_string())
+            }
         };
 
         // Don't send reset for OAuth users
@@ -246,11 +250,12 @@ impl AuthService {
         // Generate token
         let token = generate_token();
         let token_hash = hash_token(&token);
-        let expires_at = Utc::now() + Duration::hours(self.config.email.password_reset_expiry_hours);
+        let expires_at =
+            Utc::now() + Duration::hours(self.config.email.password_reset_expiry_hours);
 
         sqlx::query(
             "INSERT INTO password_reset_tokens (user_id, token, expires_at) 
-             VALUES ($1, $2, $3)"
+             VALUES ($1, $2, $3)",
         )
         .bind(user.id)
         .bind(&token_hash)
@@ -269,11 +274,11 @@ impl AuthService {
     pub async fn reset_password(&self, token: &str, new_password: &str) -> Result<String> {
         // Hash the token for database lookup
         let token_hash = hash_token(token);
-        
+
         // Find and validate token
         let reset = sqlx::query_as::<_, PasswordResetRecord>(
             "SELECT user_id, expires_at, used FROM password_reset_tokens 
-             WHERE token = $1"
+             WHERE token = $1",
         )
         .bind(&token_hash)
         .fetch_optional(&self.pool)
@@ -292,13 +297,11 @@ impl AuthService {
         let password_hash = self.hash_password(new_password)?;
 
         // Update password
-        sqlx::query(
-            "UPDATE users SET password_hash = $1 WHERE id = $2"
-        )
-        .bind(password_hash)
-        .bind(reset.user_id)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("UPDATE users SET password_hash = $1 WHERE id = $2")
+            .bind(password_hash)
+            .bind(reset.user_id)
+            .execute(&self.pool)
+            .await?;
 
         // Mark token as used
         sqlx::query("UPDATE password_reset_tokens SET used = true WHERE token = $1")
@@ -328,10 +331,10 @@ impl AuthService {
     pub async fn refresh_access_token(&self, refresh_token: &str) -> Result<String> {
         // Hash the refresh token for database lookup
         let token_hash = hash_token(refresh_token);
-        
+
         // Verify the refresh token exists and is valid
         let token_record = sqlx::query_as::<_, TokenRecord>(
-            "SELECT user_id, expires_at FROM refresh_tokens WHERE token_hash = $1"
+            "SELECT user_id, expires_at FROM refresh_tokens WHERE token_hash = $1",
         )
         .bind(&token_hash)
         .fetch_optional(&self.pool)
@@ -348,13 +351,16 @@ impl AuthService {
         }
 
         // Get user
-        let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1 AND is_active = true")
-            .bind(token_record.user_id)
-            .fetch_one(&self.pool)
-            .await?;
+        let user =
+            sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1 AND is_active = true")
+                .bind(token_record.user_id)
+                .fetch_one(&self.pool)
+                .await?;
 
         // Generate new access token
-        let access_token = self.jwt_service.create_access_token(user.id, &user.email, &user.role)?;
+        let access_token =
+            self.jwt_service
+                .create_access_token(user.id, &user.email, &user.role)?;
 
         Ok(access_token)
     }
@@ -362,7 +368,7 @@ impl AuthService {
     pub async fn logout(&self, refresh_token: &str) -> Result<String> {
         // Hash the refresh token for database lookup
         let token_hash = hash_token(refresh_token);
-        
+
         sqlx::query("DELETE FROM refresh_tokens WHERE token_hash = $1")
             .bind(&token_hash)
             .execute(&self.pool)
@@ -375,7 +381,7 @@ impl AuthService {
     pub async fn oauth_login(&self, oauth_info: OAuthUserInfo) -> Result<AuthTokens> {
         // Check if user exists with this OAuth provider and subject
         let existing_user = sqlx::query_as::<_, User>(
-            "SELECT * FROM users WHERE oauth_provider = $1 AND oauth_subject = $2"
+            "SELECT * FROM users WHERE oauth_provider = $1 AND oauth_subject = $2",
         )
         .bind("google")
         .bind(&oauth_info.oauth_subject)
@@ -390,12 +396,11 @@ impl AuthService {
             user
         } else {
             // Check if email already exists (from regular registration)
-            let email_exists = sqlx::query_scalar::<_, i64>(
-                "SELECT COUNT(*) FROM users WHERE email = $1"
-            )
-            .bind(&oauth_info.email)
-            .fetch_one(&self.pool)
-            .await?;
+            let email_exists =
+                sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM users WHERE email = $1")
+                    .bind(&oauth_info.email)
+                    .fetch_one(&self.pool)
+                    .await?;
 
             if email_exists > 0 {
                 return Err(AppError::Conflict(
@@ -405,7 +410,7 @@ impl AuthService {
 
             // Create new OAuth user
             let full_name = oauth_info.name.unwrap_or_else(|| "User".to_string());
-            
+
             let user_id = sqlx::query_scalar::<_, Uuid>(
                 "INSERT INTO users (
                     email, 
@@ -418,7 +423,7 @@ impl AuthService {
                     country
                 ) 
                 VALUES ($1, $2, $3, NOW(), $4, $5, $6, $7) 
-                RETURNING id"
+                RETURNING id",
             )
             .bind(&oauth_info.email)
             .bind(&full_name)
@@ -450,14 +455,16 @@ impl AuthService {
     // Helper methods
 
     async fn create_auth_tokens(&self, user: User) -> Result<AuthTokens> {
-        let access_token = self.jwt_service.create_access_token(user.id, &user.email, &user.role)?;
-        
+        let access_token =
+            self.jwt_service
+                .create_access_token(user.id, &user.email, &user.role)?;
+
         let refresh_token = generate_token();
         let token_hash = hash_token(&refresh_token);
         let expires_at = Utc::now() + Duration::seconds(self.config.jwt.refresh_expiry);
 
         sqlx::query(
-            "INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)"
+            "INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)",
         )
         .bind(user.id)
         .bind(&token_hash)
@@ -475,17 +482,17 @@ impl AuthService {
     fn hash_password(&self, password: &str) -> Result<String> {
         let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
-        
+
         argon2
             .hash_password(password.as_bytes(), &salt)
             .map(|hash| hash.to_string())
-            .map_err(|e| AppError::Internal(anyhow::anyhow!("Failed to hash password: {}", e)))
+            .map_err(|e| AppError::Internal(anyhow::anyhow!("Failed to hash password: {e}")))
     }
 
     fn verify_password(&self, password: &str, hash: &str) -> Result<()> {
         let parsed_hash = PasswordHash::new(hash)
-            .map_err(|e| AppError::Internal(anyhow::anyhow!("Invalid password hash: {}", e)))?;
-        
+            .map_err(|e| AppError::Internal(anyhow::anyhow!("Invalid password hash: {e}")))?;
+
         Argon2::default()
             .verify_password(password.as_bytes(), &parsed_hash)
             .map_err(|_| AppError::Auth("Invalid credentials".to_string()))

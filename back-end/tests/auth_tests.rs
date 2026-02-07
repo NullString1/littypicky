@@ -150,7 +150,10 @@ async fn test_registration_validation() {
             .await
             .unwrap();
         let body_str = String::from_utf8_lossy(&body);
-        eprintln!("Invalid email test - Response status: {}, body: {}", status, body_str);
+        eprintln!(
+            "Invalid email test - Response status: {}, body: {}",
+            status, body_str
+        );
     }
     assert_eq!(status, StatusCode::BAD_REQUEST);
 

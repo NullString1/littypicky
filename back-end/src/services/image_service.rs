@@ -11,6 +11,7 @@ pub struct ImageService {
 }
 
 impl ImageService {
+    #[must_use]
     pub fn new(config: ImageConfig) -> Self {
         Self { config }
     }
@@ -41,7 +42,7 @@ impl ImageService {
 
         // Load image
         let img = image::load_from_memory(&image_data)
-            .map_err(|e| AppError::Image(format!("Failed to load image: {}", e)))?;
+            .map_err(|e| AppError::Image(format!("Failed to load image: {e}")))?;
 
         // Validate dimensions
         let (width, height) = img.dimensions();
@@ -116,7 +117,7 @@ impl ImageService {
 
         general_purpose::STANDARD
             .decode(base64_data)
-            .map_err(|e| AppError::Image(format!("Invalid base64: {}", e)))?;
+            .map_err(|e| AppError::Image(format!("Invalid base64: {e}")))?;
 
         Ok(())
     }

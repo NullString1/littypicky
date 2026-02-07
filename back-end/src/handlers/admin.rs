@@ -9,7 +9,7 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{PgPool, FromRow};
+use sqlx::{FromRow, PgPool};
 use std::sync::Arc;
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -65,16 +65,17 @@ pub async fn list_users(
     _auth_user: AuthUser, // Verified by require_admin middleware
 ) -> Result<impl IntoResponse, AppError> {
     let users = sqlx::query_as::<_, User>(
-        r#"
+        r"
         SELECT * FROM users
         ORDER BY created_at DESC
         LIMIT 100
-        "#
+        ",
     )
     .fetch_all(&state.pool)
     .await?;
 
-    let user_responses: Vec<UserResponse> = users.into_iter().map(|u| u.into()).collect();
+    let user_responses: Vec<UserResponse> =
+        users.into_iter().map(std::convert::Into::into).collect();
 
     Ok(Json(user_responses))
 }
@@ -102,13 +103,11 @@ pub async fn get_user_by_id(
     Path(user_id): Path<Uuid>,
     _auth_user: AuthUser,
 ) -> Result<impl IntoResponse, AppError> {
-    let user = sqlx::query_as::<_, User>(
-        "SELECT * FROM users WHERE id = $1"
-    )
-    .bind(user_id)
-    .fetch_optional(&state.pool)
-    .await?
-    .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")
+        .bind(user_id)
+        .fetch_optional(&state.pool)
+        .await?
+        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
 
     Ok(Json(UserResponse::from(user)))
 }
@@ -145,7 +144,7 @@ pub async fn toggle_user_ban(
     Json(payload): Json<BanUserRequest>,
 ) -> Result<impl IntoResponse, AppError> {
     let user = sqlx::query_as::<_, User>(
-        "UPDATE users SET is_active = $1, updated_at = NOW() WHERE id = $2 RETURNING *"
+        "UPDATE users SET is_active = $1, updated_at = NOW() WHERE id = $2 RETURNING *",
     )
     .bind(payload.is_active)
     .bind(user_id)
@@ -178,7 +177,7 @@ pub async fn list_all_reports(
     _auth_user: AuthUser,
 ) -> Result<impl IntoResponse, AppError> {
     let reports = sqlx::query_as::<_, AdminReportView>(
-        r#"
+        r"
         SELECT 
             lr.id,
             lr.reporter_id,
@@ -199,7 +198,7 @@ pub async fn list_all_reports(
         JOIN users u ON lr.reporter_id = u.id
         ORDER BY lr.created_at DESC
         LIMIT 100
-        "#
+        ",
     )
     .fetch_all(&state.pool)
     .await?;

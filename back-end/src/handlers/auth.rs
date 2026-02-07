@@ -1,13 +1,12 @@
 use crate::{
     error::Result,
-    models::*,
+    models::{
+        AuthTokens, ForgotPasswordRequest, LoginRequest, ResendVerificationRequest,
+        ResetPasswordRequest, VerifyEmailRequest,
+    },
     services::AuthService,
 };
-use axum::{
-    extract::State,
-    http::StatusCode,
-    Json,
-};
+use axum::{extract::State, http::StatusCode, Json};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use utoipa::ToSchema;
@@ -54,29 +53,35 @@ pub async fn register(
     Json(req): Json<RegisterRequest>,
 ) -> Result<(StatusCode, Json<MessageResponse>)> {
     tracing::info!("Registering user: {}", req.email);
-    
+
     // Validate the request
     if let Err(e) = req.validate() {
         tracing::warn!("Validation failed for {}: {}", req.email, e);
-        return Err(crate::error::AppError::BadRequest(format!("Validation error: {}", e)));
+        return Err(crate::error::AppError::BadRequest(format!(
+            "Validation error: {e}"
+        )));
     }
-    
+
     let message = match auth_service
-        .register_user(&req.email, &req.password, &req.full_name, &req.city, &req.country)
-        .await {
-            Ok(msg) => msg,
-            Err(e) => {
-                tracing::error!("Registration failed for {}: {:?}", req.email, e);
-                return Err(e);
-            }
-        };
+        .register_user(
+            &req.email,
+            &req.password,
+            &req.full_name,
+            &req.city,
+            &req.country,
+        )
+        .await
+    {
+        Ok(msg) => msg,
+        Err(e) => {
+            tracing::error!("Registration failed for {}: {:?}", req.email, e);
+            return Err(e);
+        }
+    };
 
     tracing::info!("User registered successfully: {}", req.email);
 
-    Ok((
-        StatusCode::CREATED,
-        Json(MessageResponse { message }),
-    ))
+    Ok((StatusCode::CREATED, Json(MessageResponse { message })))
 }
 
 #[utoipa::path(
@@ -166,7 +171,9 @@ pub async fn reset_password(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<ResetPasswordRequest>,
 ) -> Result<Json<MessageResponse>> {
-    let message = auth_service.reset_password(&req.token, &req.new_password).await?;
+    let message = auth_service
+        .reset_password(&req.token, &req.new_password)
+        .await?;
     Ok(Json(MessageResponse { message }))
 }
 
@@ -196,7 +203,9 @@ pub async fn refresh_token(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<RefreshTokenRequest>,
 ) -> Result<Json<RefreshTokenResponse>> {
-    let access_token = auth_service.refresh_access_token(&req.refresh_token).await?;
+    let access_token = auth_service
+        .refresh_access_token(&req.refresh_token)
+        .await?;
     Ok(Json(RefreshTokenResponse { access_token }))
 }
 

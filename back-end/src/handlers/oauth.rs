@@ -1,5 +1,4 @@
 use crate::error::AppError;
-use crate::models::AuthTokens;
 use crate::services::{AuthService, OAuthService};
 use axum::{
     extract::{Query, State},
@@ -7,11 +6,11 @@ use axum::{
     response::{IntoResponse, Redirect},
     Json,
 };
-use openidconnect::{CsrfToken, Nonce};
+use openidconnect::Nonce;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use std::collections::HashMap;
 use utoipa::{IntoParams, ToSchema};
 
 /// Shared state for OAuth handlers
@@ -103,7 +102,7 @@ pub async fn google_callback(
     // 1. Set HTTP-only cookies with the tokens
     // 2. Redirect to a frontend route with a success parameter
     // 3. Have the frontend retrieve the tokens from a secure endpoint
-    
+
     // For this API, we'll return JSON
     // In production, consider redirecting to your frontend with tokens in a secure way
     Ok((StatusCode::OK, Json(auth_tokens)))
@@ -138,8 +137,7 @@ pub async fn google_callback_redirect(
     // Change this URL to your frontend URL
     let redirect_url = format!(
         "http://localhost:3000/auth/callback#access_token={}&refresh_token={}",
-        auth_tokens.access_token,
-        auth_tokens.refresh_token
+        auth_tokens.access_token, auth_tokens.refresh_token
     );
 
     Ok(Redirect::to(&redirect_url))

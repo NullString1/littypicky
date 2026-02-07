@@ -23,6 +23,7 @@ pub struct JwtService {
 }
 
 impl JwtService {
+    #[must_use]
     pub fn new(config: JwtConfig) -> Self {
         Self { config }
     }
@@ -52,7 +53,7 @@ impl JwtService {
             &claims,
             &EncodingKey::from_secret(self.config.secret.as_bytes()),
         )
-        .map_err(|e| AppError::Auth(format!("Failed to create token: {}", e)))
+        .map_err(|e| AppError::Auth(format!("Failed to create token: {e}")))
     }
 
     pub fn verify_token(&self, token: &str) -> Result<Claims> {
@@ -62,6 +63,6 @@ impl JwtService {
             &Validation::default(),
         )
         .map(|data| data.claims)
-        .map_err(|e| AppError::Auth(format!("Invalid token: {}", e)))
+        .map_err(|e| AppError::Auth(format!("Invalid token: {e}")))
     }
 }

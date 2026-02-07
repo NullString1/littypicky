@@ -46,11 +46,14 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let error_id = Uuid::new_v4();
-        
+
         let (status, error_message) = match self {
             AppError::Database(ref e) => {
                 tracing::error!(%error_id, "Database error: {:?}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Database error occurred".to_string())
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Database error occurred".to_string(),
+                )
             }
             AppError::Auth(ref msg) => {
                 tracing::warn!(%error_id, "Authentication error: {}", msg);
@@ -74,11 +77,17 @@ impl IntoResponse for AppError {
             }
             AppError::Internal(ref e) => {
                 tracing::error!(%error_id, "Internal error: {:?}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string())
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Internal server error".to_string(),
+                )
             }
             AppError::Email(ref msg) => {
                 tracing::error!(%error_id, "Email error: {}", msg);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Email service error".to_string())
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Email service error".to_string(),
+                )
             }
             AppError::Image(ref msg) => {
                 tracing::warn!(%error_id, "Image processing error: {}", msg);

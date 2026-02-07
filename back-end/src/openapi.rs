@@ -24,16 +24,13 @@ use utoipa::OpenApi;
         crate::handlers::auth::reset_password,
         crate::handlers::auth::refresh_token,
         crate::handlers::auth::logout,
-        
         // OAuth endpoints
         crate::handlers::oauth::google_login,
         crate::handlers::oauth::google_callback,
-        
         // User endpoints
         crate::handlers::users::get_current_user,
         crate::handlers::users::update_current_user,
         crate::handlers::users::get_current_user_score,
-        
         // Report endpoints
         crate::handlers::reports::create_report,
         crate::handlers::reports::get_nearby_reports,
@@ -42,16 +39,13 @@ use utoipa::OpenApi;
         crate::handlers::reports::get_report,
         crate::handlers::reports::claim_report,
         crate::handlers::reports::clear_report,
-        
         // Verification endpoints
         crate::handlers::verifications::verify_report,
         crate::handlers::verifications::get_report_verifications,
-        
         // Leaderboard endpoints
         crate::handlers::leaderboards::get_global_leaderboard,
         crate::handlers::leaderboards::get_city_leaderboard,
         crate::handlers::leaderboards::get_country_leaderboard,
-        
         // Admin endpoints
         crate::handlers::admin::list_users,
         crate::handlers::admin::get_user_by_id,
@@ -76,30 +70,24 @@ use utoipa::OpenApi;
             crate::models::email_token::ResendVerificationRequest,
             crate::models::email_token::ForgotPasswordRequest,
             crate::models::email_token::ResetPasswordRequest,
-            
             // OAuth models
             crate::handlers::oauth::OAuthLoginResponse,
-            
             // User models
             crate::handlers::users::UserScoreRecord,
-            
             // Report models
             crate::models::report::CreateReportRequest,
             crate::models::report::ClearReportRequest,
             crate::models::report::LitterReport,
             crate::models::report::ReportResponse,
             crate::models::report::ReportStatus,
-            
             // Verification models
             crate::models::verification::CreateVerificationRequest,
             crate::models::verification::VerificationResponse,
             crate::models::verification::ReportVerification,
-            
             // Score models
             crate::models::score::UserScore,
             crate::models::score::ScoreResponse,
             crate::models::score::LeaderboardEntry,
-            
             // Admin models
             crate::handlers::admin::BanUserRequest,
             crate::handlers::admin::AdminReportView,
@@ -119,7 +107,7 @@ use utoipa::OpenApi;
 )]
 pub struct ApiDoc;
 
-/// Add JWT Bearer authentication to OpenAPI
+/// Add JWT Bearer authentication to `OpenAPI`
 struct SecurityAddon;
 
 impl utoipa::Modify for SecurityAddon {
@@ -133,7 +121,7 @@ impl utoipa::Modify for SecurityAddon {
                         .bearer_format("JWT")
                         .build(),
                 ),
-            )
+            );
         }
     }
 }

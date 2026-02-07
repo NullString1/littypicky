@@ -6,9 +6,9 @@ use crate::{
 use axum::{
     async_trait,
     extract::{FromRequestParts, Request, State},
-    http::{request::Parts, StatusCode},
+    http::request::Parts,
     middleware::Next,
-    response::{IntoResponse, Response},
+    response::Response,
 };
 use uuid::Uuid;
 
@@ -27,7 +27,10 @@ where
 {
     type Rejection = AppError;
 
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> std::result::Result<Self, Self::Rejection> {
+    async fn from_request_parts(
+        parts: &mut Parts,
+        _state: &S,
+    ) -> std::result::Result<Self, Self::Rejection> {
         parts
             .extensions
             .get::<AuthUser>()
@@ -73,10 +76,7 @@ pub async fn require_auth(
     Ok(next.run(req).await)
 }
 
-pub async fn require_admin(
-    req: Request,
-    next: Next,
-) -> Result<Response> {
+pub async fn require_admin(req: Request, next: Next) -> Result<Response> {
     let auth_user = req
         .extensions()
         .get::<AuthUser>()

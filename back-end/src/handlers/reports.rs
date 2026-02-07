@@ -1,6 +1,8 @@
 use crate::auth::middleware::AuthUser;
 use crate::error::AppError;
-use crate::models::report::{ClearReportRequest, CreateReportRequest, ReportResponse, NearbyReportsQuery};
+use crate::models::report::{
+    ClearReportRequest, CreateReportRequest, NearbyReportsQuery, ReportResponse,
+};
 use crate::services::report_service::ReportService;
 use crate::services::scoring_service::ScoringService;
 use axum::{
@@ -49,7 +51,7 @@ pub async fn create_report(
 }
 
 /// Get nearby reports
-/// GET /api/reports/nearby?latitude=X&longitude=Y&radius_km=Z
+/// GET /`api/reports/nearby?latitude=X&longitude=Y&radius_km=Z`
 #[utoipa::path(
     get,
     path = "/api/reports/nearby",
@@ -78,7 +80,8 @@ pub async fn get_nearby_reports(
         .get_nearby_reports(query.latitude, query.longitude, radius)
         .await?;
 
-    let responses: Vec<ReportResponse> = reports.into_iter().map(|r| r.into()).collect();
+    let responses: Vec<ReportResponse> =
+        reports.into_iter().map(std::convert::Into::into).collect();
     Ok(Json(responses))
 }
 
@@ -112,7 +115,8 @@ pub async fn get_verification_queue(
         .get_verification_queue(query.latitude, query.longitude, radius, auth_user.id)
         .await?;
 
-    let responses: Vec<ReportResponse> = reports.into_iter().map(|r| r.into()).collect();
+    let responses: Vec<ReportResponse> =
+        reports.into_iter().map(std::convert::Into::into).collect();
     Ok(Json(responses))
 }
 
@@ -166,7 +170,10 @@ pub async fn claim_report(
     auth_user: AuthUser,
     Path(report_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
-    let report = state.report_service.claim_report(report_id, auth_user.id).await?;
+    let report = state
+        .report_service
+        .claim_report(report_id, auth_user.id)
+        .await?;
     let response: ReportResponse = report.into();
     Ok(Json(response))
 }
@@ -230,7 +237,8 @@ pub async fn get_my_reports(
     auth_user: AuthUser,
 ) -> Result<impl IntoResponse, AppError> {
     let reports = state.report_service.get_user_reports(auth_user.id).await?;
-    let responses: Vec<ReportResponse> = reports.into_iter().map(|r| r.into()).collect();
+    let responses: Vec<ReportResponse> =
+        reports.into_iter().map(std::convert::Into::into).collect();
     Ok(Json(responses))
 }
 
@@ -255,6 +263,7 @@ pub async fn get_my_cleared_reports(
         .report_service
         .get_user_cleared_reports(auth_user.id)
         .await?;
-    let responses: Vec<ReportResponse> = reports.into_iter().map(|r| r.into()).collect();
+    let responses: Vec<ReportResponse> =
+        reports.into_iter().map(std::convert::Into::into).collect();
     Ok(Json(responses))
 }

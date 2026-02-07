@@ -8,6 +8,10 @@
 --
 -- For development, we're just resetting the data.
 
+-- Drop NOT NULL constraint on photo_before (photo_after doesn't have it)
+ALTER TABLE litter_reports 
+    ALTER COLUMN photo_before DROP NOT NULL;
+
 -- Clear existing photo data (development only!)
 UPDATE litter_reports SET photo_before = NULL, photo_after = NULL;
 

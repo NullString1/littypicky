@@ -42,13 +42,22 @@ pub async fn get_test_pool() -> sqlx::PgPool {
 }
 
 async fn build_test_router(config: config::Config, pool: sqlx::PgPool) -> Router {
+    // Initialize S3 service for tests
+    let s3_service = services::S3Service::new(config.s3.clone())
+        .await
+        .expect("Failed to create S3 service");
+    s3_service
+        .initialize()
+        .await
+        .expect("Failed to initialize S3 bucket");
+
     // Initialize services
     let jwt_service = auth::JwtService::new(config.jwt.clone());
     // Use real email service with MailHog for tests
     let email_service =
         services::EmailService::new(config.email.clone()).expect("Failed to create email service");
     let image_service = services::ImageService::new(config.image.clone());
-    let report_service = services::ReportService::new(pool.clone(), image_service);
+    let report_service = services::ReportService::new(pool.clone(), image_service, s3_service.clone());
     let scoring_service = services::ScoringService::new(pool.clone(), config.scoring.clone());
 
     let auth_service = Arc::new(services::AuthService::new(

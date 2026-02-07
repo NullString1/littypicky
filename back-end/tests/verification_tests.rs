@@ -228,7 +228,7 @@ async fn test_cannot_verify_without_clearing_enough_reports() {
 }
 
 #[tokio::test]
-async fn test_cannot_verify_own_report() {
+async fn test_reporter_can_verify_someone_elses_cleanup() {
     let app = create_test_app().await;
 
     // Create user who will be reporter and verifier
@@ -270,7 +270,7 @@ async fn test_cannot_verify_own_report() {
         .await
         .unwrap();
 
-    // Original reporter tries to verify
+    // Original reporter verifies the cleanup - this SHOULD work now
     let response = app
         .oneshot(
             Request::builder()
@@ -281,7 +281,7 @@ async fn test_cannot_verify_own_report() {
                 .body(Body::from(
                     json!({
                         "is_verified": true,
-                        "comment": "Looks good"
+                        "comment": "Great job cleaning up my report!"
                     })
                     .to_string(),
                 ))
@@ -290,16 +290,14 @@ async fn test_cannot_verify_own_report() {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    // Reporter should be able to verify someone else's cleanup of their report
+    assert_eq!(response.status(), StatusCode::CREATED);
 
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
-    let error: Value = serde_json::from_slice(&body).unwrap();
-    assert!(error["error"]
-        .as_str()
-        .unwrap()
-        .contains("cannot verify your own report"));
+    let verification: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(verification["is_verified"].as_bool().unwrap(), true);
 }
 
 #[tokio::test]

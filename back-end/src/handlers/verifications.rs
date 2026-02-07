@@ -73,16 +73,11 @@ pub async fn verify_report(
         ));
     }
 
-    // Check user is not the reporter or clearer
-    if report.reporter_id == auth_user.id {
-        return Err(AppError::BadRequest(
-            "You cannot verify your own report".to_string(),
-        ));
-    }
-
+    // Check user is not the clearer
+    // Note: The reporter IS allowed to verify someone else's cleanup of their report
     if report.cleared_by == Some(auth_user.id) {
         return Err(AppError::BadRequest(
-            "You cannot verify a report you cleared".to_string(),
+            "You cannot verify a report you cleared yourself".to_string(),
         ));
     }
 

@@ -4,8 +4,9 @@ use crate::{
     models::UserRole,
 };
 use axum::{
-    extract::{Request, State},
-    http::StatusCode,
+    async_trait,
+    extract::{FromRequestParts, Request, State},
+    http::{request::Parts, StatusCode},
     middleware::Next,
     response::{IntoResponse, Response},
 };
@@ -16,6 +17,23 @@ pub struct AuthUser {
     pub id: Uuid,
     pub email: String,
     pub role: UserRole,
+}
+
+// Implement extractor for AuthUser
+#[async_trait]
+impl<S> FromRequestParts<S> for AuthUser
+where
+    S: Send + Sync,
+{
+    type Rejection = AppError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> std::result::Result<Self, Self::Rejection> {
+        parts
+            .extensions
+            .get::<AuthUser>()
+            .cloned()
+            .ok_or(AppError::Unauthorized)
+    }
 }
 
 pub async fn require_auth(

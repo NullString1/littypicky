@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgis/postgis:16-3.4-alpine
@@ -18,6 +16,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - littypicky-network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: littypicky-mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
     networks:
       - littypicky-network
 

@@ -239,7 +239,7 @@ async fn main() -> anyhow::Result<()> {
         .with_state(image_state);
 
     // Test helper routes (only enabled in test/dev environments)
-    let mut app = Router::new()
+    
     // Feed routes (authenticated)
     let feed_routes = Router::new()
         .route("/api/feed", post(handlers::create_post))
@@ -282,8 +282,14 @@ async fn main() -> anyhow::Result<()> {
         .merge(verification_routes)
         .merge(leaderboard_routes)
         .merge(admin_routes)
-        .merge(image_routes);
+        .merge(image_routes)
+        .merge(feed_routes);
 
+    let mut app = app
+        // Global layers
+        .layer(TraceLayer::new_for_http())
+        .layer(CatchPanicLayer::new())
+        .layer(cors);
     // Conditionally add test helper routes
     if config.enable_test_helpers {
         tracing::warn!("⚠️  TEST HELPER ENDPOINTS ARE ENABLED - DO NOT USE IN PRODUCTION!");
@@ -306,13 +312,6 @@ async fn main() -> anyhow::Result<()> {
     }
 
     // Build main router
-    let app = app
-        .merge(image_routes)
-        .merge(feed_routes)
-        // Global layers
-        .layer(TraceLayer::new_for_http())
-        .layer(CatchPanicLayer::new())
-        .layer(cors);
 
     // Start server
     let addr = format!("{}:{}", config.server.host, config.server.port);

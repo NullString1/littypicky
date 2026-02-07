@@ -4,6 +4,9 @@
   import { page } from '$app/state';
   import { api, type Report, type CreateVerificationRequest, type ClearReportRequest } from '$lib/api';
   import { auth } from '$lib/stores/auth';
+  import imageCompression from 'browser-image-compression';
+  import { getStatusColor } from '$lib/utils/status';
+  import { formatDateTime } from '$lib/utils/date';
 
   let report: Report | undefined = $state();
   let loading = $state(true);
@@ -128,27 +131,6 @@
   function openDirections(lat: number, lng: number) {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
   }
-
-  function getStatusColor(status: string) {
-    switch (status) {
-      case 'pending': return 'bg-red-100 text-red-800';
-      case 'claimed': return 'bg-yellow-100 text-yellow-800';
-      case 'cleared': return 'bg-green-100 text-green-800';
-      case 'verified': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-slate-100 text-slate-800';
-    }
-  }
-
-  function formatDate(dateString: string) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
 </script>
 
 <div class="bg-slate-50 min-h-full py-8">
@@ -173,7 +155,7 @@
             {report.status}
           </span>
         </div>
-        <p class="text-slate-500 mt-2">Reported on {formatDate(report.created_at)}</p>
+        <p class="text-slate-500 mt-2">Reported on {formatDateTime(report.created_at)}</p>
       </div>
 
       {#if error}
@@ -245,14 +227,14 @@
           {#if report.claimed_at}
             <div>
               <dt class="text-sm font-medium text-slate-500">Claimed At</dt>
-              <dd class="mt-1 text-sm text-slate-900">{formatDate(report.claimed_at)}</dd>
+              <dd class="mt-1 text-sm text-slate-900">{formatDateTime(report.claimed_at)}</dd>
             </div>
           {/if}
 
           {#if report.cleared_at}
             <div>
               <dt class="text-sm font-medium text-slate-500">Cleared At</dt>
-              <dd class="mt-1 text-sm text-slate-900">{formatDate(report.cleared_at)}</dd>
+              <dd class="mt-1 text-sm text-slate-900">{formatDateTime(report.cleared_at)}</dd>
             </div>
           {/if}
         </dl>

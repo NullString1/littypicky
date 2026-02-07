@@ -2,6 +2,9 @@
   import { onMount } from 'svelte';
   import { api, type Report } from '$lib/api';
   import { auth } from '$lib/stores/auth';
+  import { getCurrentLocation, calculateDistance } from '$lib/utils/geolocation';
+  import { getStatusColor } from '$lib/utils/status';
+  import { formatDateShort } from '$lib/utils/date';
 
   let reports = $state<Report[]>([]);
   let loading = $state(true);
@@ -27,42 +30,13 @@
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
   }
 
-  function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): string {
-    const R = 6371; // Radius of the earth in km
-    const dLat = deg2rad(lat2 - lat1);
-    const dLon = deg2rad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const d = R * c; // Distance in km
-    
-    if (d < 1) {
-        return `${Math.round(d * 1000)}m`;
-    }
-    return `${d.toFixed(1)}km`;
-  }
-
-  function deg2rad(deg: number) {
-    return deg * (Math.PI / 180);
-  }
-
   async function loadReports() {
     loading = true;
     error = '';
     try {
         if (!$auth.token) return;
 
-        // Default location (London) if geolocation fails or is denied
-        let lat = 51.5074;
-        let lng = -0.1278;
-
-        if (userLocation) {
-            lat = userLocation.lat;
-            lng = userLocation.lng;
-        }
-
+        const { lat, lng } = userLocation || { lat: 51.5074, lng: -0.1278 };
         const data = await api.reports.getNearby(lat, lng, 10, $auth.token); // 10km radius
         reports = data;
     } catch (e: any) {
@@ -72,35 +46,11 @@
     }
   }
 
-  onMount(() => {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                loadReports();
-            },
-            (err) => {
-                console.warn('Geolocation denied or failed:', err);
-                loadReports(); // Load with default location
-            }
-        );
-    } else {
-        loadReports();
-    }
+  onMount(async () => {
+    // Get user location with fallback
+    userLocation = await getCurrentLocation();
+    await loadReports();
   });
-
-  function getStatusColor(status: string) {
-      switch (status) {
-          case 'pending': return 'bg-red-100 text-red-800';
-          case 'claimed': return 'bg-yellow-100 text-yellow-800';
-          case 'cleared': return 'bg-green-100 text-green-800';
-          case 'verified': return 'bg-blue-100 text-blue-800';
-          default: return 'bg-slate-100 text-slate-800';
-      }
-  }
 </script>
 
 <div class="bg-slate-50 min-h-full py-8">
@@ -191,7 +141,7 @@
                 </div>
             </div>
             <div class="bg-slate-50 px-4 py-3 sm:px-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-                <span>Reported {new Date(report.created_at).toLocaleDateString()}</span>
+                <span>Reported {formatDateShort(report.created_at)}</span>
             </div>
             </div>
         {/each}

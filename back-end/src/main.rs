@@ -89,16 +89,20 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods(Any)
         .allow_headers(Any);
 
-    // Create per-endpoint rate limiters
+    // Create a global rate limiter for general protection
+    // This is more lenient to avoid dev issues, but provides basic DoS protection
+    let global_rate_limiter = rate_limit::get_rate_limiter_layer();
+
+    // Create per-endpoint rate limiters (more strict)
     let _auth_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.auth_per_min);
-    let _reports_rate_limiter =
+    let reports_rate_limiter =
         rate_limit::create_rate_limiter_per_hour(config.rate_limit.reports_per_hour);
-    let _verifications_rate_limiter =
+    let verifications_rate_limiter =
         rate_limit::create_rate_limiter_per_hour(config.rate_limit.verifications_per_hour);
     let _general_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.general_per_min);
-    let _email_verification_limiter =
+    let _email_verification_rate_limiter =
         rate_limit::create_rate_limiter_per_hour(config.rate_limit.email_verification_per_hour);
-    let _password_reset_limiter =
+    let _password_reset_rate_limiter =
         rate_limit::create_rate_limiter_per_hour(config.rate_limit.password_reset_per_hour);
 
     // Build routers - Rate limiting disabled in development
@@ -159,8 +163,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/reports/:id", get(handlers::get_report))
         .route("/api/reports/:id/claim", post(handlers::claim_report))
         .route("/api/reports/:id/clear", post(handlers::clear_report))
+        .layer(reports_rate_limiter.clone())
         .with_state(report_state)
-        //.layer(reports_rate_limiter.clone()) // Disabled
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
@@ -173,8 +177,8 @@ async fn main() -> anyhow::Result<()> {
             "/api/reports/:id/verifications",
             get(handlers::get_report_verifications),
         )
+        .layer(verifications_rate_limiter.clone())
         .with_state(verification_state)
-        //.layer(verifications_rate_limiter.clone()) // Disabled
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
@@ -243,6 +247,8 @@ async fn main() -> anyhow::Result<()> {
         .merge(leaderboard_routes)
         .merge(admin_routes)
         .merge(image_routes)
+        // Global rate limiter (lenient, for DDoS protection)
+        .layer(global_rate_limiter)
         // Global layers
         .layer(TraceLayer::new_for_http())
         .layer(CatchPanicLayer::new())

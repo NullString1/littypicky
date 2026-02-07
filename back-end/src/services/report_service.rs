@@ -38,8 +38,8 @@ impl ReportService {
             ));
         }
 
-        // Process the image
-        let processed_photo = self.image_service.process_image(&request.photo_base64)?;
+        // Process the image (async to avoid blocking)
+        let processed_photo = self.image_service.process_image(request.photo_base64).await?;
 
         // Create the report with PostGIS geometry
         let report = sqlx::query_as!(
@@ -248,8 +248,8 @@ impl ReportService {
             ));
         }
 
-        // Process the after photo
-        let processed_photo = self.image_service.process_image(&photo_base64)?;
+        // Process the after photo (async to avoid blocking)
+        let processed_photo = self.image_service.process_image(photo_base64).await?;
 
         // Update the report
         let report = sqlx::query_as!(

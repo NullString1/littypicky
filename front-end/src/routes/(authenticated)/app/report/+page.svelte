@@ -3,6 +3,7 @@
   import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
   import imageCompression from 'browser-image-compression';
+  import { getCurrentLocation, reverseGeocode } from '$lib/utils/geolocation';
 
   let isSubmitting = false;
   let photoPreview: string | null = null;
@@ -64,34 +65,27 @@
 
   async function getLocation() {
     locationStatus = 'Locating...';
-    if (!navigator.geolocation) {
-        locationStatus = 'Geolocation not supported';
-        return;
+    
+    try {
+      // Get coordinates using utility
+      const coords = await getCurrentLocation();
+      latitude = coords.lat;
+      longitude = coords.lng;
+      locationStatus = 'Found coordinates. Fetching address...';
+
+      // Reverse geocode using utility
+      const address = await reverseGeocode(latitude, longitude);
+      if (address) {
+        city = address.city;
+        country = address.country;
+        locationStatus = `Located: ${city}, ${country}`;
+      } else {
+        locationStatus = 'Coordinates found. Please enter city manually.';
+      }
+    } catch (err: any) {
+      locationStatus = 'Location access failed. Please enter manually.';
+      console.error('Location error:', err);
     }
-
-    navigator.geolocation.getCurrentPosition(async (position) => {
-        latitude = position.coords.latitude;
-        longitude = position.coords.longitude;
-        locationStatus = 'Found coordinates. Fetching address...';
-
-        // Reverse geocoding
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            const data = await res.json();
-            if (data && data.address) {
-                city = data.address.city || data.address.town || data.address.village || data.address.hamlet || '';
-                country = data.address.country || '';
-                locationStatus = `Located: ${city}, ${country}`;
-            } else {
-                locationStatus = 'Coordinates found. Please enter city manually.';
-            }
-        } catch (e) {
-            locationStatus = 'Coordinates found. Please enter city manually.';
-        }
-    }, (err) => {
-        locationStatus = 'Location access denied or failed.';
-        console.error(err);
-    });
   }
 
   async function handleSubmit(e: Event) {

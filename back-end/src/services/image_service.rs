@@ -17,9 +17,22 @@ impl ImageService {
     }
 
     /// Process image: decode base64, validate, resize, convert to WebP, re-encode to base64
-    pub fn process_image(&self, base64_input: &str) -> Result<String> {
+    /// Uses spawn_blocking to avoid blocking the async runtime during CPU-intensive work
+    pub async fn process_image(&self, base64_input: String) -> Result<String> {
+        let config = self.config.clone();
+        
+        // Move CPU-intensive work to blocking thread pool
+        tokio::task::spawn_blocking(move || {
+            Self::process_image_sync(&base64_input, &config)
+        })
+        .await
+        .map_err(|e| AppError::Internal(anyhow::anyhow!("Task join error: {}", e)))?
+    }
+
+    /// Synchronous image processing implementation
+    fn process_image_sync(base64_input: &str, config: &ImageConfig) -> Result<String> {
         // Validate base64 format first
-        self.validate_base64(base64_input)?;
+        Self::validate_base64_sync(base64_input)?;
 
         // Remove data URI prefix if present
         let base64_data = if base64_input.contains("base64,") {
@@ -32,11 +45,11 @@ impl ImageService {
         let image_data = general_purpose::STANDARD.decode(base64_data).unwrap(); // Safe because validate_base64 already decoded it
 
         // Check size limit
-        let max_size_bytes = self.config.max_size_mb * 1024 * 1024;
+        let max_size_bytes = config.max_size_mb * 1024 * 1024;
         if image_data.len() > max_size_bytes {
             return Err(AppError::Image(format!(
                 "Image size exceeds {}MB limit",
-                self.config.max_size_mb
+                config.max_size_mb
             )));
         }
 
@@ -56,10 +69,10 @@ impl ImageService {
         }
 
         // Resize if necessary
-        let resized_img = self.resize_image(img);
+        let resized_img = Self::resize_image_static(img, config);
 
         // Convert to WebP
-        let webp_data = self.convert_to_webp(&resized_img)?;
+        let webp_data = Self::convert_to_webp_static(&resized_img, config)?;
 
         // Encode back to base64
         let encoded = general_purpose::STANDARD.encode(&webp_data);
@@ -67,10 +80,10 @@ impl ImageService {
         Ok(encoded)
     }
 
-    fn resize_image(&self, img: DynamicImage) -> DynamicImage {
+    fn resize_image_static(img: DynamicImage, config: &ImageConfig) -> DynamicImage {
         let (width, height) = img.dimensions();
 
-        if width <= self.config.max_width && height <= self.config.max_height {
+        if width <= config.max_width && height <= config.max_height {
             return img;
         }
 
@@ -78,20 +91,20 @@ impl ImageService {
 
         let (new_width, new_height) = if width > height {
             (
-                self.config.max_width,
-                (self.config.max_width as f32 / aspect_ratio) as u32,
+                config.max_width,
+                (config.max_width as f32 / aspect_ratio) as u32,
             )
         } else {
             (
-                (self.config.max_height as f32 * aspect_ratio) as u32,
-                self.config.max_height,
+                (config.max_height as f32 * aspect_ratio) as u32,
+                config.max_height,
             )
         };
 
         img.resize(new_width, new_height, FilterType::Lanczos3)
     }
 
-    fn convert_to_webp(&self, img: &DynamicImage) -> Result<Vec<u8>> {
+    fn convert_to_webp_static(img: &DynamicImage, config: &ImageConfig) -> Result<Vec<u8>> {
         // Convert to RGB8 for WebP encoding
         let rgb_img = img.to_rgb8();
 
@@ -99,13 +112,22 @@ impl ImageService {
         let encoder = webp::Encoder::from_rgb(rgb_img.as_raw(), img.width(), img.height());
 
         // Encode with configured quality
-        let webp_memory = encoder.encode(self.config.webp_quality);
+        let webp_memory = encoder.encode(config.webp_quality);
 
         Ok(webp_memory.to_vec())
     }
 
+    /// Validate that input is valid base64 (async wrapper)
+    pub async fn validate_base64(&self, base64_input: String) -> Result<()> {
+        tokio::task::spawn_blocking(move || {
+            Self::validate_base64_sync(&base64_input)
+        })
+        .await
+        .map_err(|e| AppError::Internal(anyhow::anyhow!("Task join error: {}", e)))?
+    }
+
     /// Validate that input is valid base64 (doesn't process, just validates)
-    pub fn validate_base64(&self, base64_input: &str) -> Result<()> {
+    fn validate_base64_sync(base64_input: &str) -> Result<()> {
         let base64_data = if base64_input.contains("base64,") {
             base64_input
                 .split("base64,")

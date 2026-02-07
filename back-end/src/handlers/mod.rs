@@ -1,5 +1,6 @@
 pub mod admin;
 pub mod auth;
+pub mod feed;
 pub mod images;
 pub mod leaderboards;
 pub mod oauth;
@@ -10,6 +11,7 @@ pub mod verifications;
 
 pub use admin::*;
 pub use auth::*;
+pub use feed::*;
 pub use images::*;
 pub use leaderboards::*;
 pub use oauth::*;

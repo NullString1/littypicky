@@ -46,8 +46,9 @@ async fn main() -> anyhow::Result<()> {
     let jwt_service = auth::JwtService::new(config.jwt.clone());
     let email_service = services::EmailService::new(config.email.clone())?;
     let image_service = services::ImageService::new(config.image.clone());
-    let report_service = services::ReportService::new(pool.clone(), image_service, s3_service.clone());
+    let report_service = services::ReportService::new(pool.clone(), image_service.clone(), s3_service.clone());
     let scoring_service = services::ScoringService::new(pool.clone(), config.scoring.clone());
+    let feed_service = services::FeedService::new(pool.clone(), image_service.clone(), s3_service.clone());
     let oauth_service = Arc::new(services::OAuthService::new(config.oauth.clone()).await?);
 
     let auth_service = Arc::new(services::AuthService::new(
@@ -85,6 +86,10 @@ async fn main() -> anyhow::Result<()> {
     let image_state = Arc::new(handlers::ImageHandlerState {
         report_service: report_service.clone(),
         s3_service: s3_service.clone(),
+    });
+
+    let feed_state = Arc::new(handlers::FeedHandlerState {
+        feed_service: feed_service.clone(),
     });
 
     tracing::info!("Services initialized");
@@ -235,6 +240,33 @@ async fn main() -> anyhow::Result<()> {
 
     // Test helper routes (only enabled in test/dev environments)
     let mut app = Router::new()
+    // Feed routes (authenticated)
+    let feed_routes = Router::new()
+        .route("/api/feed", post(handlers::create_post))
+        .route("/api/feed", get(handlers::get_feed))
+        .route("/api/feed/:id", get(handlers::get_post))
+        .route("/api/feed/:id", patch(handlers::update_post))
+        .route("/api/feed/:id", delete(handlers::delete_post))
+        .route("/api/feed/:post_id/comments", post(handlers::create_comment))
+        .route("/api/feed/:post_id/comments", get(handlers::get_comments))
+        .route(
+            "/api/feed/comments/:comment_id",
+            patch(handlers::update_comment),
+        )
+        .route(
+            "/api/feed/comments/:comment_id",
+            delete(handlers::delete_comment),
+        )
+        .route("/api/feed/:post_id/like", post(handlers::like_post))
+        .route("/api/feed/:post_id/like", delete(handlers::unlike_post))
+        .with_state(feed_state)
+        .route_layer(axum::middleware::from_fn_with_state(
+            jwt_service.clone(),
+            auth::middleware::require_auth,
+        ));
+
+    // Build main router
+    let app = Router::new()
         // Health check
         .route("/", get(|| async { "LittyPicky API v0.1.0" }))
         .route("/api/health", get(health_check))
@@ -275,6 +307,8 @@ async fn main() -> anyhow::Result<()> {
 
     // Build main router
     let app = app
+        .merge(image_routes)
+        .merge(feed_routes)
         // Global layers
         .layer(TraceLayer::new_for_http())
         .layer(CatchPanicLayer::new())
@@ -321,6 +355,18 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("  Images (public):");
     tracing::info!("    GET  /api/images/reports/:id/before");
     tracing::info!("    GET  /api/images/reports/:id/after");
+    tracing::info!("  Feed (authenticated):");
+    tracing::info!("    POST /api/feed");
+    tracing::info!("    GET  /api/feed?offset=0&limit=20");
+    tracing::info!("    GET  /api/feed/:id");
+    tracing::info!("    PATCH /api/feed/:id");
+    tracing::info!("    DELETE /api/feed/:id");
+    tracing::info!("    POST /api/feed/:post_id/comments");
+    tracing::info!("    GET  /api/feed/:post_id/comments");
+    tracing::info!("    PATCH /api/feed/comments/:comment_id");
+    tracing::info!("    DELETE /api/feed/comments/:comment_id");
+    tracing::info!("    POST /api/feed/:post_id/like");
+    tracing::info!("    DELETE /api/feed/:post_id/like");
     tracing::info!("  Documentation:");
     tracing::info!("    GET  /api/openapi.json - OpenAPI 3.0 specification");
     tracing::info!("    GET  /swagger-ui - Interactive API documentation");

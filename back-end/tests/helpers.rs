@@ -57,7 +57,8 @@ async fn build_test_router(config: config::Config, pool: sqlx::PgPool) -> Router
     let email_service =
         services::EmailService::new(config.email.clone()).expect("Failed to create email service");
     let image_service = services::ImageService::new(config.image.clone());
-    let report_service = services::ReportService::new(pool.clone(), image_service, s3_service.clone());
+    let report_service = services::ReportService::new(pool.clone(), image_service.clone(), s3_service.clone());
+    let feed_service = services::FeedService::new(pool.clone(), image_service, s3_service.clone());
     let scoring_service = services::ScoringService::new(pool.clone(), config.scoring.clone());
 
     let auth_service = Arc::new(services::AuthService::new(
@@ -83,8 +84,12 @@ async fn build_test_router(config: config::Config, pool: sqlx::PgPool) -> Router
 
     let leaderboard_state = Arc::new(handlers::LeaderboardHandlerState { pool: pool.clone() });
 
+    let feed_state = Arc::new(handlers::FeedHandlerState {
+        feed_service: feed_service.clone(),
+    });
+
     // Build router - using nested routers to properly separate auth states
-    use axum::routing::{get, post};
+    use axum::routing::{delete, get, patch, post};
 
     // Auth routes (no auth middleware)
     let auth_router = Router::new()
@@ -158,6 +163,31 @@ async fn build_test_router(config: config::Config, pool: sqlx::PgPool) -> Router
             auth::middleware::require_auth,
         ));
 
+    // Feed routes (with auth middleware)
+    let feed_router = Router::new()
+        .route("/api/feed", post(handlers::create_post))
+        .route("/api/feed", get(handlers::get_feed))
+        .route("/api/feed/:id", get(handlers::get_post))
+        .route("/api/feed/:id", patch(handlers::update_post))
+        .route("/api/feed/:id", delete(handlers::delete_post))
+        .route("/api/feed/:post_id/comments", post(handlers::create_comment))
+        .route("/api/feed/:post_id/comments", get(handlers::get_comments))
+        .route(
+            "/api/feed/comments/:comment_id",
+            patch(handlers::update_comment),
+        )
+        .route(
+            "/api/feed/comments/:comment_id",
+            delete(handlers::delete_comment),
+        )
+        .route("/api/feed/:post_id/like", post(handlers::like_post))
+        .route("/api/feed/:post_id/like", delete(handlers::unlike_post))
+        .with_state(feed_state)
+        .route_layer(axum::middleware::from_fn_with_state(
+            jwt_service.clone(),
+            auth::middleware::require_auth,
+        ));
+
     // Combine all routers
     Router::new()
         .route("/", get(|| async { "LittyPicky API v0.1.0" }))
@@ -167,6 +197,7 @@ async fn build_test_router(config: config::Config, pool: sqlx::PgPool) -> Router
         .merge(report_router)
         .merge(verification_router)
         .merge(leaderboard_router)
+        .merge(feed_router)
 }
 
 async fn health_check() -> &'static str {
@@ -190,6 +221,26 @@ pub async fn cleanup_test_data(pool: &PgPool) {
         .execute(pool)
         .await
         .expect("Failed to clean litter_reports");
+
+    sqlx::query!("DELETE FROM feed_post_likes")
+        .execute(pool)
+        .await
+        .expect("Failed to clean feed_post_likes");
+
+    sqlx::query!("DELETE FROM feed_comments")
+        .execute(pool)
+        .await
+        .expect("Failed to clean feed_comments");
+
+    sqlx::query!("DELETE FROM feed_post_images")
+        .execute(pool)
+        .await
+        .expect("Failed to clean feed_post_images");
+
+    sqlx::query!("DELETE FROM feed_posts")
+        .execute(pool)
+        .await
+        .expect("Failed to clean feed_posts");
 
     sqlx::query!("DELETE FROM refresh_tokens")
         .execute(pool)

@@ -16,6 +16,13 @@ export type UserScoreRecord = components['schemas']['UserScoreRecord'];
 export type UpdateUserRequest = components['schemas']['UpdateUserRequest'];
 export type RefreshTokenRequest = components['schemas']['RefreshTokenRequest'];
 export type RefreshTokenResponse = components['schemas']['RefreshTokenResponse'];
+export type FeedPostResponse = components['schemas']['FeedPostResponse'];
+export type FeedComment = components['schemas']['FeedComment'];
+export type FeedCommentResponse = components['schemas']['FeedCommentResponse'];
+export type CreateFeedPostRequest = components['schemas']['CreateFeedPostRequest'];
+export type UpdateFeedPostRequest = components['schemas']['UpdateFeedPostRequest'];
+export type CreateFeedCommentRequest = components['schemas']['CreateFeedCommentRequest'];
+export type UpdateFeedCommentRequest = components['schemas']['UpdateFeedCommentRequest'];
 
 const API_BASE = '/api';
 
@@ -162,6 +169,34 @@ export const api = {
         getGlobal: (period: string = 'weekly', token: string) => request<LeaderboardEntry[]>('GET', `/leaderboards?period=${period}`, undefined, token),
         getCity: (city: string, period: string = 'weekly', token: string) => request<LeaderboardEntry[]>('GET', `/leaderboards/city/${city}?period=${period}`, undefined, token),
         getCountry: (country: string, period: string = 'weekly', token: string) => request<LeaderboardEntry[]>('GET', `/leaderboards/country/${country}?period=${period}`, undefined, token),
+    },
+    feed: {
+        getAll: (offset: number = 0, limit: number = 20, token?: string) => 
+            request<FeedPostResponse[]>('GET', `/feed?offset=${offset}&limit=${limit}`, undefined, token),
+        getById: (id: string, token?: string) => 
+            request<FeedPostResponse>('GET', `/feed/${id}`, undefined, token),
+        create: (data: CreateFeedPostRequest, token?: string) => 
+            request<FeedPostResponse>('POST', '/feed', data, token),
+        update: (id: string, data: UpdateFeedPostRequest, token?: string) => 
+            request<FeedPostResponse>('PATCH', `/feed/${id}`, data, token),
+        delete: (id: string, token?: string) => 
+            request<void>('DELETE', `/feed/${id}`, undefined, token),
+        comments: {
+            create: (postId: string, data: CreateFeedCommentRequest, token?: string) => 
+                request<FeedComment>('POST', `/feed/${postId}/comments`, data, token),
+            get: (postId: string, token?: string) => 
+                request<FeedCommentResponse[]>('GET', `/feed/${postId}/comments`, undefined, token),
+            update: (commentId: string, data: UpdateFeedCommentRequest, token?: string) => 
+                request<FeedComment>('PATCH', `/feed/comments/${commentId}`, data, token),
+            delete: (commentId: string, token?: string) => 
+                request<void>('DELETE', `/feed/comments/${commentId}`, undefined, token),
+        },
+        likes: {
+            create: (postId: string, token?: string) => 
+                request<void>('POST', `/feed/${postId}/like`, {}, token),
+            delete: (postId: string, token?: string) => 
+                request<void>('DELETE', `/feed/${postId}/like`, undefined, token),
+        }
     }
 };
 

@@ -1,3 +1,4 @@
+use crate::config::S3Config;
 use crate::error::{AppError, Result};
 use aws_config::BehaviorVersion;
 use aws_sdk_s3::{
@@ -7,16 +8,6 @@ use aws_sdk_s3::{
 };
 use std::sync::Arc;
 use uuid::Uuid;
-
-#[derive(Clone)]
-pub struct S3Config {
-    pub endpoint: String,
-    pub region: String,
-    pub bucket: String,
-    pub access_key: String,
-    pub secret_key: String,
-    pub public_url: String,
-}
 
 #[derive(Clone)]
 pub struct S3Service {

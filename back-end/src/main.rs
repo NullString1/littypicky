@@ -9,7 +9,7 @@ mod handlers;
 mod rate_limit;
 
 use axum::{
-    routing::{get, post},
+    routing::{delete, get, patch, post, put},
     Router,
 };
 use std::sync::Arc;
@@ -45,6 +45,7 @@ async fn main() -> anyhow::Result<()> {
     let image_service = services::ImageService::new(config.image.clone());
     let report_service = services::ReportService::new(pool.clone(), image_service);
     let scoring_service = services::ScoringService::new(pool.clone(), config.scoring.clone());
+    let oauth_service = Arc::new(services::OAuthService::new(config.oauth.clone()).await?);
     
     let auth_service = Arc::new(services::AuthService::new(
         pool.clone(),
@@ -71,6 +72,16 @@ async fn main() -> anyhow::Result<()> {
     });
 
     let leaderboard_state = Arc::new(handlers::LeaderboardHandlerState {
+        pool: pool.clone(),
+    });
+
+    let oauth_state = Arc::new(handlers::OAuthHandlerState {
+        oauth_service: oauth_service.clone(),
+        auth_service: auth_service.clone(),
+        session_store: Arc::new(tokio::sync::RwLock::new(std::collections::HashMap::new())),
+    });
+
+    let admin_state = Arc::new(handlers::AdminHandlerState {
         pool: pool.clone(),
     });
 
@@ -102,13 +113,20 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/auth/logout", post(handlers::logout))
         .with_state(auth_service.clone())
         
+        // OAuth routes (public)
+        .route("/api/auth/google", get(handlers::google_login))
+        .route("/api/auth/google/callback", get(handlers::google_callback))
+        .with_state(oauth_state)
+        
         // User routes (authenticated)
         .route("/api/users/me", get(handlers::get_current_user))
+        .route("/api/users/me", patch(handlers::update_current_user))
+        .route("/api/users/me/score", get(handlers::get_current_user_score))
+        .with_state(user_state)
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
         ))
-        .with_state(user_state)
         
         // Report routes (authenticated)
         .route("/api/reports", post(handlers::create_report))
@@ -142,6 +160,19 @@ async fn main() -> anyhow::Result<()> {
             auth::middleware::require_auth,
         ))
         .with_state(leaderboard_state)
+        
+        // Admin routes (authenticated + admin role required)
+        .route("/api/admin/users", get(handlers::list_users))
+        .route("/api/admin/users/:id", get(handlers::get_user_by_id))
+        .route("/api/admin/users/:id/ban", put(handlers::toggle_user_ban))
+        .route("/api/admin/reports", get(handlers::list_all_reports))
+        .route("/api/admin/reports/:id", delete(handlers::delete_report))
+        .route_layer(axum::middleware::from_fn(auth::middleware::require_admin))
+        .route_layer(axum::middleware::from_fn_with_state(
+            jwt_service.clone(),
+            auth::middleware::require_auth,
+        ))
+        .with_state(admin_state)
         
         .layer(rate_limiter)
         .layer(cors);
@@ -178,6 +209,12 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("    GET  /api/leaderboards?period=weekly|monthly|all_time");
     tracing::info!("    GET  /api/leaderboards/city/:city?period=...");
     tracing::info!("    GET  /api/leaderboards/country/:country?period=...");
+    tracing::info!("  Admin (authenticated, admin role required):");
+    tracing::info!("    GET    /api/admin/users");
+    tracing::info!("    GET    /api/admin/users/:id");
+    tracing::info!("    PUT    /api/admin/users/:id/ban");
+    tracing::info!("    GET    /api/admin/reports");
+    tracing::info!("    DELETE /api/admin/reports/:id");
     
     axum::serve(listener, app).await?;
 

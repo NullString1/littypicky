@@ -11,7 +11,7 @@ pub fn create_rate_limiter(
     let governor_conf = Box::new(
         GovernorConfigBuilder::default()
             .per_second((requests_per_min / 60).max(1) as u64)
-            .burst_size(requests_per_min.max(100))
+            .burst_size(requests_per_min.max(10))
             .key_extractor(SmartIpKeyExtractor)
             .finish()
             .unwrap(),
@@ -20,6 +20,14 @@ pub fn create_rate_limiter(
     GovernorLayer {
         config: Box::leak(governor_conf),
     }
+}
+
+/// Create a rate limiter based on requests per hour
+pub fn create_rate_limiter_per_hour(
+    requests_per_hour: u32,
+) -> GovernorLayer<'static, SmartIpKeyExtractor, NoOpMiddleware> {
+    let per_minute = (requests_per_hour / 60).max(1);
+    create_rate_limiter(per_minute)
 }
 
 /// Get a simple global rate limiter layer using the default SmartIpKeyExtractor

@@ -93,8 +93,13 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods(Any)
         .allow_headers(Any);
 
-    // Add rate limiting
-    let rate_limiter = rate_limit::get_rate_limiter_layer();
+    // Create per-endpoint rate limiters
+    let auth_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.auth_per_min);
+    let reports_rate_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.reports_per_hour);
+    let verifications_rate_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.verifications_per_hour);
+    let general_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.general_per_min);
+    let email_verification_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.email_verification_per_hour);
+    let password_reset_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.password_reset_per_hour);
 
     // Build router
     let app = Router::new()
@@ -102,27 +107,36 @@ async fn main() -> anyhow::Result<()> {
         .route("/", get(|| async { "LittyPicky API v0.1.0" }))
         .route("/health", get(health_check))
         
-        // Auth routes (public)
+        // Auth routes (public) with different rate limits
         .route("/api/auth/register", post(handlers::register))
         .route("/api/auth/login", post(handlers::login))
         .route("/api/auth/verify-email", post(handlers::verify_email))
-        .route("/api/auth/resend-verification", post(handlers::resend_verification))
-        .route("/api/auth/forgot-password", post(handlers::forgot_password))
-        .route("/api/auth/reset-password", post(handlers::reset_password))
         .route("/api/auth/refresh", post(handlers::refresh_token))
         .route("/api/auth/logout", post(handlers::logout))
         .with_state(auth_service.clone())
+        .layer(auth_rate_limiter.clone())
+        
+        .route("/api/auth/resend-verification", post(handlers::resend_verification))
+        .with_state(auth_service.clone())
+        .layer(email_verification_limiter.clone())
+        
+        .route("/api/auth/forgot-password", post(handlers::forgot_password))
+        .route("/api/auth/reset-password", post(handlers::reset_password))
+        .with_state(auth_service.clone())
+        .layer(password_reset_limiter.clone())
         
         // OAuth routes (public)
         .route("/api/auth/google", get(handlers::google_login))
         .route("/api/auth/google/callback", get(handlers::google_callback))
         .with_state(oauth_state)
+        .layer(auth_rate_limiter.clone())
         
         // User routes (authenticated)
         .route("/api/users/me", get(handlers::get_current_user))
         .route("/api/users/me", patch(handlers::update_current_user))
         .route("/api/users/me/score", get(handlers::get_current_user_score))
         .with_state(user_state)
+        .layer(general_rate_limiter.clone())
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
@@ -136,30 +150,33 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/reports/:id", get(handlers::get_report))
         .route("/api/reports/:id/claim", post(handlers::claim_report))
         .route("/api/reports/:id/clear", post(handlers::clear_report))
+        .with_state(report_state)
+        .layer(reports_rate_limiter.clone())
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
         ))
-        .with_state(report_state)
         
         // Verification routes (authenticated)
         .route("/api/reports/:id/verify", post(handlers::verify_report))
         .route("/api/reports/:id/verifications", get(handlers::get_report_verifications))
+        .with_state(verification_state)
+        .layer(verifications_rate_limiter.clone())
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
         ))
-        .with_state(verification_state)
         
         // Leaderboard routes (authenticated)
         .route("/api/leaderboards", get(handlers::get_global_leaderboard))
         .route("/api/leaderboards/city/:city", get(handlers::get_city_leaderboard))
         .route("/api/leaderboards/country/:country", get(handlers::get_country_leaderboard))
+        .with_state(leaderboard_state)
+        .layer(general_rate_limiter.clone())
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
         ))
-        .with_state(leaderboard_state)
         
         // Admin routes (authenticated + admin role required)
         .route("/api/admin/users", get(handlers::list_users))
@@ -167,14 +184,14 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/admin/users/:id/ban", put(handlers::toggle_user_ban))
         .route("/api/admin/reports", get(handlers::list_all_reports))
         .route("/api/admin/reports/:id", delete(handlers::delete_report))
+        .with_state(admin_state)
+        .layer(general_rate_limiter.clone())
         .route_layer(axum::middleware::from_fn(auth::middleware::require_admin))
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
         ))
-        .with_state(admin_state)
         
-        .layer(rate_limiter)
         .layer(cors);
 
     // Start server

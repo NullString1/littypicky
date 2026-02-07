@@ -1,4 +1,6 @@
 import type { components } from './api-types';
+import { get } from 'svelte/store';
+import { auth } from '$lib/stores/auth';
 
 export type User = components['schemas']['UserResponse'];
 export type LoginRequest = components['schemas']['LoginRequest'];
@@ -12,6 +14,8 @@ export type VerificationResponse = components['schemas']['VerificationResponse']
 export type LeaderboardEntry = components['schemas']['LeaderboardEntry'];
 export type UserScoreRecord = components['schemas']['UserScoreRecord'];
 export type UpdateUserRequest = components['schemas']['UpdateUserRequest'];
+export type RefreshTokenRequest = components['schemas']['RefreshTokenRequest'];
+export type RefreshTokenResponse = components['schemas']['RefreshTokenResponse'];
 
 const API_BASE = '/api';
 
@@ -33,8 +37,17 @@ async function request<T>(
         'Content-Type': 'application/json',
     };
 
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+    // Use provided token or fall back to store token
+    let currentToken = token;
+    if (!currentToken) {
+        const state = get(auth);
+        if (state.token) {
+            currentToken = state.token;
+        }
+    }
+
+    if (currentToken) {
+        headers['Authorization'] = `Bearer ${currentToken}`;
     }
 
     const options: RequestInit = {
@@ -47,6 +60,53 @@ async function request<T>(
     }
 
     const response = await fetch(`${API_BASE}${path}`, options);
+
+    if (response.status === 401) {
+        // Prevent infinite loop for refresh endpoint or login
+        if (path === '/auth/refresh' || path === '/auth/login') {
+             throw new ApiError('Unauthorized', 401);
+        }
+
+        const state = get(auth);
+        const refreshToken = state.refreshToken;
+        
+        if (refreshToken) {
+            try {
+                // Try to refresh the token
+                const refreshResponse = await fetch(`${API_BASE}/auth/refresh`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ refresh_token: refreshToken })
+                });
+
+                if (refreshResponse.ok) {
+                    const data = await refreshResponse.json();
+                    // Update store with new access token (and refresh token if rotated)
+                    // Note: API might not return a new refresh token, so keep the old one if needed
+                    const newAccessToken = data.access_token;
+                    const newRefreshToken = data.refresh_token || refreshToken;
+                    
+                    auth.updateTokens(newAccessToken, newRefreshToken);
+                    
+                    // Retry original request with new token
+                    return request<T>(method, path, body, newAccessToken);
+                } else {
+                    // Refresh failed (e.g. refresh token expired)
+                    auth.logout();
+                    throw new ApiError('Session expired', 401);
+                }
+            } catch (e) {
+                // Network error or other issue during refresh
+                auth.logout();
+                throw e;
+            }
+        } else {
+             // No refresh token available
+             auth.logout();
+        }
+    }
 
     if (!response.ok) {
         let errorMessage = 'An unknown error occurred';
@@ -77,6 +137,7 @@ export const api = {
         login: (data: LoginRequest) => request<AuthTokens>('POST', '/auth/login', data),
         register: (data: RegisterRequest) => request<{ message: string }>('POST', '/auth/register', data),
         verifyEmail: (token: string) => request<AuthTokens>('POST', '/auth/verify-email', { token }),
+        refreshToken: (data: RefreshTokenRequest) => request<RefreshTokenResponse>('POST', '/auth/refresh', data),
         getMe: (token: string) => request<User>('GET', '/users/me', undefined, token),
     },
     users: {
@@ -103,3 +164,4 @@ export const api = {
         getCountry: (country: string, period: string = 'weekly', token: string) => request<LeaderboardEntry[]>('GET', `/leaderboards/country/${country}?period=${period}`, undefined, token),
     }
 };
+

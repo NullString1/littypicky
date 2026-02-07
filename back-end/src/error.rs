@@ -5,6 +5,7 @@ use axum::{
 };
 use serde_json::json;
 use thiserror::Error;
+use uuid::Uuid;
 
 #[derive(Error, Debug)]
 pub enum AppError {
@@ -44,31 +45,58 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
+        let error_id = Uuid::new_v4();
+        
         let (status, error_message) = match self {
             AppError::Database(ref e) => {
-                tracing::error!("Database error: {:?}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Database error occurred")
+                tracing::error!(%error_id, "Database error: {:?}", e);
+                (StatusCode::INTERNAL_SERVER_ERROR, "Database error occurred".to_string())
             }
-            AppError::Auth(ref msg) => (StatusCode::UNAUTHORIZED, msg.as_str()),
-            AppError::Validation(ref msg) => (StatusCode::BAD_REQUEST, msg.as_str()),
-            AppError::NotFound(ref msg) => (StatusCode::NOT_FOUND, msg.as_str()),
-            AppError::Forbidden(ref msg) => (StatusCode::FORBIDDEN, msg.as_str()),
-            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized"),
+            AppError::Auth(ref msg) => {
+                tracing::warn!(%error_id, "Authentication error: {}", msg);
+                (StatusCode::UNAUTHORIZED, msg.clone())
+            }
+            AppError::Validation(ref msg) => {
+                tracing::warn!(%error_id, "Validation error: {}", msg);
+                (StatusCode::BAD_REQUEST, msg.clone())
+            }
+            AppError::NotFound(ref msg) => {
+                tracing::warn!(%error_id, "Not found error: {}", msg);
+                (StatusCode::NOT_FOUND, msg.clone())
+            }
+            AppError::Forbidden(ref msg) => {
+                tracing::warn!(%error_id, "Forbidden error: {}", msg);
+                (StatusCode::FORBIDDEN, msg.clone())
+            }
+            AppError::Unauthorized => {
+                tracing::warn!(%error_id, "Unauthorized access attempt");
+                (StatusCode::UNAUTHORIZED, "Unauthorized".to_string())
+            }
             AppError::Internal(ref e) => {
-                tracing::error!("Internal error: {:?}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error")
+                tracing::error!(%error_id, "Internal error: {:?}", e);
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string())
             }
             AppError::Email(ref msg) => {
-                tracing::error!("Email error: {}", msg);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Email service error")
+                tracing::error!(%error_id, "Email error: {}", msg);
+                (StatusCode::INTERNAL_SERVER_ERROR, "Email service error".to_string())
             }
-            AppError::Image(ref msg) => (StatusCode::BAD_REQUEST, msg.as_str()),
-            AppError::BadRequest(ref msg) => (StatusCode::BAD_REQUEST, msg.as_str()),
-            AppError::Conflict(ref msg) => (StatusCode::CONFLICT, msg.as_str()),
+            AppError::Image(ref msg) => {
+                tracing::warn!(%error_id, "Image processing error: {}", msg);
+                (StatusCode::BAD_REQUEST, msg.clone())
+            }
+            AppError::BadRequest(ref msg) => {
+                tracing::warn!(%error_id, "Bad request: {}", msg);
+                (StatusCode::BAD_REQUEST, msg.clone())
+            }
+            AppError::Conflict(ref msg) => {
+                tracing::warn!(%error_id, "Conflict error: {}", msg);
+                (StatusCode::CONFLICT, msg.clone())
+            }
         };
 
         let body = Json(json!({
             "error": error_message,
+            "error_id": error_id.to_string(),
         }));
 
         (status, body).into_response()

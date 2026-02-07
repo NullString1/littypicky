@@ -20,7 +20,7 @@
     try {
       const tokens = await api.auth.verifyEmail(token);
       // Auto-login after verification
-      auth.login(tokens.access_token, tokens.user);
+      auth.login(tokens.access_token, tokens.user, tokens.refresh_token);
       status = 'success';
       message = 'Email verified successfully! Redirecting...';
       setTimeout(() => {

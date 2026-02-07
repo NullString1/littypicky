@@ -2,13 +2,14 @@
 name = "back-end"
 version = "0.1.0"
 edition = "2021"
+default-run = "back-end"
 
 [dependencies]
 # Web Framework
 axum = { version = "0.7", features = ["macros", "multipart"] }
 tokio = { version = "1", features = ["full"] }
 tower = "0.4"
-tower-http = { version = "0.5", features = ["cors", "trace", "limit"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "limit", "catch-panic"] }
 
 # Database
 sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "uuid", "chrono", "migrate"] }

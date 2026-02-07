@@ -1,9 +1,18 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { api } from '$lib/api';
+  import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
+  import { browser } from '$app/environment';
 
   let isLoading = false;
   let error = '';
+
+  onMount(() => {
+    if (browser && $auth.isAuthenticated) {
+      goto('/app/feed');
+    }
+  });
 
   async function handleSubmit(event: Event) {
     event.preventDefault();

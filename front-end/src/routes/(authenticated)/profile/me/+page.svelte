@@ -17,8 +17,8 @@
         user = userData;
         score = scoreData;
         // Update store
-        if ($auth.token && user) {
-            auth.login($auth.token, user);
+        if ($auth.token && user && $auth.refreshToken) {
+            auth.login($auth.token, user, $auth.refreshToken);
         }
     } catch (e) {
         console.error('Failed to load profile:', e);

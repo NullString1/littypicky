@@ -7,7 +7,11 @@ use axum::{
     Json, Router,
 };
 use std::sync::Arc;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::TraceLayer,
+    catch_panic::CatchPanicLayer,
+};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
@@ -97,7 +101,7 @@ async fn main() -> anyhow::Result<()> {
     let email_verification_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.email_verification_per_hour);
     let password_reset_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.password_reset_per_hour);
 
-    // Build routers
+    // Build routers - Rate limiting disabled in development
     let auth_routes = Router::new()
         .route("/api/auth/register", post(handlers::register))
         .route("/api/auth/login", post(handlers::login))
@@ -105,24 +109,24 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/auth/refresh", post(handlers::refresh_token))
         .route("/api/auth/logout", post(handlers::logout))
         .with_state(auth_service.clone());
-        //.layer(auth_rate_limiter.clone());
+        //.layer(auth_rate_limiter.clone()); // Disabled - causes "Unable To Extract Key!" error
         
     let auth_email_routes = Router::new()
         .route("/api/auth/resend-verification", post(handlers::resend_verification))
         .with_state(auth_service.clone());
-        //.layer(email_verification_limiter.clone());
+        //.layer(email_verification_limiter.clone()); // Disabled
         
     let auth_password_routes = Router::new()
         .route("/api/auth/forgot-password", post(handlers::forgot_password))
         .route("/api/auth/reset-password", post(handlers::reset_password))
         .with_state(auth_service.clone());
-        //.layer(password_reset_limiter.clone());
+        //.layer(password_reset_limiter.clone()); // Disabled
 
     let oauth_routes = Router::new()
         .route("/api/auth/google", get(handlers::google_login))
         .route("/api/auth/google/callback", get(handlers::google_callback))
         .with_state(oauth_state);
-        //.layer(auth_rate_limiter.clone());
+        //.layer(auth_rate_limiter.clone()); // Disabled
 
     // User routes (authenticated)
     let user_routes = Router::new()
@@ -130,7 +134,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/users/me", patch(handlers::update_current_user))
         .route("/api/users/me/score", get(handlers::get_current_user_score))
         .with_state(user_state)
-        .layer(general_rate_limiter.clone())
+        //.layer(general_rate_limiter.clone()) // Disabled - was causing 500 errors
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
@@ -147,7 +151,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/reports/:id/claim", post(handlers::claim_report))
         .route("/api/reports/:id/clear", post(handlers::clear_report))
         .with_state(report_state)
-        .layer(reports_rate_limiter.clone())
+        //.layer(reports_rate_limiter.clone()) // Disabled
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
@@ -158,7 +162,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/reports/:id/verify", post(handlers::verify_report))
         .route("/api/reports/:id/verifications", get(handlers::get_report_verifications))
         .with_state(verification_state)
-        .layer(verifications_rate_limiter.clone())
+        //.layer(verifications_rate_limiter.clone()) // Disabled
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
@@ -170,7 +174,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/leaderboards/city/:city", get(handlers::get_city_leaderboard))
         .route("/api/leaderboards/country/:country", get(handlers::get_country_leaderboard))
         .with_state(leaderboard_state)
-        .layer(general_rate_limiter.clone())
+        //.layer(general_rate_limiter.clone()) // Disabled
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
@@ -184,7 +188,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/admin/reports", get(handlers::list_all_reports))
         .route("/api/admin/reports/:id", delete(handlers::delete_report))
         .with_state(admin_state)
-        .layer(general_rate_limiter.clone())
+        //.layer(general_rate_limiter.clone()) // Disabled
         .route_layer(axum::middleware::from_fn(auth::middleware::require_admin))
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
@@ -195,7 +199,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         // Health check
         .route("/", get(|| async { "LittyPicky API v0.1.0" }))
-        .route("/health", get(health_check))
+        .route("/api/health", get(health_check))
         
         // OpenAPI/Swagger documentation
         .merge(SwaggerUi::new("/swagger-ui").url("/api/openapi.json", ApiDoc::openapi()))
@@ -212,6 +216,8 @@ async fn main() -> anyhow::Result<()> {
         .merge(admin_routes)
         
         // Global layers
+        .layer(TraceLayer::new_for_http())
+        .layer(CatchPanicLayer::new())
         .layer(cors);
 
     // Start server

@@ -42,6 +42,7 @@ pub async fn get_current_user(
     State(state): State<Arc<UserHandlerState>>,
     auth_user: AuthUser,
 ) -> Result<impl IntoResponse, AppError> {
+    tracing::info!("Getting current user profile for {}", auth_user.id);
     let user = sqlx::query_as!(
         User,
         r#"
@@ -58,7 +59,9 @@ pub async fn get_current_user(
     .await?
     .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
 
+    tracing::debug!("Fetched user from DB: {:?}", user);
     let response: UserResponse = user.into();
+    tracing::debug!("Converted to UserResponse: {:?}", response);
     Ok(Json(response))
 }
 

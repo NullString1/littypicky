@@ -55,6 +55,10 @@ use utoipa::OpenApi;
         crate::handlers::admin::toggle_user_ban,
         crate::handlers::admin::list_all_reports,
         crate::handlers::admin::delete_report,
+        // Test helper endpoints
+        crate::handlers::test_helpers::verify_email_for_testing,
+        crate::handlers::test_helpers::cleanup_test_data,
+        crate::handlers::test_helpers::test_status,
     ),
     components(
         schemas(
@@ -95,6 +99,9 @@ use utoipa::OpenApi;
             crate::handlers::admin::BanUserRequest,
             crate::handlers::admin::AdminReportView,
             crate::handlers::admin::ListUsersQuery,
+            // Test helper models
+            crate::handlers::test_helpers::TestHelperResponse,
+            crate::handlers::test_helpers::CleanupRequest,
         )
     ),
     tags(
@@ -106,6 +113,7 @@ use utoipa::OpenApi;
         (name = "Verifications", description = "Report verification"),
         (name = "Leaderboards", description = "User rankings and leaderboards"),
         (name = "Admin", description = "Administrative endpoints (admin role required)"),
+        (name = "test-helpers", description = "Test helper endpoints (TESTING ONLY - DO NOT USE IN PRODUCTION)"),
     ),
     modifiers(&SecurityAddon)
 )]

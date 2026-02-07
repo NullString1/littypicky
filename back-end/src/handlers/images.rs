@@ -36,7 +36,7 @@ pub async fn get_report_before_photo(
     let report = state.report_service.get_report_by_id(report_id).await?;
     
     // Extract S3 key from URL
-    let key = state.s3_service.extract_key_from_url(&report.photo_before)
+    let key = state.s3_service.extract_key_from_url(report.photo_before.as_ref().ok_or_else(|| AppError::NotFound("Before photo not found".into()))?)
         .ok_or_else(|| AppError::Internal(anyhow::anyhow!("Invalid S3 URL")))?;
     
     // Get image data from S3

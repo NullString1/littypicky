@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { api } from '$lib/api';
   import { auth } from '$lib/stores/auth';
-  import { goto } from '$app/navigation';
+  import { goto, replaceState } from '$app/navigation';
   import { browser } from '$app/environment';
 
   let isLoading = false;
@@ -38,8 +38,7 @@
       });
       // Redirect to login or show success message
       // The backend says "User registered successfully. Verification email sent."
-      alert('Registration successful! Please login.'); 
-      goto('/auth/login');
+      goto('/auth/login', { replaceState: true, invalidateAll: true });
     } catch (e: any) {
       error = e.message;
     } finally {

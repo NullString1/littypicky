@@ -233,8 +233,8 @@ async fn main() -> anyhow::Result<()> {
         )
         .with_state(image_state);
 
-    // Build main router
-    let app = Router::new()
+    // Test helper routes (only enabled in test/dev environments)
+    let mut app = Router::new()
         // Health check
         .route("/", get(|| async { "LittyPicky API v0.1.0" }))
         .route("/api/health", get(health_check))
@@ -250,7 +250,31 @@ async fn main() -> anyhow::Result<()> {
         .merge(verification_routes)
         .merge(leaderboard_routes)
         .merge(admin_routes)
-        .merge(image_routes)
+        .merge(image_routes);
+
+    // Conditionally add test helper routes
+    if config.enable_test_helpers {
+        tracing::warn!("⚠️  TEST HELPER ENDPOINTS ARE ENABLED - DO NOT USE IN PRODUCTION!");
+        
+        let test_helper_state = Arc::new(handlers::TestHelperState {
+            pool: pool.clone(),
+            auth_service: auth_service.clone(),
+        });
+
+        let test_helper_routes = Router::new()
+            .route("/api/test/status", get(handlers::test_status))
+            .route(
+                "/api/test/verify-email/:email",
+                post(handlers::verify_email_for_testing),
+            )
+            .route("/api/test/cleanup", delete(handlers::cleanup_test_data))
+            .with_state(test_helper_state);
+
+        app = app.merge(test_helper_routes);
+    }
+
+    // Build main router
+    let app = app
         // Global layers
         .layer(TraceLayer::new_for_http())
         .layer(CatchPanicLayer::new())
@@ -300,6 +324,13 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("  Documentation:");
     tracing::info!("    GET  /api/openapi.json - OpenAPI 3.0 specification");
     tracing::info!("    GET  /swagger-ui - Interactive API documentation");
+    
+    if config.enable_test_helpers {
+        tracing::info!("  Test Helpers (⚠️  TESTING ONLY - DO NOT USE IN PRODUCTION):");
+        tracing::info!("    GET    /api/test/status");
+        tracing::info!("    POST   /api/test/verify-email/:email");
+        tracing::info!("    DELETE /api/test/cleanup");
+    }
 
     axum::serve(listener, app).await?;
 

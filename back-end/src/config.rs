@@ -12,6 +12,7 @@ pub struct Config {
     pub image: ImageConfig,
     pub scoring: ScoringConfig,
     pub s3: S3Config,
+    pub enable_test_helpers: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -205,6 +206,10 @@ impl Config {
                 public_url: env::var("S3_PUBLIC_URL")
                     .unwrap_or_else(|_| "http://127.0.0.1:9000/littypicky-images".to_string()),
             },
+            enable_test_helpers: env::var("ENABLE_TEST_HELPERS")
+                .unwrap_or_else(|_| "false".to_string())
+                .parse()
+                .unwrap_or(false),
         })
     }
 }

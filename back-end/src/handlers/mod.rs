@@ -4,6 +4,7 @@ pub mod images;
 pub mod leaderboards;
 pub mod oauth;
 pub mod reports;
+pub mod test_helpers;
 pub mod users;
 pub mod verifications;
 
@@ -13,5 +14,6 @@ pub use images::*;
 pub use leaderboards::*;
 pub use oauth::*;
 pub use reports::*;
+pub use test_helpers::*;
 pub use users::*;
 pub use verifications::*;

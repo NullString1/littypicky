@@ -1,9 +1,10 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use utoipa::{IntoParams, ToSchema};
 use uuid::Uuid;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct UserScore {
     pub id: Uuid,
     pub user_id: Uuid,
@@ -16,7 +17,7 @@ pub struct UserScore {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ScoreResponse {
     pub user_id: Uuid,
     pub total_points: i32,
@@ -37,7 +38,7 @@ impl From<UserScore> for ScoreResponse {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct LeaderboardEntry {
     pub user_id: Uuid,
     pub full_name: String,
@@ -49,7 +50,8 @@ pub struct LeaderboardEntry {
     pub rank: i64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
 pub struct LeaderboardQuery {
+    #[param(example = "weekly")]
     pub period: Option<String>, // "weekly", "monthly", "all_time"
 }

@@ -25,6 +25,24 @@ pub struct VerificationHandlerState {
 
 /// Verify a cleared report
 /// POST /api/reports/:id/verify
+#[utoipa::path(
+    post,
+    path = "/api/reports/{id}/verify",
+    tag = "Verifications",
+    request_body = CreateVerificationRequest,
+    params(
+        ("id" = Uuid, Path, description = "Report ID")
+    ),
+    responses(
+        (status = 201, description = "Report verification submitted", body = VerificationResponse),
+        (status = 404, description = "Report not found"),
+        (status = 400, description = "Invalid report status or self-verification"),
+        (status = 403, description = "Not enough experience to verify")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn verify_report(
     State(state): State<Arc<VerificationHandlerState>>,
     auth_user: AuthUser,
@@ -133,6 +151,21 @@ pub async fn verify_report(
 
 /// Get all verifications for a report
 /// GET /api/reports/:id/verifications
+#[utoipa::path(
+    get,
+    path = "/api/reports/{id}/verifications",
+    tag = "Verifications",
+    params(
+        ("id" = Uuid, Path, description = "Report ID")
+    ),
+    responses(
+        (status = 200, description = "Returns list of verifications", body = Vec<VerificationResponse>),
+        (status = 404, description = "Report not found")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_report_verifications(
     State(state): State<Arc<VerificationHandlerState>>,
     _auth_user: AuthUser,

@@ -1,10 +1,12 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use utoipa::{IntoParams, ToSchema};
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq, ToSchema)]
 #[sqlx(type_name = "report_status", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum ReportStatus {
     Pending,
     Claimed,
@@ -12,7 +14,7 @@ pub enum ReportStatus {
     Verified,
 }
 
-#[derive(Debug, Clone, FromRow)]
+#[derive(Debug, Clone, FromRow, ToSchema)]
 pub struct LitterReport {
     pub id: Uuid,
     pub reporter_id: Uuid,
@@ -32,7 +34,7 @@ pub struct LitterReport {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ReportResponse {
     pub id: Uuid,
     pub reporter_id: Uuid,
@@ -75,24 +77,34 @@ impl From<LitterReport> for ReportResponse {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateReportRequest {
+    #[schema(example = 51.5074)]
     pub latitude: f64,
+    #[schema(example = -0.1278)]
     pub longitude: f64,
+    #[schema(example = "Plastic bottles near the park entrance")]
     pub description: Option<String>,
+    #[schema(example = "data:image/jpeg;base64,...")]
     pub photo_base64: String,
+    #[schema(example = "London")]
     pub city: String,
+    #[schema(example = "UK")]
     pub country: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct ClearReportRequest {
+    #[schema(example = "data:image/jpeg;base64,...")]
     pub photo_base64: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
 pub struct NearbyReportsQuery {
+    #[param(example = 51.5074)]
     pub latitude: f64,
+    #[param(example = -0.1278)]
     pub longitude: f64,
+    #[param(example = 5.0, minimum = 0.1, maximum = 100.0)]
     pub radius_km: Option<f64>,
 }

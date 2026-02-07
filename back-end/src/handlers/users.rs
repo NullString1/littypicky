@@ -3,18 +3,20 @@ use crate::error::AppError;
 use crate::models::user::{User, UserResponse, UserRole, UpdateUserRequest};
 use axum::{extract::State, response::IntoResponse, Json};
 use chrono::NaiveDate;
+use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, FromRow};
 use std::sync::Arc;
+use utoipa::ToSchema;
 
-#[derive(FromRow)]
-struct UserScoreRecord {
-    total_points: i32,
-    total_reports: i32,
-    total_clears: i32,
-    total_verifications: i32,
-    current_streak: i32,
-    longest_streak: i32,
-    last_clear_date: Option<NaiveDate>,
+#[derive(FromRow, Serialize, ToSchema)]
+pub struct UserScoreRecord {
+    pub total_points: i32,
+    pub total_reports: i32,
+    pub total_clears: i32,
+    pub total_verifications: i32,
+    pub current_streak: i32,
+    pub longest_streak: i32,
+    pub last_clear_date: Option<NaiveDate>,
 }
 
 #[derive(Clone)]
@@ -24,6 +26,18 @@ pub struct UserHandlerState {
 
 /// Get current authenticated user's profile
 /// GET /api/users/me
+#[utoipa::path(
+    get,
+    path = "/api/users/me",
+    tag = "Users",
+    responses(
+        (status = 200, description = "Returns user profile", body = UserResponse),
+        (status = 404, description = "User not found")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_current_user(
     State(state): State<Arc<UserHandlerState>>,
     auth_user: AuthUser,
@@ -50,6 +64,19 @@ pub async fn get_current_user(
 
 /// Update current user's profile
 /// PATCH /api/users/me
+#[utoipa::path(
+    patch,
+    path = "/api/users/me",
+    tag = "Users",
+    request_body = UpdateUserRequest,
+    responses(
+        (status = 200, description = "Profile updated successfully", body = UserResponse),
+        (status = 400, description = "Invalid parameters")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn update_current_user(
     State(state): State<Arc<UserHandlerState>>,
     auth_user: AuthUser,
@@ -107,6 +134,18 @@ pub async fn update_current_user(
 
 /// Get user's score and statistics
 /// GET /api/users/me/score
+#[utoipa::path(
+    get,
+    path = "/api/users/me/score",
+    tag = "Users",
+    responses(
+        (status = 200, description = "Returns user statistics and score", body = UserScoreRecord),
+        (status = 404, description = "Score not found")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_current_user_score(
     State(state): State<Arc<UserHandlerState>>,
     auth_user: AuthUser,
@@ -124,13 +163,5 @@ pub async fn get_current_user_score(
     .await?
     .ok_or_else(|| AppError::NotFound("Score not found".to_string()))?;
 
-    Ok(Json(serde_json::json!({
-        "total_points": score.total_points,
-        "total_reports": score.total_reports,
-        "total_clears": score.total_clears,
-        "total_verifications": score.total_verifications,
-        "current_streak": score.current_streak,
-        "longest_streak": score.longest_streak,
-        "last_clear_date": score.last_clear_date,
-    })))
+    Ok(Json(score))
 }

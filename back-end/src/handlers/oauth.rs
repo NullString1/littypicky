@@ -1,4 +1,5 @@
 use crate::error::AppError;
+use crate::models::AuthTokens;
 use crate::services::{AuthService, OAuthService};
 use axum::{
     extract::{Query, State},
@@ -11,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use std::collections::HashMap;
+use utoipa::{IntoParams, ToSchema};
 
 /// Shared state for OAuth handlers
 #[derive(Clone)]
@@ -22,20 +24,29 @@ pub struct OAuthHandlerState {
 }
 
 /// Query parameters for OAuth callback
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
 pub struct OAuthCallback {
     code: String,
     state: String,
 }
 
 /// Response for OAuth login
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct OAuthLoginResponse {
+    #[schema(example = "https://accounts.google.com/o/oauth2/v2/auth?...")]
     pub auth_url: String,
 }
 
 /// Initiate Google OAuth login
 /// GET /api/auth/google
+#[utoipa::path(
+    get,
+    path = "/api/auth/google",
+    tag = "OAuth",
+    responses(
+        (status = 200, description = "Returns Google OAuth authorization URL", body = OAuthLoginResponse)
+    )
+)]
 pub async fn google_login(
     State(state): State<Arc<OAuthHandlerState>>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -52,6 +63,19 @@ pub async fn google_login(
 
 /// Handle Google OAuth callback
 /// GET /api/auth/google/callback
+#[utoipa::path(
+    get,
+    path = "/api/auth/google/callback",
+    tag = "OAuth",
+    params(
+        OAuthCallback
+    ),
+    responses(
+        (status = 200, description = "OAuth login successful", body = AuthTokens),
+        (status = 401, description = "Invalid or expired session"),
+        (status = 500, description = "OAuth exchange failed")
+    )
+)]
 pub async fn google_callback(
     State(state): State<Arc<OAuthHandlerState>>,
     Query(params): Query<OAuthCallback>,

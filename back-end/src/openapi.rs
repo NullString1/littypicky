@@ -77,6 +77,12 @@ use utoipa::OpenApi;
             crate::models::email_token::ForgotPasswordRequest,
             crate::models::email_token::ResetPasswordRequest,
             
+            // OAuth models
+            crate::handlers::oauth::OAuthLoginResponse,
+            
+            // User models
+            crate::handlers::users::UserScoreRecord,
+            
             // Report models
             crate::models::report::CreateReportRequest,
             crate::models::report::ClearReportRequest,
@@ -85,15 +91,19 @@ use utoipa::OpenApi;
             crate::models::report::ReportStatus,
             
             // Verification models
-            crate::models::verification::VerifyReportRequest,
+            crate::models::verification::CreateVerificationRequest,
+            crate::models::verification::VerificationResponse,
             crate::models::verification::ReportVerification,
             
             // Score models
             crate::models::score::UserScore,
+            crate::models::score::ScoreResponse,
+            crate::models::score::LeaderboardEntry,
             
             // Admin models
             crate::handlers::admin::BanUserRequest,
             crate::handlers::admin::AdminReportView,
+            crate::handlers::admin::ListUsersQuery,
         )
     ),
     tags(

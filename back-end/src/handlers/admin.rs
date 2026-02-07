@@ -11,6 +11,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, FromRow};
 use std::sync::Arc;
+use utoipa::ToSchema;
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -18,13 +19,15 @@ pub struct AdminHandlerState {
     pub pool: PgPool,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct ListUsersQuery {
+    #[schema(example = 1)]
     pub page: Option<i64>,
+    #[schema(example = 20)]
     pub limit: Option<i64>,
 }
 
-#[derive(Serialize, FromRow)]
+#[derive(Serialize, FromRow, ToSchema)]
 pub struct AdminReportView {
     pub id: Uuid,
     pub reporter_id: Uuid,
@@ -45,6 +48,18 @@ pub struct AdminReportView {
 
 /// Get all users (paginated)
 /// GET /api/admin/users?page=1&limit=20
+#[utoipa::path(
+    get,
+    path = "/api/admin/users",
+    tag = "Admin",
+    responses(
+        (status = 200, description = "Returns list of users", body = Vec<UserResponse>),
+        (status = 403, description = "Admin access required")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn list_users(
     State(state): State<Arc<AdminHandlerState>>,
     _auth_user: AuthUser, // Verified by require_admin middleware
@@ -66,6 +81,22 @@ pub async fn list_users(
 
 /// Get user by ID
 /// GET /api/admin/users/:id
+#[utoipa::path(
+    get,
+    path = "/api/admin/users/{id}",
+    tag = "Admin",
+    params(
+        ("id" = Uuid, Path, description = "User ID")
+    ),
+    responses(
+        (status = 200, description = "Returns user details", body = UserResponse),
+        (status = 404, description = "User not found"),
+        (status = 403, description = "Admin access required")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_user_by_id(
     State(state): State<Arc<AdminHandlerState>>,
     Path(user_id): Path<Uuid>,
@@ -84,11 +115,29 @@ pub async fn get_user_by_id(
 
 /// Ban/unban a user
 /// PUT /api/admin/users/:id/ban
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct BanUserRequest {
+    #[schema(example = false)]
     pub is_active: bool,
 }
 
+#[utoipa::path(
+    put,
+    path = "/api/admin/users/{id}/ban",
+    tag = "Admin",
+    request_body = BanUserRequest,
+    params(
+        ("id" = Uuid, Path, description = "User ID")
+    ),
+    responses(
+        (status = 200, description = "User ban status updated", body = UserResponse),
+        (status = 404, description = "User not found"),
+        (status = 403, description = "Admin access required")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn toggle_user_ban(
     State(state): State<Arc<AdminHandlerState>>,
     Path(user_id): Path<Uuid>,
@@ -112,6 +161,18 @@ pub async fn toggle_user_ban(
 
 /// Get all reports (not just nearby)
 /// GET /api/admin/reports
+#[utoipa::path(
+    get,
+    path = "/api/admin/reports",
+    tag = "Admin",
+    responses(
+        (status = 200, description = "Returns all reports", body = Vec<AdminReportView>),
+        (status = 403, description = "Admin access required")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn list_all_reports(
     State(state): State<Arc<AdminHandlerState>>,
     _auth_user: AuthUser,
@@ -148,6 +209,22 @@ pub async fn list_all_reports(
 
 /// Delete a report (for spam/inappropriate content)
 /// DELETE /api/admin/reports/:id
+#[utoipa::path(
+    delete,
+    path = "/api/admin/reports/{id}",
+    tag = "Admin",
+    params(
+        ("id" = Uuid, Path, description = "Report ID")
+    ),
+    responses(
+        (status = 200, description = "Report deleted"),
+        (status = 404, description = "Report not found"),
+        (status = 403, description = "Admin access required")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn delete_report(
     State(state): State<Arc<AdminHandlerState>>,
     Path(report_id): Path<Uuid>,

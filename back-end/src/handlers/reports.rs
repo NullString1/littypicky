@@ -1,6 +1,6 @@
 use crate::auth::middleware::AuthUser;
 use crate::error::AppError;
-use crate::models::report::{ClearReportRequest, CreateReportRequest, ReportResponse};
+use crate::models::report::{ClearReportRequest, CreateReportRequest, ReportResponse, NearbyReportsQuery};
 use crate::services::report_service::ReportService;
 use crate::services::scoring_service::ScoringService;
 use axum::{
@@ -9,7 +9,6 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -21,6 +20,20 @@ pub struct ReportHandlerState {
 
 /// Create a new litter report
 /// POST /api/reports
+#[utoipa::path(
+    post,
+    path = "/api/reports",
+    tag = "Reports",
+    request_body = CreateReportRequest,
+    responses(
+        (status = 201, description = "Report created successfully", body = ReportResponse),
+        (status = 400, description = "Invalid input or image"),
+        (status = 403, description = "Email verification required")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn create_report(
     State(state): State<Arc<ReportHandlerState>>,
     auth_user: AuthUser,
@@ -37,17 +50,25 @@ pub async fn create_report(
 
 /// Get nearby reports
 /// GET /api/reports/nearby?latitude=X&longitude=Y&radius_km=Z
-#[derive(Debug, Deserialize)]
-pub struct NearbyQuery {
-    pub latitude: f64,
-    pub longitude: f64,
-    pub radius_km: Option<f64>,
-}
-
+#[utoipa::path(
+    get,
+    path = "/api/reports/nearby",
+    tag = "Reports",
+    params(
+        NearbyReportsQuery
+    ),
+    responses(
+        (status = 200, description = "Returns reports within radius", body = Vec<ReportResponse>),
+        (status = 400, description = "Invalid coordinates")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_nearby_reports(
     State(state): State<Arc<ReportHandlerState>>,
     _auth_user: AuthUser,
-    Query(query): Query<NearbyQuery>,
+    Query(query): Query<NearbyReportsQuery>,
 ) -> Result<impl IntoResponse, AppError> {
     // Default to 5km radius if not specified
     let radius = query.radius_km.unwrap_or(5.0);
@@ -63,6 +84,21 @@ pub async fn get_nearby_reports(
 
 /// Get a single report by ID
 /// GET /api/reports/:id
+#[utoipa::path(
+    get,
+    path = "/api/reports/{id}",
+    tag = "Reports",
+    params(
+        ("id" = Uuid, Path, description = "Report ID")
+    ),
+    responses(
+        (status = 200, description = "Returns report details", body = ReportResponse),
+        (status = 404, description = "Report not found")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_report(
     State(state): State<Arc<ReportHandlerState>>,
     _auth_user: AuthUser,
@@ -75,6 +111,22 @@ pub async fn get_report(
 
 /// Claim a report for cleanup
 /// POST /api/reports/:id/claim
+#[utoipa::path(
+    post,
+    path = "/api/reports/{id}/claim",
+    tag = "Reports",
+    params(
+        ("id" = Uuid, Path, description = "Report ID")
+    ),
+    responses(
+        (status = 200, description = "Report claimed successfully", body = ReportResponse),
+        (status = 404, description = "Report not found"),
+        (status = 400, description = "Report already claimed or not in pending status")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn claim_report(
     State(state): State<Arc<ReportHandlerState>>,
     auth_user: AuthUser,
@@ -87,6 +139,23 @@ pub async fn claim_report(
 
 /// Clear a report with after photo
 /// POST /api/reports/:id/clear
+#[utoipa::path(
+    post,
+    path = "/api/reports/{id}/clear",
+    tag = "Reports",
+    request_body = ClearReportRequest,
+    params(
+        ("id" = Uuid, Path, description = "Report ID")
+    ),
+    responses(
+        (status = 200, description = "Report cleared successfully. Points awarded.", body = ReportResponse),
+        (status = 404, description = "Report not found"),
+        (status = 400, description = "Report not claimed by you or invalid status")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn clear_report(
     State(state): State<Arc<ReportHandlerState>>,
     auth_user: AuthUser,
@@ -111,6 +180,17 @@ pub async fn clear_report(
 
 /// Get all reports created by the current user
 /// GET /api/reports/my-reports
+#[utoipa::path(
+    get,
+    path = "/api/reports/my-reports",
+    tag = "Reports",
+    responses(
+        (status = 200, description = "Returns user's reports", body = Vec<ReportResponse>)
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_my_reports(
     State(state): State<Arc<ReportHandlerState>>,
     auth_user: AuthUser,
@@ -122,6 +202,17 @@ pub async fn get_my_reports(
 
 /// Get all reports cleared by the current user
 /// GET /api/reports/my-clears
+#[utoipa::path(
+    get,
+    path = "/api/reports/my-clears",
+    tag = "Reports",
+    responses(
+        (status = 200, description = "Returns user's cleared reports", body = Vec<ReportResponse>)
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_my_cleared_reports(
     State(state): State<Arc<ReportHandlerState>>,
     auth_user: AuthUser,

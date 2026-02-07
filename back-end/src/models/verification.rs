@@ -1,9 +1,10 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct ReportVerification {
     pub id: Uuid,
     pub report_id: Uuid,
@@ -13,13 +14,15 @@ pub struct ReportVerification {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateVerificationRequest {
+    #[schema(example = true)]
     pub is_verified: bool,
+    #[schema(example = "Good job!")]
     pub comment: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct VerificationResponse {
     pub id: Uuid,
     pub report_id: Uuid,

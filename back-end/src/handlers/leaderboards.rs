@@ -10,19 +10,35 @@ use chrono::{Duration, Utc};
 use serde::Deserialize;
 use sqlx::PgPool;
 use std::sync::Arc;
+use utoipa::IntoParams;
 
 #[derive(Clone)]
 pub struct LeaderboardHandlerState {
     pub pool: PgPool,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
 pub struct LeaderboardQuery {
+    #[param(example = "weekly")]
     pub period: Option<String>, // "weekly", "monthly", "all_time"
 }
 
 /// Get global leaderboard
 /// GET /api/leaderboards?period=weekly
+#[utoipa::path(
+    get,
+    path = "/api/leaderboards",
+    tag = "Leaderboards",
+    params(
+        LeaderboardQuery
+    ),
+    responses(
+        (status = 200, description = "Returns leaderboard", body = Vec<LeaderboardEntry>)
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_global_leaderboard(
     State(state): State<Arc<LeaderboardHandlerState>>,
     _auth_user: AuthUser,
@@ -34,6 +50,21 @@ pub async fn get_global_leaderboard(
 
 /// Get leaderboard by city
 /// GET /api/leaderboards/city/:city?period=weekly
+#[utoipa::path(
+    get,
+    path = "/api/leaderboards/city/{city}",
+    tag = "Leaderboards",
+    params(
+        ("city" = String, Path, description = "City name"),
+        LeaderboardQuery
+    ),
+    responses(
+        (status = 200, description = "Returns city leaderboard", body = Vec<LeaderboardEntry>)
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_city_leaderboard(
     State(state): State<Arc<LeaderboardHandlerState>>,
     _auth_user: AuthUser,
@@ -46,6 +77,21 @@ pub async fn get_city_leaderboard(
 
 /// Get leaderboard by country
 /// GET /api/leaderboards/country/:country?period=weekly
+#[utoipa::path(
+    get,
+    path = "/api/leaderboards/country/{country}",
+    tag = "Leaderboards",
+    params(
+        ("country" = String, Path, description = "Country name"),
+        LeaderboardQuery
+    ),
+    responses(
+        (status = 200, description = "Returns country leaderboard", body = Vec<LeaderboardEntry>)
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn get_country_leaderboard(
     State(state): State<Arc<LeaderboardHandlerState>>,
     _auth_user: AuthUser,

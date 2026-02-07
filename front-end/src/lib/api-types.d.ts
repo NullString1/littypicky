@@ -849,7 +849,13 @@ export interface components {
             /** Format: int32 */
             reports_cleared: number;
             /** Format: int32 */
+            total_clears: number;
+            /** Format: int32 */
             total_points: number;
+            /** Format: int32 */
+            total_reports: number;
+            /** Format: int32 */
+            total_verifications: number;
             /** Format: date-time */
             updated_at: string;
             /** Format: uuid */

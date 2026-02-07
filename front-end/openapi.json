@@ -1987,6 +1987,9 @@
           "reports_cleared",
           "current_streak",
           "longest_streak",
+          "total_reports",
+          "total_clears",
+          "total_verifications",
           "created_at",
           "updated_at"
         ],
@@ -2016,7 +2019,19 @@
             "type": "integer",
             "format": "int32"
           },
+          "total_clears": {
+            "type": "integer",
+            "format": "int32"
+          },
           "total_points": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total_reports": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total_verifications": {
             "type": "integer",
             "format": "int32"
           },

@@ -6,6 +6,7 @@ use base64::{engine::general_purpose, Engine};
 use image::{imageops::FilterType, DynamicImage, GenericImageView};
 use std::io::Cursor;
 
+#[derive(Clone)]
 pub struct ImageService {
     config: ImageConfig,
 }

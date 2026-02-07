@@ -1,0 +1,39 @@
+use governor::middleware::NoOpMiddleware;
+use tower_governor::{
+    governor::GovernorConfigBuilder, key_extractor::SmartIpKeyExtractor, GovernorLayer,
+};
+
+/// Create a rate limiting layer for general API requests
+/// Uses IP address as the key for rate limiting
+pub fn create_rate_limiter(
+    requests_per_min: u32,
+) -> GovernorLayer<'static, SmartIpKeyExtractor, NoOpMiddleware> {
+    let governor_conf = Box::new(
+        GovernorConfigBuilder::default()
+            .per_second((requests_per_min / 60).max(1) as u64)
+            .burst_size(requests_per_min.max(100))
+            .key_extractor(SmartIpKeyExtractor)
+            .finish()
+            .unwrap(),
+    );
+
+    GovernorLayer {
+        config: Box::leak(governor_conf),
+    }
+}
+
+/// Get a simple global rate limiter layer using the default SmartIpKeyExtractor
+pub fn get_rate_limiter_layer() -> GovernorLayer<'static, SmartIpKeyExtractor, NoOpMiddleware> {
+    let config = Box::new(
+        GovernorConfigBuilder::default()
+            .per_second(2) // ~120 per minute
+            .burst_size(10)
+            .key_extractor(SmartIpKeyExtractor)
+            .finish()
+            .unwrap(),
+    );
+
+    GovernorLayer {
+        config: Box::leak(config),
+    }
+}

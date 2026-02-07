@@ -10,13 +10,19 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use validator::Validate;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct RegisterRequest {
+    #[validate(email)]
     pub email: String,
+    #[validate(length(min = 8))]
     pub password: String,
+    #[validate(length(min = 1))]
     pub full_name: String,
+    #[validate(length(min = 1))]
     pub city: String,
+    #[validate(length(min = 1))]
     pub country: String,
 }
 
@@ -29,6 +35,10 @@ pub async fn register(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<RegisterRequest>,
 ) -> Result<(StatusCode, Json<MessageResponse>)> {
+    // Validate the request
+    req.validate()
+        .map_err(|e| crate::error::AppError::BadRequest(format!("Validation error: {}", e)))?;
+    
     let message = auth_service
         .register_user(&req.email, &req.password, &req.full_name, &req.city, &req.country)
         .await?;

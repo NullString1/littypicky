@@ -21,11 +21,18 @@ impl EmailService {
             config.smtp_password.clone(),
         );
 
-        let mailer = SmtpTransport::relay(&config.smtp_host)
-            .map_err(|e| AppError::Email(format!("Failed to create SMTP transport: {}", e)))?
-            .credentials(creds)
-            .port(config.smtp_port)
-            .build();
+        // Use builder_dangerous for localhost (MailHog), relay for production SMTP
+        let mailer = if config.smtp_host == "localhost" || config.smtp_host == "127.0.0.1" {
+            SmtpTransport::builder_dangerous(&config.smtp_host)
+                .port(config.smtp_port)
+                .build()
+        } else {
+            SmtpTransport::relay(&config.smtp_host)
+                .map_err(|e| AppError::Email(format!("Failed to create SMTP transport: {}", e)))?
+                .credentials(creds)
+                .port(config.smtp_port)
+                .build()
+        };
 
         Ok(Self { config, mailer })
     }

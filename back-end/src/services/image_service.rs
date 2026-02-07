@@ -4,7 +4,6 @@ use crate::{
 };
 use base64::{engine::general_purpose, Engine};
 use image::{imageops::FilterType, DynamicImage, GenericImageView};
-use std::io::Cursor;
 
 #[derive(Clone)]
 pub struct ImageService {
@@ -18,20 +17,18 @@ impl ImageService {
 
     /// Process image: decode base64, validate, resize, convert to WebP, re-encode to base64
     pub fn process_image(&self, base64_input: &str) -> Result<String> {
+        // Validate base64 format first
+        self.validate_base64(base64_input)?;
+
         // Remove data URI prefix if present
         let base64_data = if base64_input.contains("base64,") {
-            base64_input
-                .split("base64,")
-                .nth(1)
-                .ok_or_else(|| AppError::Image("Invalid base64 format".to_string()))?
+            base64_input.split("base64,").nth(1).unwrap() // Safe because validate_base64 already checked this
         } else {
             base64_input
         };
 
         // Decode base64
-        let image_data = general_purpose::STANDARD
-            .decode(base64_data)
-            .map_err(|e| AppError::Image(format!("Failed to decode base64: {}", e)))?;
+        let image_data = general_purpose::STANDARD.decode(base64_data).unwrap(); // Safe because validate_base64 already decoded it
 
         // Check size limit
         let max_size_bytes = self.config.max_size_mb * 1024 * 1024;
@@ -45,6 +42,17 @@ impl ImageService {
         // Load image
         let img = image::load_from_memory(&image_data)
             .map_err(|e| AppError::Image(format!("Failed to load image: {}", e)))?;
+
+        // Validate dimensions
+        let (width, height) = img.dimensions();
+        if width == 0 || height == 0 {
+            return Err(AppError::Image("Invalid image dimensions".to_string()));
+        }
+        if width > 10000 || height > 10000 {
+            return Err(AppError::Image(
+                "Image dimensions too large (max 10000x10000)".to_string(),
+            ));
+        }
 
         // Resize if necessary
         let resized_img = self.resize_image(img);

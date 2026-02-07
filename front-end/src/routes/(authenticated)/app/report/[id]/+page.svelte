@@ -15,8 +15,6 @@
   let clearPhotoPreview = $state<string | null>(null);
   let clearPhotoBase64 = $state<string | null>(null);
   
-  let verifyPhotoPreview = $state<string | null>(null);
-  let verifyPhotoBase64 = $state<string | null>(null);
   let isLegitimate = $state(true);
   let verifyComments = $state('');
 
@@ -66,25 +64,6 @@
     }
   }
 
-  function handleVerifyFileSelect(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      
-      if (file.size > 5 * 1024 * 1024) {
-        error = 'File size must be less than 5MB';
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        verifyPhotoPreview = e.target?.result as string;
-        verifyPhotoBase64 = verifyPhotoPreview;
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
   async function claimReport() {
     if (!$auth.token || !report) return;
     
@@ -124,8 +103,8 @@
   }
 
   async function verifyReport() {
-    if (!$auth.token || !report || !verifyPhotoBase64) {
-      error = 'Please upload a verification photo';
+    if (!$auth.token || !report) {
+      error = 'Unable to verify report';
       return;
     }
     
@@ -138,8 +117,6 @@
       };
       await api.reports.verify(report.id, data, $auth.token);
       await loadReport(); // Reload to get updated status
-      verifyPhotoPreview = null;
-      verifyPhotoBase64 = null;
       verifyComments = '';
     } catch (e: any) {
       error = e.message || 'Failed to verify report';
@@ -329,26 +306,8 @@
       {#if report.status === 'cleared'}
         <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
           <h2 class="text-xl font-bold text-slate-900 mb-4">Verify This Report</h2>
-          <p class="text-slate-600 mb-4">Help the community by verifying this cleanup. Visit the location and confirm it's been cleaned.</p>
+          <p class="text-slate-600 mb-4">Help the community by verifying this cleanup. Confirm that the area has been properly cleaned.</p>
           
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-slate-700 mb-2">
-              Verification Photo *
-              <input 
-                type="file" 
-                accept="image/*" 
-                onchange={handleVerifyFileSelect}
-                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-              />
-            </label>
-          </div>
-
-          {#if verifyPhotoPreview}
-            <div class="mb-4">
-              <img src={verifyPhotoPreview} alt="Preview" class="max-w-xs rounded-lg border border-slate-200" />
-            </div>
-          {/if}
-
           <div class="mb-4">
             <label class="flex items-center">
               <input 
@@ -374,7 +333,7 @@
 
           <button 
             onclick={verifyReport}
-            disabled={verifying || !verifyPhotoBase64}
+            disabled={verifying}
             class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {verifying ? 'Submitting...' : 'Submit Verification'}

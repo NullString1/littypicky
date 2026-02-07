@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import { api, type User, type UserScoreRecord } from '$lib/api';
   import { auth } from '$lib/stores/auth';
 
@@ -60,9 +61,9 @@
                <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
                  {score ? getTier(score.total_points) : 'Loading...'}
                </span>
-              <button type="button" class="inline-flex justify-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none">
-                Edit Profile
-              </button>
+               <button type="button" onclick={() => goto('/profile/me/edit')} class="inline-flex justify-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none">
+                 Edit Profile
+               </button>
             </div>
           </div>
         </div>

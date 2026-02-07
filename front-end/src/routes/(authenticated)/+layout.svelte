@@ -5,11 +5,17 @@
   import { browser } from '$app/environment';
 
   let { children } = $props();
-  let checked = false;
+  let checked = $state(false);
+  let isInitializing = $state(true);
+
+  // Initialize auth immediately if in browser
+  if (browser) {
+    auth.initialize();
+    isInitializing = false;
+  }
 
   onMount(() => {
     // If not authenticated, redirect to login
-    // We check localStorage directly as a fallback or trust the store
     if (browser) {
         if (!$auth.isAuthenticated) {
              const token = localStorage.getItem('token');
@@ -29,10 +35,14 @@
   });
 </script>
 
-{#if $auth.isAuthenticated}
+{#if isInitializing}
+    <div class="min-h-[60vh] flex items-center justify-center">
+        <div class="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+    </div>
+{:else if $auth.isAuthenticated}
     {@render children()}
 {:else}
-    <!-- Optional: loading state while checking or redirecting -->
+    <!-- Loading state while checking or redirecting -->
     <div class="min-h-[60vh] flex items-center justify-center">
         <div class="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
     </div>

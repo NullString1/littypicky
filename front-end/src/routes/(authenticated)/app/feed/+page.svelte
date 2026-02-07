@@ -140,7 +140,7 @@
             {#if report.photo_before}
                 <div class="h-48 w-full bg-slate-200 overflow-hidden relative group">
                    <img src={report.photo_before} alt="Litter report" class="w-full h-full object-cover" />
-                   <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all"></div>
+                   <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none"></div>
                 </div>
             {:else}
                 <div class="h-48 w-full bg-slate-200 flex items-center justify-center text-slate-400">

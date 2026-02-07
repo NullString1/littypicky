@@ -39,6 +39,9 @@ use utoipa::OpenApi;
         crate::handlers::reports::get_report,
         crate::handlers::reports::claim_report,
         crate::handlers::reports::clear_report,
+        // Image endpoints
+        crate::handlers::images::get_report_before_photo,
+        crate::handlers::images::get_report_after_photo,
         // Verification endpoints
         crate::handlers::verifications::verify_report,
         crate::handlers::verifications::get_report_verifications,
@@ -99,6 +102,7 @@ use utoipa::OpenApi;
         (name = "OAuth", description = "OAuth authentication with Google"),
         (name = "Users", description = "User profile management"),
         (name = "Reports", description = "Litter report management"),
+        (name = "Images", description = "Image serving endpoints"),
         (name = "Verifications", description = "Report verification"),
         (name = "Leaderboards", description = "User rankings and leaderboards"),
         (name = "Admin", description = "Administrative endpoints (admin role required)"),

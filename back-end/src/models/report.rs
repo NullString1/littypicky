@@ -62,13 +62,15 @@ impl From<LitterReport> for ReportResponse {
             latitude: report.latitude,
             longitude: report.longitude,
             description: report.description,
-            photo_before: report.photo_before,
+            // Convert base64 data URLs to image endpoint URLs
+            photo_before: format!("/api/images/reports/{}/before", report.id),
             status: report.status,
             claimed_by: report.claimed_by,
             claimed_at: report.claimed_at,
             cleared_by: report.cleared_by,
             cleared_at: report.cleared_at,
-            photo_after: report.photo_after,
+            // Convert base64 data URLs to image endpoint URLs
+            photo_after: report.photo_after.map(|_| format!("/api/images/reports/{}/after", report.id)),
             city: report.city,
             country: report.country,
             created_at: report.created_at,

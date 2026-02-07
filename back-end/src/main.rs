@@ -77,6 +77,10 @@ async fn main() -> anyhow::Result<()> {
 
     let admin_state = Arc::new(handlers::AdminHandlerState { pool: pool.clone() });
 
+    let image_state = Arc::new(handlers::ImageHandlerState {
+        report_service: report_service.clone(),
+    });
+
     tracing::info!("Services initialized");
 
     // Build CORS layer
@@ -209,6 +213,18 @@ async fn main() -> anyhow::Result<()> {
             auth::middleware::require_auth,
         ));
 
+    // Image routes (public - no authentication required)
+    let image_routes = Router::new()
+        .route(
+            "/api/images/reports/:id/before",
+            get(handlers::get_report_before_photo),
+        )
+        .route(
+            "/api/images/reports/:id/after",
+            get(handlers::get_report_after_photo),
+        )
+        .with_state(image_state);
+
     // Build main router
     let app = Router::new()
         // Health check
@@ -226,6 +242,7 @@ async fn main() -> anyhow::Result<()> {
         .merge(verification_routes)
         .merge(leaderboard_routes)
         .merge(admin_routes)
+        .merge(image_routes)
         // Global layers
         .layer(TraceLayer::new_for_http())
         .layer(CatchPanicLayer::new())
@@ -269,6 +286,9 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("    PUT    /api/admin/users/:id/ban");
     tracing::info!("    GET    /api/admin/reports");
     tracing::info!("    DELETE /api/admin/reports/:id");
+    tracing::info!("  Images (public):");
+    tracing::info!("    GET  /api/images/reports/:id/before");
+    tracing::info!("    GET  /api/images/reports/:id/after");
     tracing::info!("  Documentation:");
     tracing::info!("    GET  /api/openapi.json - OpenAPI 3.0 specification");
     tracing::info!("    GET  /swagger-ui - Interactive API documentation");

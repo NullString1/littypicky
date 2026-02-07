@@ -4,7 +4,7 @@ use openidconnect::{
     core::{CoreClient, CoreProviderMetadata, CoreResponseType},
     reqwest::async_http_client,
     AuthenticationFlow, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce,
-    RedirectUrl, Scope, TokenResponse,
+    RedirectUrl, Scope,
 };
 use serde::{Deserialize, Serialize};
 

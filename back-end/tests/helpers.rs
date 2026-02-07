@@ -32,6 +32,7 @@ pub async fn create_test_app() -> Router {
 }
 
 /// Helper to get a database pool for test helpers
+#[allow(dead_code)]
 pub async fn get_test_pool() -> sqlx::PgPool {
     dotenvy::from_filename(".env.test").ok();
     let config = config::Config::from_env().expect("Failed to load config");

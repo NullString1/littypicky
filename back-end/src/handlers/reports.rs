@@ -72,13 +72,25 @@ pub async fn get_nearby_reports(
     _auth_user: AuthUser,
     Query(query): Query<NearbyReportsQuery>,
 ) -> Result<impl IntoResponse, AppError> {
-    // Default to 5km radius if not specified
+    tracing::info!("get_nearby_reports called with lat={}, lng={}, radius={:?}", 
+        query.latitude, query.longitude, query.radius_km);
+    
     let radius = query.radius_km.unwrap_or(5.0);
 
-    let reports = state
+    let reports = match state
         .report_service
         .get_nearby_reports(query.latitude, query.longitude, radius)
-        .await?;
+        .await {
+            Ok(r) => {
+                tracing::info!("Successfully fetched {} reports", r.len());
+                r
+            },
+            Err(e) => {
+                tracing::error!("Error fetching nearby reports: {:?}", e);
+                eprintln!("NEARBY REPORTS ERROR: {:?}", e);
+                return Err(e);
+            }
+        };
 
     let responses: Vec<ReportResponse> =
         reports.into_iter().map(std::convert::Into::into).collect();

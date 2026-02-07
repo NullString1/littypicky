@@ -163,7 +163,6 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/reports/:id", get(handlers::get_report))
         .route("/api/reports/:id/claim", post(handlers::claim_report))
         .route("/api/reports/:id/clear", post(handlers::clear_report))
-        .layer(reports_rate_limiter.clone())
         .with_state(report_state)
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
@@ -177,7 +176,6 @@ async fn main() -> anyhow::Result<()> {
             "/api/reports/:id/verifications",
             get(handlers::get_report_verifications),
         )
-        .layer(verifications_rate_limiter.clone())
         .with_state(verification_state)
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
@@ -247,8 +245,6 @@ async fn main() -> anyhow::Result<()> {
         .merge(leaderboard_routes)
         .merge(admin_routes)
         .merge(image_routes)
-        // Global rate limiter (lenient, for DDoS protection)
-        .layer(global_rate_limiter)
         // Global layers
         .layer(TraceLayer::new_for_http())
         .layer(CatchPanicLayer::new())

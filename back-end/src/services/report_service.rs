@@ -82,7 +82,6 @@ impl ReportService {
         longitude: f64,
         radius_km: f64,
     ) -> Result<Vec<LitterReport>, AppError> {
-        // Convert km to meters for PostGIS
         let radius_meters = radius_km * 1000.0;
 
         let reports = sqlx::query_as!(
@@ -95,7 +94,7 @@ impl ReportService {
                 photo_after, city, country, created_at, updated_at
             FROM litter_reports
             WHERE ST_DWithin(
-                location,
+                location::geography,
                 ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
                 $3
             )
@@ -121,7 +120,6 @@ impl ReportService {
         radius_km: f64,
         user_id: Uuid,
     ) -> Result<Vec<LitterReport>, AppError> {
-        // Convert km to meters for PostGIS
         let radius_meters = radius_km * 1000.0;
 
         let reports = sqlx::query_as!(
@@ -134,13 +132,13 @@ impl ReportService {
                 photo_after, city, country, created_at, updated_at
             FROM litter_reports
             WHERE ST_DWithin(
-                location,
+                location::geography,
                 ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
                 $3
             )
             AND status = 'cleared'
-            AND (cleared_by IS NULL OR cleared_by != $4) -- Cannot verify own reports
-            AND id NOT IN ( -- Exclude already verified by this user
+            AND (cleared_by IS NULL OR cleared_by != $4)
+            AND id NOT IN (
                 SELECT report_id FROM report_verifications WHERE verifier_id = $4
             )
             ORDER BY cleared_at DESC

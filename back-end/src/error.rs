@@ -49,10 +49,11 @@ impl IntoResponse for AppError {
 
         let (status, error_message) = match self {
             AppError::Database(ref e) => {
-                tracing::error!(%error_id, "Database error: {:?}", e);
+                tracing::error!(%error_id, "Database error details: {:#?}", e);
+                eprintln!("DATABASE ERROR: {:?}", e);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    "Database error occurred".to_string(),
+                    format!("Database error occurred (error_id: {})", error_id),
                 )
             }
             AppError::Auth(ref msg) => {

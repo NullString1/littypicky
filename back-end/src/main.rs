@@ -7,14 +7,18 @@ mod services;
 mod templates;
 mod handlers;
 mod rate_limit;
+mod openapi;
 
 use axum::{
     routing::{delete, get, patch, post, put},
-    Router,
+    Json, Router,
 };
+use openapi::ApiDoc;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -106,6 +110,10 @@ async fn main() -> anyhow::Result<()> {
         // Health check
         .route("/", get(|| async { "LittyPicky API v0.1.0" }))
         .route("/health", get(health_check))
+        
+        // OpenAPI/Swagger documentation
+        .route("/api/openapi.json", get(openapi_json))
+        .merge(SwaggerUi::new("/swagger-ui").url("/api/openapi.json", ApiDoc::openapi()))
         
         // Auth routes (public) with different rate limits
         .route("/api/auth/register", post(handlers::register))
@@ -232,6 +240,9 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("    PUT    /api/admin/users/:id/ban");
     tracing::info!("    GET    /api/admin/reports");
     tracing::info!("    DELETE /api/admin/reports/:id");
+    tracing::info!("  Documentation:");
+    tracing::info!("    GET  /api/openapi.json - OpenAPI 3.0 specification");
+    tracing::info!("    GET  /swagger-ui - Interactive API documentation");
     
     axum::serve(listener, app).await?;
 
@@ -240,4 +251,9 @@ async fn main() -> anyhow::Result<()> {
 
 async fn health_check() -> &'static str {
     "OK"
+}
+
+/// Returns the OpenAPI JSON specification
+async fn openapi_json() -> Json<utoipa::openapi::OpenApi> {
+    Json(ApiDoc::openapi())
 }

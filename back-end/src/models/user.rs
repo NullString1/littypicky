@@ -1,19 +1,22 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, ToSchema)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum UserRole {
     User,
     Admin,
 }
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct User {
     pub id: Uuid,
     pub email: String,
+    #[serde(skip_serializing)]
     pub password_hash: Option<String>,
     pub full_name: String,
     pub city: String,
@@ -29,22 +32,29 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateUserRequest {
+    #[schema(example = "user@example.com")]
     pub email: String,
+    #[schema(example = "SecurePassword123", min_length = 8)]
     pub password: String,
+    #[schema(example = "John Doe")]
     pub full_name: String,
+    #[schema(example = "London")]
     pub city: String,
+    #[schema(example = "UK")]
     pub country: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct LoginRequest {
+    #[schema(example = "user@example.com")]
     pub email: String,
+    #[schema(example = "SecurePassword123")]
     pub password: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct UserResponse {
     pub id: Uuid,
     pub email: String,
@@ -73,17 +83,23 @@ impl From<User> for UserResponse {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct UpdateUserRequest {
+    #[schema(example = "Jane Doe")]
     pub full_name: Option<String>,
+    #[schema(example = "Manchester")]
     pub city: Option<String>,
+    #[schema(example = "UK")]
     pub country: Option<String>,
+    #[schema(example = 10, minimum = 1, maximum = 100)]
     pub search_radius_km: Option<i32>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct AuthTokens {
+    #[schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")]
     pub access_token: String,
+    #[schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")]
     pub refresh_token: String,
     pub user: UserResponse,
 }

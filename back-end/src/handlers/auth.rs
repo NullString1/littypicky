@@ -10,27 +10,45 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct RegisterRequest {
     #[validate(email)]
+    #[schema(example = "user@example.com")]
     pub email: String,
     #[validate(length(min = 8))]
+    #[schema(example = "SecurePassword123", min_length = 8)]
     pub password: String,
     #[validate(length(min = 1))]
+    #[schema(example = "John Doe")]
     pub full_name: String,
     #[validate(length(min = 1))]
+    #[schema(example = "London")]
     pub city: String,
     #[validate(length(min = 1))]
+    #[schema(example = "UK")]
     pub country: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct MessageResponse {
+    #[schema(example = "Operation successful")]
     pub message: String,
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/auth/register",
+    tag = "Authentication",
+    request_body = RegisterRequest,
+    responses(
+        (status = 201, description = "User registered successfully. Verification email sent.", body = MessageResponse),
+        (status = 400, description = "Validation error"),
+        (status = 409, description = "Email already registered")
+    )
+)]
 pub async fn register(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<RegisterRequest>,
@@ -49,6 +67,17 @@ pub async fn register(
     ))
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/auth/login",
+    tag = "Authentication",
+    request_body = LoginRequest,
+    responses(
+        (status = 200, description = "Login successful", body = AuthTokens),
+        (status = 401, description = "Invalid credentials"),
+        (status = 403, description = "Email not verified")
+    )
+)]
 pub async fn login(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<LoginRequest>,
@@ -57,6 +86,16 @@ pub async fn login(
     Ok(Json(tokens))
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/auth/verify-email",
+    tag = "Authentication",
+    request_body = VerifyEmailRequest,
+    responses(
+        (status = 200, description = "Email verified successfully", body = AuthTokens),
+        (status = 400, description = "Invalid or expired token")
+    )
+)]
 pub async fn verify_email(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<VerifyEmailRequest>,
@@ -65,6 +104,17 @@ pub async fn verify_email(
     Ok(Json(tokens))
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/auth/resend-verification",
+    tag = "Authentication",
+    request_body = ResendVerificationRequest,
+    responses(
+        (status = 200, description = "Verification email sent", body = MessageResponse),
+        (status = 400, description = "Email already verified"),
+        (status = 404, description = "User not found")
+    )
+)]
 pub async fn resend_verification(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<ResendVerificationRequest>,
@@ -73,6 +123,15 @@ pub async fn resend_verification(
     Ok(Json(MessageResponse { message }))
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/auth/forgot-password",
+    tag = "Authentication",
+    request_body = ForgotPasswordRequest,
+    responses(
+        (status = 200, description = "Password reset email sent (if email exists)", body = MessageResponse)
+    )
+)]
 pub async fn forgot_password(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<ForgotPasswordRequest>,
@@ -81,6 +140,16 @@ pub async fn forgot_password(
     Ok(Json(MessageResponse { message }))
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/auth/reset-password",
+    tag = "Authentication",
+    request_body = ResetPasswordRequest,
+    responses(
+        (status = 200, description = "Password reset successful", body = MessageResponse),
+        (status = 400, description = "Invalid or expired token")
+    )
+)]
 pub async fn reset_password(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<ResetPasswordRequest>,
@@ -89,16 +158,28 @@ pub async fn reset_password(
     Ok(Json(MessageResponse { message }))
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct RefreshTokenRequest {
+    #[schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")]
     pub refresh_token: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct RefreshTokenResponse {
+    #[schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")]
     pub access_token: String,
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/auth/refresh",
+    tag = "Authentication",
+    request_body = RefreshTokenRequest,
+    responses(
+        (status = 200, description = "Token refreshed successfully", body = RefreshTokenResponse),
+        (status = 401, description = "Invalid or expired refresh token")
+    )
+)]
 pub async fn refresh_token(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<RefreshTokenRequest>,
@@ -107,6 +188,15 @@ pub async fn refresh_token(
     Ok(Json(RefreshTokenResponse { access_token }))
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/auth/logout",
+    tag = "Authentication",
+    request_body = RefreshTokenRequest,
+    responses(
+        (status = 200, description = "Logged out successfully", body = MessageResponse)
+    )
+)]
 pub async fn logout(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<RefreshTokenRequest>,

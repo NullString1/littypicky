@@ -1,9 +1,99 @@
 <script lang="ts">
-  import { activeReports } from '$lib/mockData';
+  import { onMount } from 'svelte';
+  import { api, type Report } from '$lib/api';
+  import { auth } from '$lib/stores/auth';
+
+  let reports: Report[] = [];
+  let loading = true;
+  let error = '';
+  let userLocation: { lat: number; lng: number } | null = null;
+  let distances: Record<string, string> = {};
 
   // Helper to open Google Maps
   function openDirections(lat: number, lng: number) {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+  }
+
+  function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): string {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in km
+    
+    if (d < 1) {
+        return `${Math.round(d * 1000)}m`;
+    }
+    return `${d.toFixed(1)}km`;
+  }
+
+  function deg2rad(deg: number) {
+    return deg * (Math.PI / 180);
+  }
+
+  async function loadReports() {
+    loading = true;
+    error = '';
+    try {
+        if (!$auth.token) return;
+
+        // Default location (London) if geolocation fails or is denied
+        let lat = 51.5074;
+        let lng = -0.1278;
+
+        if (userLocation) {
+            lat = userLocation.lat;
+            lng = userLocation.lng;
+        }
+
+        const data = await api.reports.getNearby(lat, lng, 10, $auth.token); // 10km radius
+        reports = data;
+
+        // Calculate distances
+        if (userLocation) {
+            reports.forEach(r => {
+                distances[r.id] = calculateDistance(userLocation!.lat, userLocation!.lng, r.latitude, r.longitude);
+            });
+        }
+    } catch (e: any) {
+        error = e.message || 'Failed to load reports';
+    } finally {
+        loading = false;
+    }
+  }
+
+  onMount(() => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                loadReports();
+            },
+            (err) => {
+                console.warn('Geolocation denied or failed:', err);
+                loadReports(); // Load with default location
+            }
+        );
+    } else {
+        loadReports();
+    }
+  });
+
+  function getStatusColor(status: string) {
+      switch (status) {
+          case 'pending': return 'bg-red-100 text-red-800';
+          case 'claimed': return 'bg-yellow-100 text-yellow-800';
+          case 'cleared': return 'bg-green-100 text-green-800';
+          case 'verified': return 'bg-blue-100 text-blue-800';
+          default: return 'bg-slate-100 text-slate-800';
+      }
   }
 </script>
 
@@ -27,47 +117,73 @@
       </div>
     </div>
 
-    <!-- Feed Grid -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {#each activeReports as report}
-        <div class="bg-white overflow-hidden shadow rounded-lg border border-slate-200 flex flex-col">
-          <!-- Photo Placeholder -->
-          <div class="h-48 w-full bg-slate-200 flex items-center justify-center text-slate-400">
-             <span class="text-4xl">📸</span>
-          </div>
-          
-          <div class="px-4 py-5 sm:p-6 flex-1 flex flex-col">
-            <div class="flex items-center justify-between mb-2">
-               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                 {report.status}
-               </span>
-               <span class="text-xs text-slate-500">{report.distance} away</span>
-            </div>
-            
-            <h3 class="text-lg leading-6 font-medium text-slate-900">
-              {report.locationName}
-            </h3>
-            <p class="mt-2 text-sm text-slate-500 line-clamp-2">
-              {report.description}
-            </p>
-            
-            <div class="mt-6 flex-1 flex items-end">
-                <button 
-                  onclick={() => openDirections(report.coordinates.lat, report.coordinates.lng)}
-                  class="w-full flex items-center justify-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50"
-                >
-                    📍 Get Directions
-                </button>
-            </div>
-          </div>
-          <div class="bg-slate-50 px-4 py-4 sm:px-6 border-t border-slate-100">
-            <div class="text-xs text-slate-500 flex justify-between items-center">
-                <span>Reported by User #{report.reporterId}</span>
-                <span>{report.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-            </div>
-          </div>
+    {#if loading}
+        <div class="flex justify-center py-12">
+            <div class="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
         </div>
-      {/each}
-    </div>
+    {:else if error}
+        <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-6">
+            {error}
+        </div>
+    {:else if reports.length === 0}
+        <div class="text-center py-12 bg-white rounded-lg shadow border border-slate-200">
+            <span class="text-4xl block mb-4">🎉</span>
+            <h3 class="text-lg font-medium text-slate-900">No reports nearby!</h3>
+            <p class="mt-2 text-slate-500">Great job keeping the area clean. Try increasing the search radius or check back later.</p>
+        </div>
+    {:else}
+        <!-- Feed Grid -->
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {#each reports as report}
+            <div class="bg-white overflow-hidden shadow rounded-lg border border-slate-200 flex flex-col transition hover:shadow-md">
+            <!-- Photo -->
+            {#if report.photo_before}
+                <div class="h-48 w-full bg-slate-200 overflow-hidden relative group">
+                   <img src={report.photo_before} alt="Litter report" class="w-full h-full object-cover" />
+                   <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all"></div>
+                </div>
+            {:else}
+                <div class="h-48 w-full bg-slate-200 flex items-center justify-center text-slate-400">
+                    <span class="text-4xl">📸</span>
+                </div>
+            {/if}
+            
+            <div class="px-4 py-5 sm:p-6 flex-1 flex flex-col">
+                <div class="flex items-center justify-between mb-2">
+                   <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(report.status)} uppercase tracking-wide`}>
+                     {report.status}
+                   </span>
+                   {#if distances[report.id]}
+                     <span class="text-xs text-slate-500 font-medium">{distances[report.id]} away</span>
+                   {/if}
+                </div>
+                
+                <h3 class="text-lg leading-6 font-bold text-slate-900 mb-1">
+                  {report.city}
+                </h3>
+                <p class="text-sm text-slate-500 line-clamp-2 mb-4">
+                  {report.description || 'No description provided.'}
+                </p>
+                
+                <div class="mt-auto pt-4 flex gap-2">
+                    <a href={`/app/report/${report.id}`} class="flex-1 flex items-center justify-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50">
+                        View Details
+                    </a>
+                    <button 
+                    onclick={() => openDirections(report.latitude, report.longitude)}
+                    class="flex items-center justify-center px-3 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50"
+                    title="Get Directions"
+                    >
+                        📍
+                    </button>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-4 py-3 sm:px-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+                <span>Reported {new Date(report.created_at).toLocaleDateString()}</span>
+            </div>
+            </div>
+        {/each}
+        </div>
+    {/if}
   </div>
 </div>

@@ -97,41 +97,35 @@ async fn main() -> anyhow::Result<()> {
     let email_verification_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.email_verification_per_hour);
     let password_reset_limiter = rate_limit::create_rate_limiter_per_hour(config.rate_limit.password_reset_per_hour);
 
-    // Build router
-    let app = Router::new()
-        // Health check
-        .route("/", get(|| async { "LittyPicky API v0.1.0" }))
-        .route("/health", get(health_check))
-        
-        // OpenAPI/Swagger documentation
-        .route("/api/openapi.json", get(openapi_json))
-        .merge(SwaggerUi::new("/swagger-ui").url("/api/openapi.json", ApiDoc::openapi()))
-        
-        // Auth routes (public) with different rate limits
+    // Build routers
+    let auth_routes = Router::new()
         .route("/api/auth/register", post(handlers::register))
         .route("/api/auth/login", post(handlers::login))
         .route("/api/auth/verify-email", post(handlers::verify_email))
         .route("/api/auth/refresh", post(handlers::refresh_token))
         .route("/api/auth/logout", post(handlers::logout))
-        .with_state(auth_service.clone())
-        .layer(auth_rate_limiter.clone())
+        .with_state(auth_service.clone());
+        //.layer(auth_rate_limiter.clone());
         
+    let auth_email_routes = Router::new()
         .route("/api/auth/resend-verification", post(handlers::resend_verification))
-        .with_state(auth_service.clone())
-        .layer(email_verification_limiter.clone())
+        .with_state(auth_service.clone());
+        //.layer(email_verification_limiter.clone());
         
+    let auth_password_routes = Router::new()
         .route("/api/auth/forgot-password", post(handlers::forgot_password))
         .route("/api/auth/reset-password", post(handlers::reset_password))
-        .with_state(auth_service.clone())
-        .layer(password_reset_limiter.clone())
-        
-        // OAuth routes (public)
+        .with_state(auth_service.clone());
+        //.layer(password_reset_limiter.clone());
+
+    let oauth_routes = Router::new()
         .route("/api/auth/google", get(handlers::google_login))
         .route("/api/auth/google/callback", get(handlers::google_callback))
-        .with_state(oauth_state)
-        .layer(auth_rate_limiter.clone())
-        
-        // User routes (authenticated)
+        .with_state(oauth_state);
+        //.layer(auth_rate_limiter.clone());
+
+    // User routes (authenticated)
+    let user_routes = Router::new()
         .route("/api/users/me", get(handlers::get_current_user))
         .route("/api/users/me", patch(handlers::update_current_user))
         .route("/api/users/me/score", get(handlers::get_current_user_score))
@@ -140,11 +134,13 @@ async fn main() -> anyhow::Result<()> {
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
-        ))
+        ));
         
-        // Report routes (authenticated)
+    // Report routes (authenticated)
+    let report_routes = Router::new()
         .route("/api/reports", post(handlers::create_report))
         .route("/api/reports/nearby", get(handlers::get_nearby_reports))
+        .route("/api/reports/verification-queue", get(handlers::get_verification_queue))
         .route("/api/reports/my-reports", get(handlers::get_my_reports))
         .route("/api/reports/my-clears", get(handlers::get_my_cleared_reports))
         .route("/api/reports/:id", get(handlers::get_report))
@@ -155,9 +151,10 @@ async fn main() -> anyhow::Result<()> {
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
-        ))
+        ));
         
-        // Verification routes (authenticated)
+    // Verification routes (authenticated)
+    let verification_routes = Router::new()
         .route("/api/reports/:id/verify", post(handlers::verify_report))
         .route("/api/reports/:id/verifications", get(handlers::get_report_verifications))
         .with_state(verification_state)
@@ -165,9 +162,10 @@ async fn main() -> anyhow::Result<()> {
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
-        ))
+        ));
         
-        // Leaderboard routes (authenticated)
+    // Leaderboard routes (authenticated)
+    let leaderboard_routes = Router::new()
         .route("/api/leaderboards", get(handlers::get_global_leaderboard))
         .route("/api/leaderboards/city/:city", get(handlers::get_city_leaderboard))
         .route("/api/leaderboards/country/:country", get(handlers::get_country_leaderboard))
@@ -176,9 +174,10 @@ async fn main() -> anyhow::Result<()> {
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
-        ))
+        ));
         
-        // Admin routes (authenticated + admin role required)
+    // Admin routes (authenticated + admin role required)
+    let admin_routes = Router::new()
         .route("/api/admin/users", get(handlers::list_users))
         .route("/api/admin/users/:id", get(handlers::get_user_by_id))
         .route("/api/admin/users/:id/ban", put(handlers::toggle_user_ban))
@@ -190,8 +189,29 @@ async fn main() -> anyhow::Result<()> {
         .route_layer(axum::middleware::from_fn_with_state(
             jwt_service.clone(),
             auth::middleware::require_auth,
-        ))
+        ));
+
+    // Build main router
+    let app = Router::new()
+        // Health check
+        .route("/", get(|| async { "LittyPicky API v0.1.0" }))
+        .route("/health", get(health_check))
         
+        // OpenAPI/Swagger documentation
+        .merge(SwaggerUi::new("/swagger-ui").url("/api/openapi.json", ApiDoc::openapi()))
+        
+        // Merge route groups
+        .merge(auth_routes)
+        .merge(auth_email_routes)
+        .merge(auth_password_routes)
+        .merge(oauth_routes)
+        .merge(user_routes)
+        .merge(report_routes)
+        .merge(verification_routes)
+        .merge(leaderboard_routes)
+        .merge(admin_routes)
+        
+        // Global layers
         .layer(cors);
 
     // Start server

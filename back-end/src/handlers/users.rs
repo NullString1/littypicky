@@ -153,7 +153,7 @@ pub async fn get_current_user_score(
     let score = sqlx::query_as::<_, UserScoreRecord>(
         r#"
         SELECT total_points, total_reports, total_clears, total_verifications,
-               current_streak, longest_streak, last_clear_date
+               current_streak, longest_streak, last_cleared_date as last_clear_date
         FROM user_scores
         WHERE user_id = $1
         "#

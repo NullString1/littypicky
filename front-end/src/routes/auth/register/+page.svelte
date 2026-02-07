@@ -1,5 +1,42 @@
 <script lang="ts">
-  // Register Page
+  import { api } from '$lib/api';
+  import { goto } from '$app/navigation';
+
+  let isLoading = false;
+  let error = '';
+
+  async function handleSubmit(event: Event) {
+    event.preventDefault();
+    isLoading = true;
+    error = '';
+    
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
+    
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const full_name = formData.get('name') as string;
+    const city = formData.get('city') as string;
+    const country = formData.get('country') as string;
+    
+    try {
+      await api.auth.register({
+        email,
+        password,
+        full_name,
+        city,
+        country
+      });
+      // Redirect to login or show success message
+      // The backend says "User registered successfully. Verification email sent."
+      alert('Registration successful! Please login.'); 
+      goto('/auth/login');
+    } catch (e: any) {
+      error = e.message;
+    } finally {
+      isLoading = false;
+    }
+  }
 </script>
 
 <div class="min-h-[calc(100vh-4rem)] flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-slate-50">
@@ -20,7 +57,13 @@
 
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-slate-200">
-      <form class="space-y-6" action="#" method="POST">
+      {#if error}
+        <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-6 text-sm">
+          {error}
+        </div>
+      {/if}
+
+      <form class="space-y-6" onsubmit={handleSubmit}>
         <div>
             <label for="name" class="block text-sm font-medium text-slate-700"> Full Name </label>
             <div class="mt-1">
@@ -36,6 +79,20 @@
         </div>
 
         <div>
+          <label for="city" class="block text-sm font-medium text-slate-700"> City </label>
+          <div class="mt-1">
+            <input id="city" name="city" type="text" autocomplete="address-level2" required class="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label for="country" class="block text-sm font-medium text-slate-700"> Country </label>
+          <div class="mt-1">
+            <input id="country" name="country" type="text" autocomplete="country-name" required class="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+          </div>
+        </div>
+
+        <div>
           <label for="password" class="block text-sm font-medium text-slate-700"> Password </label>
           <div class="mt-1">
             <input id="password" name="password" type="password" autocomplete="new-password" required class="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
@@ -43,8 +100,8 @@
         </div>
 
         <div>
-          <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-            Create Account
+          <button type="submit" disabled={isLoading} class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            {isLoading ? 'Creating Account...' : 'Create Account'}
           </button>
         </div>
       </form>

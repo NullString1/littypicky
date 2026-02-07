@@ -53,13 +53,25 @@ pub async fn register(
     State(auth_service): State<Arc<AuthService>>,
     Json(req): Json<RegisterRequest>,
 ) -> Result<(StatusCode, Json<MessageResponse>)> {
-    // Validate the request
-    req.validate()
-        .map_err(|e| crate::error::AppError::BadRequest(format!("Validation error: {}", e)))?;
+    tracing::info!("Registering user: {}", req.email);
     
-    let message = auth_service
+    // Validate the request
+    if let Err(e) = req.validate() {
+        tracing::warn!("Validation failed for {}: {}", req.email, e);
+        return Err(crate::error::AppError::BadRequest(format!("Validation error: {}", e)));
+    }
+    
+    let message = match auth_service
         .register_user(&req.email, &req.password, &req.full_name, &req.city, &req.country)
-        .await?;
+        .await {
+            Ok(msg) => msg,
+            Err(e) => {
+                tracing::error!("Registration failed for {}: {:?}", req.email, e);
+                return Err(e);
+            }
+        };
+
+    tracing::info!("User registered successfully: {}", req.email);
 
     Ok((
         StatusCode::CREATED,

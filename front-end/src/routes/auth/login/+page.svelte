@@ -1,5 +1,36 @@
 <script lang="ts">
-  // Login Page
+  import { api } from '$lib/api';
+  import { auth } from '$lib/stores/auth';
+  import { goto } from '$app/navigation';
+
+  let isLoading = false;
+  let error = '';
+
+  async function handleSubmit(event: Event) {
+    event.preventDefault();
+    isLoading = true;
+    error = '';
+    
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
+    
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    
+    try {
+      const tokens = await api.auth.login({
+        email,
+        password
+      });
+      
+      auth.login(tokens.access_token, tokens.user);
+      goto('/app/feed');
+    } catch (e: any) {
+      error = e.message;
+    } finally {
+      isLoading = false;
+    }
+  }
 </script>
 
 <div class="min-h-[calc(100vh-4rem)] flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-slate-50">
@@ -20,7 +51,13 @@
 
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-slate-200">
-      <form class="space-y-6" action="#" method="POST">
+      {#if error}
+        <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-6 text-sm">
+          {error}
+        </div>
+      {/if}
+
+      <form class="space-y-6" onsubmit={handleSubmit}>
         <div>
           <label for="email" class="block text-sm font-medium text-slate-700"> Email address </label>
           <div class="mt-1">
@@ -47,8 +84,8 @@
         </div>
 
         <div>
-          <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-            Sign in
+          <button type="submit" disabled={isLoading} class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            {isLoading ? 'Signing in...' : 'Sign in'}
           </button>
         </div>
       </form>

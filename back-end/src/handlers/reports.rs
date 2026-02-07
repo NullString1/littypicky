@@ -82,6 +82,40 @@ pub async fn get_nearby_reports(
     Ok(Json(responses))
 }
 
+/// Get reports available for verification
+/// GET /api/reports/verification-queue?latitude=X&longitude=Y&radius_km=Z
+#[utoipa::path(
+    get,
+    path = "/api/reports/verification-queue",
+    tag = "Reports",
+    params(
+        NearbyReportsQuery
+    ),
+    responses(
+        (status = 200, description = "Returns reports needing verification", body = Vec<ReportResponse>),
+        (status = 400, description = "Invalid coordinates")
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
+pub async fn get_verification_queue(
+    State(state): State<Arc<ReportHandlerState>>,
+    auth_user: AuthUser,
+    Query(query): Query<NearbyReportsQuery>,
+) -> Result<impl IntoResponse, AppError> {
+    // Default to 50km radius for verification (wider net) if not specified
+    let radius = query.radius_km.unwrap_or(50.0);
+
+    let reports = state
+        .report_service
+        .get_verification_queue(query.latitude, query.longitude, radius, auth_user.id)
+        .await?;
+
+    let responses: Vec<ReportResponse> = reports.into_iter().map(|r| r.into()).collect();
+    Ok(Json(responses))
+}
+
 /// Get a single report by ID
 /// GET /api/reports/:id
 #[utoipa::path(

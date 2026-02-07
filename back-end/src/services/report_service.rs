@@ -117,6 +117,50 @@ impl ReportService {
         Ok(reports)
     }
 
+    /// Get reports that need verification near a location
+    pub async fn get_verification_queue(
+        &self,
+        latitude: f64,
+        longitude: f64,
+        radius_km: f64,
+        user_id: Uuid,
+    ) -> Result<Vec<LitterReport>, AppError> {
+        // Convert km to meters for PostGIS
+        let radius_meters = radius_km * 1000.0;
+
+        let reports = sqlx::query_as!(
+            LitterReport,
+            r#"
+            SELECT
+                id, reporter_id, latitude, longitude, description,
+                photo_before, status as "status: ReportStatus",
+                claimed_by, claimed_at, cleared_by, cleared_at,
+                photo_after, city, country, created_at, updated_at
+            FROM litter_reports
+            WHERE ST_DWithin(
+                location,
+                ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+                $3
+            )
+            AND status = 'cleared'
+            AND (cleared_by IS NULL OR cleared_by != $4) -- Cannot verify own reports
+            AND id NOT IN ( -- Exclude already verified by this user
+                SELECT report_id FROM report_verifications WHERE verifier_id = $4
+            )
+            ORDER BY cleared_at DESC
+            LIMIT 50
+            "#,
+            longitude,
+            latitude,
+            radius_meters,
+            user_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(reports)
+    }
+
     /// Get a single report by ID
     pub async fn get_report_by_id(&self, report_id: Uuid) -> Result<LitterReport, AppError> {
         let report = sqlx::query_as!(

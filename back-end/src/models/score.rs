@@ -13,6 +13,9 @@ pub struct UserScore {
     pub current_streak: i32,
     pub longest_streak: i32,
     pub last_cleared_date: Option<NaiveDate>,
+    pub total_reports: i32,
+    pub total_clears: i32,
+    pub total_verifications: i32,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }

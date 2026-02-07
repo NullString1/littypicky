@@ -57,10 +57,14 @@ impl ScoringService {
                 reports_cleared = $2,
                 current_streak = $3,
                 longest_streak = $4,
-                last_cleared_date = $5
+                last_cleared_date = $5,
+                total_reports = total_reports,
+                total_clears = total_clears + 1,
+                total_verifications = total_verifications
             WHERE user_id = $6
             RETURNING id, user_id, total_points, reports_cleared,
                       current_streak, longest_streak, last_cleared_date,
+                      total_reports, total_clears, total_verifications,
                       created_at, updated_at
             "#,
             new_total_points,
@@ -85,10 +89,12 @@ impl ScoringService {
             UserScore,
             r#"
             UPDATE user_scores
-            SET total_points = $1
+            SET total_points = $1,
+                total_verifications = total_verifications + 1
             WHERE user_id = $2
             RETURNING id, user_id, total_points, reports_cleared,
                       current_streak, longest_streak, last_cleared_date,
+                      total_reports, total_clears, total_verifications,
                       created_at, updated_at
             "#,
             new_total,
@@ -116,6 +122,7 @@ impl ScoringService {
             WHERE user_id = $2
             RETURNING id, user_id, total_points, reports_cleared,
                       current_streak, longest_streak, last_cleared_date,
+                      total_reports, total_clears, total_verifications,
                       created_at, updated_at
             "#,
             new_total,
@@ -135,6 +142,7 @@ impl ScoringService {
             r#"
             SELECT id, user_id, total_points, reports_cleared,
                    current_streak, longest_streak, last_cleared_date,
+                   total_reports, total_clears, total_verifications,
                    created_at, updated_at
             FROM user_scores
             WHERE user_id = $1
@@ -151,10 +159,11 @@ impl ScoringService {
         let new_score = sqlx::query_as!(
             UserScore,
             r#"
-            INSERT INTO user_scores (user_id, total_points, reports_cleared, current_streak, longest_streak)
-            VALUES ($1, 0, 0, 0, 0)
+            INSERT INTO user_scores (user_id, total_points, reports_cleared, current_streak, longest_streak, total_reports, total_clears, total_verifications)
+            VALUES ($1, 0, 0, 0, 0, 0, 0, 0)
             RETURNING id, user_id, total_points, reports_cleared,
                       current_streak, longest_streak, last_cleared_date,
+                      total_reports, total_clears, total_verifications,
                       created_at, updated_at
             "#,
             user_id

@@ -1,6 +1,13 @@
 <script lang="ts">
   import '../app.css';
+  import { onMount } from 'svelte';
+  import { auth } from '$lib/stores/auth';
+
   let { children } = $props();
+
+  onMount(() => {
+    auth.initialize();
+  });
 </script>
 
 <svelte:head>
@@ -29,13 +36,19 @@
 
       <!-- Actions -->
       <div class="flex items-center gap-4">
-        <a href="/auth/login" class="text-sm font-medium text-slate-600 hover:text-slate-900 hidden sm:block">Log in</a>
-        <a href="/app/report" class="bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors shadow-sm flex items-center gap-2">
-          <span>Report Litter</span>
-        </a>
-        <a href="/profile/me" class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors">
-            <span class="text-xs font-bold">ME</span>
-        </a>
+        {#if $auth.isAuthenticated}
+            <a href="/app/report" class="bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors shadow-sm flex items-center gap-2">
+              <span>Report Litter</span>
+            </a>
+            <a href="/profile/me" class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors">
+                <span class="text-xs font-bold">ME</span>
+            </a>
+        {:else}
+            <a href="/auth/login" class="text-sm font-medium text-slate-600 hover:text-slate-900 hidden sm:block">Log in</a>
+            <a href="/auth/register" class="bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors shadow-sm">
+              Sign up
+            </a>
+        {/if}
       </div>
     </div>
   </header>

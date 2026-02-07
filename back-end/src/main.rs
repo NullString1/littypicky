@@ -9,7 +9,7 @@ mod handlers;
 mod rate_limit;
 
 use axum::{
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post, put},
     Router,
 };
 use std::sync::Arc;
@@ -79,6 +79,10 @@ async fn main() -> anyhow::Result<()> {
         oauth_service: oauth_service.clone(),
         auth_service: auth_service.clone(),
         session_store: Arc::new(tokio::sync::RwLock::new(std::collections::HashMap::new())),
+    });
+
+    let admin_state = Arc::new(handlers::AdminHandlerState {
+        pool: pool.clone(),
     });
 
     tracing::info!("Services initialized");
@@ -157,6 +161,19 @@ async fn main() -> anyhow::Result<()> {
         ))
         .with_state(leaderboard_state)
         
+        // Admin routes (authenticated + admin role required)
+        .route("/api/admin/users", get(handlers::list_users))
+        .route("/api/admin/users/:id", get(handlers::get_user_by_id))
+        .route("/api/admin/users/:id/ban", put(handlers::toggle_user_ban))
+        .route("/api/admin/reports", get(handlers::list_all_reports))
+        .route("/api/admin/reports/:id", delete(handlers::delete_report))
+        .route_layer(axum::middleware::from_fn(auth::middleware::require_admin))
+        .route_layer(axum::middleware::from_fn_with_state(
+            jwt_service.clone(),
+            auth::middleware::require_auth,
+        ))
+        .with_state(admin_state)
+        
         .layer(rate_limiter)
         .layer(cors);
 
@@ -192,6 +209,12 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("    GET  /api/leaderboards?period=weekly|monthly|all_time");
     tracing::info!("    GET  /api/leaderboards/city/:city?period=...");
     tracing::info!("    GET  /api/leaderboards/country/:country?period=...");
+    tracing::info!("  Admin (authenticated, admin role required):");
+    tracing::info!("    GET    /api/admin/users");
+    tracing::info!("    GET    /api/admin/users/:id");
+    tracing::info!("    PUT    /api/admin/users/:id/ban");
+    tracing::info!("    GET    /api/admin/reports");
+    tracing::info!("    DELETE /api/admin/reports/:id");
     
     axum::serve(listener, app).await?;
 

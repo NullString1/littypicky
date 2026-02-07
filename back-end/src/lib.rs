@@ -8,3 +8,7 @@ pub mod handlers;
 pub mod models;
 pub mod services;
 pub mod templates;
+pub mod rate_limit;
+pub mod openapi;
+
+pub use openapi::ApiDoc;

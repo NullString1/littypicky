@@ -1,19 +1,11 @@
-mod config;
-mod db;
-mod error;
-mod models;
-mod auth;
-mod services;
-mod templates;
-mod handlers;
-mod rate_limit;
-mod openapi;
+use back_end::{
+    auth, config, db, handlers, openapi::ApiDoc, rate_limit, services,
+};
 
 use axum::{
     routing::{delete, get, patch, post, put},
     Json, Router,
 };
-use openapi::ApiDoc;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};

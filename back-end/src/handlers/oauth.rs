@@ -57,7 +57,7 @@ pub async fn google_login(
     session_store.insert(csrf_token.secret().clone(), nonce.secret().clone());
 
     // Return the authorization URL for the client to redirect to
-    Ok(Json(OAuthLoginResponse { auth_url }))
+    Ok(Redirect::to(&auth_url.to_string()))
 }
 
 /// Handle Google OAuth callback
@@ -98,14 +98,27 @@ pub async fn google_callback(
     // Login or create user
     let auth_tokens = state.auth_service.oauth_login(oauth_info).await?;
 
-    // In a web app, you might:
-    // 1. Set HTTP-only cookies with the tokens
-    // 2. Redirect to a frontend route with a success parameter
-    // 3. Have the frontend retrieve the tokens from a secure endpoint
+    let html = format!(
+        r#"<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Redirecting...</title>
+    </head>
+    <body>
+        <p>Logging in...</p>
+        <script>
+            localStorage.setItem('token', '{}');
+            localStorage.setItem('refreshToken', '{}');
+            localStorage.setItem('user', '{}');
+            window.location.href = '/app/feed';
+        </script>
+    </body>
+    </html>"#,
+        auth_tokens.access_token, auth_tokens.refresh_token, serde_json::to_string(&auth_tokens.user).unwrap()
+    );
 
-    // For this API, we'll return JSON
-    // In production, consider redirecting to your frontend with tokens in a secure way
-    Ok((StatusCode::OK, Json(auth_tokens)))
+    return Ok(axum::response::Html(html).into_response());
 }
 
 /// Alternative: Redirect-based callback for web apps
@@ -136,7 +149,7 @@ pub async fn google_callback_redirect(
     // Redirect to frontend with tokens in URL fragment (only accessible client-side)
     // Change this URL to your frontend URL
     let redirect_url = format!(
-        "http://localhost:3000/auth/callback#access_token={}&refresh_token={}",
+        "http://localhost:5173/auth/callback#access_token={}&refresh_token={}",
         auth_tokens.access_token, auth_tokens.refresh_token
     );
 

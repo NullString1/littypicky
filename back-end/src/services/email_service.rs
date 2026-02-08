@@ -27,7 +27,6 @@ impl EmailService {
             SmtpTransport::relay(&config.smtp_host)
                 .map_err(|e| AppError::Email(format!("Failed to create SMTP transport: {e}")))?
                 .credentials(creds)
-                .port(config.smtp_port)
                 .build()
         };
 

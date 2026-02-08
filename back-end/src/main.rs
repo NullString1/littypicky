@@ -100,15 +100,10 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods(Any)
         .allow_headers(Any);
 
-    // Create a global rate limiter for general protection
-    // This is more lenient to avoid dev issues, but provides basic DoS protection
-    let global_rate_limiter = rate_limit::get_rate_limiter_layer();
 
     // Create per-endpoint rate limiters (more strict)
     let _auth_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.auth_per_min);
-    let reports_rate_limiter =
         rate_limit::create_rate_limiter_per_hour(config.rate_limit.reports_per_hour);
-    let verifications_rate_limiter =
         rate_limit::create_rate_limiter_per_hour(config.rate_limit.verifications_per_hour);
     let _general_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.general_per_min);
     let _email_verification_rate_limiter =

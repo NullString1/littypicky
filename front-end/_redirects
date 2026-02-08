@@ -1,0 +1,2 @@
+/api/* https://api-littypicky.nullstring.one/:splat 200
+/api https://api-littypicky.nullstring.one/ 200

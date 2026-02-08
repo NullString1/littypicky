@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
 		server: {
 			proxy: {
 				'/api': {
-					target: env.VITE_BACKEND_URL || 'http://localhost:6780',
+					target: 'https://api-littypicky.nullstring.one',
 					changeOrigin: true
 				}
 			}

@@ -23,6 +23,9 @@ export type CreateFeedPostRequest = components['schemas']['CreateFeedPostRequest
 export type UpdateFeedPostRequest = components['schemas']['UpdateFeedPostRequest'];
 export type CreateFeedCommentRequest = components['schemas']['CreateFeedCommentRequest'];
 export type UpdateFeedCommentRequest = components['schemas']['UpdateFeedCommentRequest'];
+export type ForgotPasswordRequest = components['schemas']['ForgotPasswordRequest'];
+export type ResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
+export type MessageResponse = components['schemas']['MessageResponse'];
 
 const API_BASE = '/api';
 
@@ -146,6 +149,8 @@ export const api = {
         verifyEmail: (token: string) => request<AuthTokens>('POST', '/auth/verify-email', { token }),
         refreshToken: (data: RefreshTokenRequest) => request<RefreshTokenResponse>('POST', '/auth/refresh', data),
         getMe: (token: string) => request<User>('GET', '/users/me', undefined, token),
+        forgotPassword: (data: ForgotPasswordRequest) => request<MessageResponse>('POST', '/auth/forgot-password', data),
+        resetPassword: (data: ResetPasswordRequest) => request<MessageResponse>('POST', '/auth/reset-password', data),
     },
     users: {
         updateMe: (data: UpdateUserRequest, token: string) => request<User>('PATCH', '/users/me', data, token),

@@ -38,7 +38,7 @@
       });
       // Redirect to login or show success message
       // The backend says "User registered successfully. Verification email sent."
-      goto('/auth/login', { replaceState: true, invalidateAll: true });
+      goto('/auth/login?fromRegister=true', { replaceState: true, invalidateAll: true});
     } catch (e: any) {
       error = e.message;
     } finally {

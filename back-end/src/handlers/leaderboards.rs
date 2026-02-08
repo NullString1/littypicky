@@ -134,19 +134,16 @@ async fn get_leaderboard(
                     u.full_name,
                     u.city,
                     u.country,
-                    COALESCE(SUM(CASE 
-                        WHEN lr.cleared_at > $1 THEN 10 
-                        ELSE 0 
-                    END), 0)::int as "total_points!",
-                    COUNT(CASE WHEN lr.cleared_at > $1 THEN 1 END)::int as "reports_cleared!",
+                    COALESCE(SUM(se.points), 0)::int as "total_points!",
+                    COUNT(CASE WHEN se.kind = 'clear' THEN 1 END)::int as "reports_cleared!",
                     0 as "current_streak!",
-                    ROW_NUMBER() OVER (ORDER BY SUM(CASE WHEN lr.cleared_at > $1 THEN 10 ELSE 0 END) DESC) as "rank!"
+                    ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(se.points), 0) DESC) as "rank!"
                 FROM users u
-                LEFT JOIN litter_reports lr ON u.id = lr.cleared_by
+                LEFT JOIN score_events se ON u.id = se.user_id AND se.created_at > $1
                 WHERE u.city = $2
                 GROUP BY u.id, u.full_name, u.city, u.country
-                HAVING COUNT(CASE WHEN lr.cleared_at > $1 THEN 1 END) > 0
-                ORDER BY SUM(CASE WHEN lr.cleared_at > $1 THEN 10 ELSE 0 END) DESC
+                HAVING COALESCE(SUM(se.points), 0) > 0
+                ORDER BY COALESCE(SUM(se.points), 0) DESC
                 LIMIT 20
                 "#,
                 time,
@@ -164,19 +161,16 @@ async fn get_leaderboard(
                     u.full_name,
                     u.city,
                     u.country,
-                    COALESCE(SUM(CASE 
-                        WHEN lr.cleared_at > $1 THEN 10 
-                        ELSE 0 
-                    END), 0)::int as "total_points!",
-                    COUNT(CASE WHEN lr.cleared_at > $1 THEN 1 END)::int as "reports_cleared!",
+                    COALESCE(SUM(se.points), 0)::int as "total_points!",
+                    COUNT(CASE WHEN se.kind = 'clear' THEN 1 END)::int as "reports_cleared!",
                     0 as "current_streak!",
-                    ROW_NUMBER() OVER (ORDER BY SUM(CASE WHEN lr.cleared_at > $1 THEN 10 ELSE 0 END) DESC) as "rank!"
+                    ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(se.points), 0) DESC) as "rank!"
                 FROM users u
-                LEFT JOIN litter_reports lr ON u.id = lr.cleared_by
+                LEFT JOIN score_events se ON u.id = se.user_id AND se.created_at > $1
                 WHERE u.country = $2
                 GROUP BY u.id, u.full_name, u.city, u.country
-                HAVING COUNT(CASE WHEN lr.cleared_at > $1 THEN 1 END) > 0
-                ORDER BY SUM(CASE WHEN lr.cleared_at > $1 THEN 10 ELSE 0 END) DESC
+                HAVING COALESCE(SUM(se.points), 0) > 0
+                ORDER BY COALESCE(SUM(se.points), 0) DESC
                 LIMIT 20
                 "#,
                 time,
@@ -194,18 +188,15 @@ async fn get_leaderboard(
                     u.full_name,
                     u.city,
                     u.country,
-                    COALESCE(SUM(CASE 
-                        WHEN lr.cleared_at > $1 THEN 10 
-                        ELSE 0 
-                    END), 0)::int as "total_points!",
-                    COUNT(CASE WHEN lr.cleared_at > $1 THEN 1 END)::int as "reports_cleared!",
+                    COALESCE(SUM(se.points), 0)::int as "total_points!",
+                    COUNT(CASE WHEN se.kind = 'clear' THEN 1 END)::int as "reports_cleared!",
                     0 as "current_streak!",
-                    ROW_NUMBER() OVER (ORDER BY SUM(CASE WHEN lr.cleared_at > $1 THEN 10 ELSE 0 END) DESC) as "rank!"
+                    ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(se.points), 0) DESC) as "rank!"
                 FROM users u
-                LEFT JOIN litter_reports lr ON u.id = lr.cleared_by
+                LEFT JOIN score_events se ON u.id = se.user_id AND se.created_at > $1
                 GROUP BY u.id, u.full_name, u.city, u.country
-                HAVING COUNT(CASE WHEN lr.cleared_at > $1 THEN 1 END) > 0
-                ORDER BY SUM(CASE WHEN lr.cleared_at > $1 THEN 10 ELSE 0 END) DESC
+                HAVING COALESCE(SUM(se.points), 0) > 0
+                ORDER BY COALESCE(SUM(se.points), 0) DESC
                 LIMIT 20
                 "#,
                 time
@@ -226,12 +217,12 @@ async fn get_leaderboard(
                     u.city,
                     u.country,
                     us.total_points,
-                    us.reports_cleared,
+                    us.total_clears as "reports_cleared!",
                     us.current_streak,
                     ROW_NUMBER() OVER (ORDER BY us.total_points DESC) as "rank!"
                 FROM users u
                 INNER JOIN user_scores us ON u.id = us.user_id
-                WHERE u.city = $1 AND us.reports_cleared > 0
+                WHERE u.city = $1 AND us.total_clears > 0
                 ORDER BY us.total_points DESC
                 LIMIT 20
                 "#,
@@ -250,12 +241,12 @@ async fn get_leaderboard(
                     u.city,
                     u.country,
                     us.total_points,
-                    us.reports_cleared,
+                    us.total_clears as "reports_cleared!",
                     us.current_streak,
                     ROW_NUMBER() OVER (ORDER BY us.total_points DESC) as "rank!"
                 FROM users u
                 INNER JOIN user_scores us ON u.id = us.user_id
-                WHERE u.country = $1 AND us.reports_cleared > 0
+                WHERE u.country = $1 AND us.total_clears > 0
                 ORDER BY us.total_points DESC
                 LIMIT 20
                 "#,
@@ -274,12 +265,12 @@ async fn get_leaderboard(
                     u.city,
                     u.country,
                     us.total_points,
-                    us.reports_cleared,
+                    us.total_clears as "reports_cleared!",
                     us.current_streak,
                     ROW_NUMBER() OVER (ORDER BY us.total_points DESC) as "rank!"
                 FROM users u
                 INNER JOIN user_scores us ON u.id = us.user_id
-                WHERE us.reports_cleared > 0
+                WHERE us.total_clears > 0
                 ORDER BY us.total_points DESC
                 LIMIT 20
                 "#

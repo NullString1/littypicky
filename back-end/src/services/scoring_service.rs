@@ -21,7 +21,7 @@ impl ScoringService {
     pub async fn award_clear_points(
         &self,
         user_id: Uuid,
-        _report_id: Uuid,
+        report_id: Uuid,
         latitude: f64,
         longitude: f64,
     ) -> Result<UserScore, AppError> {
@@ -33,14 +33,16 @@ impl ScoringService {
 
         // Calculate streak bonus
         let today = Utc::now().date_naive();
-        let (new_streak, _is_streak_continued) = self.calculate_streak(&user_score, today);
-        let streak_bonus = new_streak * self.config.streak_bonus_points;
+        let (new_streak, is_streak_continued) = self.calculate_streak(&user_score, today);
+        let streak_bonus = if is_streak_continued {
+            new_streak * self.config.streak_bonus_points
+        } else {
+            0
+        };
         points += streak_bonus;
 
         // Check if this is the first clear in the area (1km radius, last 24 hours)
-        let is_first_in_area = self
-            .is_first_clear_in_area(latitude, longitude, user_id)
-            .await?;
+        let is_first_in_area = self.is_first_clear_in_area(latitude, longitude).await?;
         if is_first_in_area {
             points += self.config.first_in_area_bonus;
         }
@@ -49,6 +51,8 @@ impl ScoringService {
         let new_total_points = user_score.total_points + points;
         let new_reports_cleared = user_score.reports_cleared + 1;
         let new_longest_streak = new_streak.max(user_score.longest_streak);
+
+        let mut tx = self.pool.begin().await?;
 
         let updated_score = sqlx::query_as!(
             UserScore,
@@ -75,16 +79,42 @@ impl ScoringService {
             today,
             user_id
         )
-        .fetch_one(&self.pool)
+        .fetch_one(&mut *tx)
         .await?;
+
+        sqlx::query!(
+            r#"
+            INSERT INTO score_events (user_id, points, kind, report_id)
+            VALUES ($1, $2, $3, $4)
+            "#,
+            user_id,
+            points,
+            "clear",
+            report_id
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
 
         Ok(updated_score)
     }
 
     /// Award points to a user who verified a report
-    pub async fn award_verification_points(&self, user_id: Uuid) -> Result<UserScore, AppError> {
+    pub async fn award_verification_points(
+        &self,
+        user_id: Uuid,
+        is_verified: bool,
+    ) -> Result<UserScore, AppError> {
         let user_score = self.get_or_create_user_score(user_id).await?;
-        let new_total = user_score.total_points + self.config.verification_bonus;
+        let points = if is_verified {
+            self.config.verification_bonus
+        } else {
+            0
+        };
+        let new_total = user_score.total_points + points;
+
+        let mut tx = self.pool.begin().await?;
 
         let updated_score = sqlx::query_as!(
             UserScore,
@@ -101,8 +131,24 @@ impl ScoringService {
             new_total,
             user_id
         )
-        .fetch_one(&self.pool)
+        .fetch_one(&mut *tx)
         .await?;
+
+        if points != 0 {
+            sqlx::query!(
+                r#"
+                INSERT INTO score_events (user_id, points, kind)
+                VALUES ($1, $2, $3)
+                "#,
+                user_id,
+                points,
+                "verification"
+            )
+            .execute(&mut *tx)
+            .await?;
+        }
+
+        tx.commit().await?;
 
         Ok(updated_score)
     }
@@ -114,6 +160,8 @@ impl ScoringService {
     ) -> Result<UserScore, AppError> {
         let user_score = self.get_or_create_user_score(clearer_id).await?;
         let new_total = user_score.total_points + self.config.verified_report_bonus;
+
+        let mut tx = self.pool.begin().await?;
 
         let updated_score = sqlx::query_as!(
             UserScore,
@@ -129,8 +177,22 @@ impl ScoringService {
             new_total,
             clearer_id
         )
-        .fetch_one(&self.pool)
+        .fetch_one(&mut *tx)
         .await?;
+
+        sqlx::query!(
+            r#"
+            INSERT INTO score_events (user_id, points, kind)
+            VALUES ($1, $2, $3)
+            "#,
+            clearer_id,
+            self.config.verified_report_bonus,
+            "verified_report_bonus"
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
 
         Ok(updated_score)
     }
@@ -175,6 +237,53 @@ impl ScoringService {
         Ok(new_score)
     }
 
+    pub async fn award_report_points(
+        &self,
+        user_id: Uuid,
+        report_id: Uuid,
+    ) -> Result<UserScore, AppError> {
+        let user_score = self.get_or_create_user_score(user_id).await?;
+        let points = self.config.report_points;
+        let new_total = user_score.total_points + points;
+
+        let mut tx = self.pool.begin().await?;
+
+        let updated_score = sqlx::query_as!(
+            UserScore,
+            r#"
+            UPDATE user_scores
+            SET total_points = $1,
+                total_reports = total_reports + 1
+            WHERE user_id = $2
+            RETURNING id, user_id, total_points, reports_cleared,
+                      current_streak, longest_streak, last_cleared_date,
+                      total_reports, total_clears, total_verifications,
+                      created_at, updated_at
+            "#,
+            new_total,
+            user_id
+        )
+        .fetch_one(&mut *tx)
+        .await?;
+
+        sqlx::query!(
+            r#"
+            INSERT INTO score_events (user_id, points, kind, report_id)
+            VALUES ($1, $2, $3, $4)
+            "#,
+            user_id,
+            points,
+            "report",
+            report_id
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(updated_score)
+    }
+
     /// Calculate the new streak based on last cleared date
     fn calculate_streak(&self, user_score: &UserScore, today: NaiveDate) -> (i32, bool) {
         if let Some(last_date) = user_score.last_cleared_date {
@@ -201,12 +310,7 @@ impl ScoringService {
     }
 
     /// Check if this is the first clear in the area (1km, 24 hours)
-    async fn is_first_clear_in_area(
-        &self,
-        latitude: f64,
-        longitude: f64,
-        user_id: Uuid,
-    ) -> Result<bool, AppError> {
+    async fn is_first_clear_in_area(&self, latitude: f64, longitude: f64) -> Result<bool, AppError> {
         let radius_meters = 1000.0; // 1km
         let time_threshold = Utc::now() - Duration::hours(24);
 
@@ -216,15 +320,13 @@ impl ScoringService {
             FROM litter_reports
             WHERE cleared_by IS NOT NULL
               AND cleared_at > $1
-              AND cleared_by != $2
               AND ST_DWithin(
-                  location,
-                  ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography,
-                  $5
+                                    location::geography,
+                                    ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography,
+                                    $4
               )
             "#,
             time_threshold,
-            user_id,
             longitude,
             latitude,
             radius_meters
@@ -243,6 +345,6 @@ impl ScoringService {
     /// Check if user can verify reports (has cleared enough reports)
     pub async fn can_verify_reports(&self, user_id: Uuid) -> Result<bool, AppError> {
         let score = self.get_or_create_user_score(user_id).await?;
-        Ok(score.reports_cleared >= self.config.min_clears_to_verify)
+        Ok(score.total_clears >= self.config.min_clears_to_verify)
     }
 }

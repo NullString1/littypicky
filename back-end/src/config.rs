@@ -75,6 +75,7 @@ pub struct ImageConfig {
 pub struct ScoringConfig {
     pub min_clears_to_verify: i32,
     pub min_verifications_needed: i32,
+    pub report_points: i32,
     pub base_points_per_clear: i32,
     pub streak_bonus_points: i32,
     pub first_in_area_bonus: i32,
@@ -175,6 +176,9 @@ impl Config {
                     .parse()?,
                 min_verifications_needed: env::var("MIN_VERIFICATIONS_NEEDED")
                     .unwrap_or_else(|_| "3".to_string())
+                    .parse()?,
+                report_points: env::var("REPORT_POINTS")
+                    .unwrap_or_else(|_| "10".to_string())
                     .parse()?,
                 base_points_per_clear: env::var("BASE_POINTS_PER_CLEAR")
                     .unwrap_or_else(|_| "10".to_string())

@@ -115,7 +115,7 @@ pub async fn verify_report(
     // Award points to the verifier
     state
         .scoring_service
-        .award_verification_points(auth_user.id)
+        .award_verification_points(auth_user.id, request.is_verified)
         .await?;
 
     // Check if we have enough positive verifications to mark report as verified

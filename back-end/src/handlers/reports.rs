@@ -46,6 +46,11 @@ pub async fn create_report(
         .create_report(auth_user.id, request)
         .await?;
 
+    state
+        .scoring_service
+        .award_report_points(auth_user.id, report.id)
+        .await?;
+
     let response: ReportResponse = report.into();
     Ok((StatusCode::CREATED, Json(response)))
 }

@@ -4,9 +4,12 @@
   import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
+  import { page } from '$app/state';
 
   let isLoading = false;
   let error = '';
+
+  let fromRegister = $derived(page.url.searchParams.get('fromRegister') === 'true');
 
   onMount(() => {
     if (browser && $auth.isAuthenticated) {

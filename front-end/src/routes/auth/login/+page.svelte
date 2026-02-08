@@ -6,8 +6,8 @@
   import { browser } from '$app/environment';
   import { page } from '$app/state';
 
-  let isLoading = false;
-  let error = '';
+  let isLoading = $state(false);
+  let error = $state('');
 
   let fromRegister = $derived(page.url.searchParams.get('fromRegister') === 'true');
 

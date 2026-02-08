@@ -9,7 +9,7 @@ use tower::ServiceExt;
 use uuid::Uuid;
 
 mod helpers;
-use helpers::{create_test_app, get_test_pool, cleanup_test_data};
+use helpers::create_test_app;
 
 // Helper to create a test user and get auth token
 async fn create_user_and_get_token(app: &mut axum::Router, email: &str) -> (Uuid, String) {

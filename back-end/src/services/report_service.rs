@@ -1,4 +1,3 @@
-use crate::{config, db};
 use crate::error::AppError;
 use crate::models::report::{CreateReportRequest, LitterReport, ReportStatus};
 use crate::services::image_service::ImageService;

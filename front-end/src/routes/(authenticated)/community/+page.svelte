@@ -120,10 +120,10 @@
                         <li class="px-4 py-4 sm:px-6 hover:bg-slate-50 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center min-w-0 gap-4">
-                                    <div class={`flex-shrink-0 w-8 h-8 flex items-center justify-center font-bold text-lg ${i < 3 ? 'text-yellow-500' : 'text-slate-400'}`}>
+                                    <div class={`shrink-0 w-8 h-8 flex items-center justify-center font-bold text-lg ${i < 3 ? 'text-yellow-500' : 'text-slate-400'}`}>
                                         #{entry.rank}
                                     </div>
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <div class="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold">
                                             {entry.full_name.charAt(0)}
                                         </div>

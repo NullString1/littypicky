@@ -6,7 +6,6 @@ use axum::{
 };
 use std::sync::Arc;
 use tower_http::{
-    catch_panic::CatchPanicLayer,
     cors::{Any, CorsLayer},
     trace::TraceLayer,
 };

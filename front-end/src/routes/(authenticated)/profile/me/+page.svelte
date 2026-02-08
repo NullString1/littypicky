@@ -42,7 +42,7 @@
     {#if user}
     <!-- Header Card -->
     <div class="bg-white rounded-lg shadow overflow-hidden border border-slate-200 mb-6">
-      <div class="h-32 bg-gradient-to-r from-primary-500 to-primary-600"></div>
+      <div class="h-32 bg-linear-to-r from-primary-500 to-primary-600"></div>
       <div class="relative px-4 pb-6 sm:px-6 lg:px-8">
         <div class="-mt-12 sm:-mt-16 sm:flex sm:items-end sm:space-x-5">
           <div class="flex">
@@ -125,7 +125,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
                     {#if (score?.total_clears || 0) >= 1}
                         <div class="relative rounded-lg border border-slate-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3">
-                            <div class="flex-shrink-0 text-3xl">🌱</div>
+                            <div class="shrink-0 text-3xl">🌱</div>
                             <div>
                                 <p class="text-sm font-medium text-slate-900">First Steps</p>
                                 <p class="text-xs text-slate-500">Completed 1 cleanup</p>
@@ -134,7 +134,7 @@
                     {/if}
                     {#if (score?.total_clears || 0) >= 10}
                         <div class="relative rounded-lg border border-slate-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3">
-                            <div class="flex-shrink-0 text-3xl">🌿</div>
+                            <div class="shrink-0 text-3xl">🌿</div>
                             <div>
                                 <p class="text-sm font-medium text-slate-900">Dedicated</p>
                                 <p class="text-xs text-slate-500">Completed 10 cleanups</p>
@@ -143,7 +143,7 @@
                     {/if}
                     {#if (score?.current_streak || 0) >= 3}
                         <div class="relative rounded-lg border border-slate-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3">
-                            <div class="flex-shrink-0 text-3xl">🔥</div>
+                            <div class="shrink-0 text-3xl">🔥</div>
                             <div>
                                 <p class="text-sm font-medium text-slate-900">On Fire</p>
                                 <p class="text-xs text-slate-500">3 day streak</p>

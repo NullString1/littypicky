@@ -2,9 +2,7 @@ use crate::error::AppError;
 use crate::services::{AuthService, OAuthService};
 use axum::{
     extract::{Query, State},
-    http::StatusCode,
     response::{IntoResponse, Redirect},
-    Json,
 };
 use openidconnect::Nonce;
 use serde::{Deserialize, Serialize};

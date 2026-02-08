@@ -3,6 +3,7 @@ use back_end::{auth, config, db, handlers, openapi::ApiDoc, services};
 use axum::{
     Router, extract::DefaultBodyLimit, routing::{delete, get, patch, post, put}
 };
+use std::net::SocketAddr;
 use std::sync::Arc;
 use tower_http::{
     cors::{Any, CorsLayer},
@@ -296,8 +297,7 @@ async fn main() -> anyhow::Result<()> {
     // Build main router
 
     // Start server
-    let addr = format!("{}:{}", config.server.host, config.server.port);
-    let listener = tokio::net::TcpListener::bind(&addr).await?;
+    let addr: SocketAddr = format!("{}:{}", config.server.host, config.server.port).parse()?;
 
     tracing::info!("Server starting on {}", addr);
     tracing::info!("API endpoints:");
@@ -359,7 +359,21 @@ async fn main() -> anyhow::Result<()> {
         tracing::info!("    DELETE /api/test/cleanup");
     }
 
-    axum::serve(listener, app).await?;
+    if let Some(tls) = &config.tls {
+        let tls_config = axum_server::tls_rustls::RustlsConfig::from_pem_file(
+            &tls.cert_path,
+            &tls.key_path,
+        )
+        .await?;
+        tracing::info!("TLS enabled with cert: {}, key: {}", tls.cert_path, tls.key_path);
+        axum_server::bind_rustls(addr, tls_config)
+            .serve(app.into_make_service())
+            .await?;
+    } else {
+        tracing::info!("TLS not enabled - running in HTTP");
+        let listener = tokio::net::TcpListener::bind(addr).await?;
+        axum::serve(listener, app).await?;
+    }
 
     Ok(())
 }

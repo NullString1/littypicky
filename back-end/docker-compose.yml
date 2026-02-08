@@ -1,43 +1,116 @@
 services:
-  postgres:
-    image: postgis/postgis:16-3.4-alpine
-    container_name: littypicky-postgres
-    environment:
-      POSTGRES_USER: littypicky
-      POSTGRES_PASSWORD: securepassword
-      POSTGRES_DB: littypicky
-      PGDATA: /var/lib/postgresql/data/pgdata
+  backend:
+    image: nullstring1/littypicky:latest-aarch64
+    hostname: backend
+    dns_search: .
+    volumes:
+      - ./certs:/certs:ro
+    networks:
+      - litty-net
     ports:
-      - "5432:5432"
+      - "6780:6780"
+    environment:
+      - TLS_CERT_PATH=/certs/cert.crt
+      - TLS_KEY_PATH=/certs/privkey.pem
+      - SMTP_PORT=587
+      - JWT_SECRET_FILE=/run/secrets/jwt_secret
+      - SMTP_USERNAME_FILE=/run/secrets/smtp_username
+      - SMTP_PASSWORD_FILE=/run/secrets/smtp_password
+      - GOOGLE_CLIENT_SECRET_FILE=/run/secrets/google_client_secret
+      - GOOGLE_CLIENT_ID_FILE=/run/secrets/google_client_id
+      - DATABASE_URL_FILE=/run/secrets/postgres_url
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_FROM_EMAIL=no-reply@littypicky.nullstring.one
+      - SMTP_FROM_NAME="LittyPicky No-reply"
+      - GOOGLE_REDIRECT_URI=https://littypicky.nullstring.one/api/auth/google/callback
+      - JWT_ACCESS_EXPIRY=900
+      - JWT_REFRESH_EXPIRY=2592000
+      - EMAIL_VERIFICATION_EXPIRY_HOURS=24
+      - PASSWORD_RESET_EXPIRY_HOURS=1
+      - FRONTEND_URL=https://littypicky.nullstring.one
+      - HOST=0.0.0.0
+      - PORT=6780
+      - RUST_LOG=info
+      - RATE_LIMIT_AUTH_PER_MIN=5
+      - RATE_LIMIT_REPORTS_PER_HOUR=10
+      - RATE_LIMIT_VERIFICATIONS_PER_HOUR=20
+      - RATE_LIMIT_GENERAL_PER_MIN=100
+      - RATE_LIMIT_EMAIL_VERIFICATION_PER_HOUR=3
+      - RATE_LIMIT_PASSWORD_RESET_PER_HOUR=3
+      - MAX_PHOTO_SIZE_MB=5
+      - WEBP_QUALITY=80
+      - MAX_IMAGE_WIDTH=1920
+      - MAX_IMAGE_HEIGHT=1920
+      - MIN_CLEARS_TO_VERIFY=0
+      - MIN_VERIFICATIONS_NEEDED=0
+      - BASE_POINTS_PER_CLEAR=20
+      - STREAK_BONUS_POINTS=5
+      - FIRST_IN_AREA_BONUS=20
+      - VERIFICATION_BONUS=2
+      - VERIFIED_REPORT_BONUS=10
+      - S3_ENDPOINT=http://minio:9000
+      - S3_REGION=us-east-1
+      - S3_BUCKET=littypicky-images
+      - S3_ACCESS_KEY=minioadmin
+      - S3_SECRET_KEY=minioadminlitty
+      - S3_PUBLIC_URL=http://minio:9000/littypicky-images
+
+    secrets:
+      - source: lp_jwt_secret_v1
+        target: jwt_secret
+      - source: lp_smtp_password_v1
+        target: smtp_password
+      - source: lp_smtp_username_v1
+        target: smtp_username
+      - source: lp_google_client_secret_v1
+        target: google_client_secret
+      - source: lp_google_client_id_v1
+        target: google_client_id
+      - source: lp_postgres_url_v1
+        target: postgres_url
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        failure_action: rollback
+    depends_on:
+      - postgres
+      - minio
+
+  postgres:
+    image: imresamu/postgis:15-3.5.4-alpine3.22
+    hostname: postgres
+    ports:
+      - "5435:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U littypicky"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    command: postgres -c hba_file=/etc/postgresql/pg_hba.conf
+    secrets:
+      - source: lp_postgres_user_v1
+        target: POSTGRES_USER
+      - source: lp_postgres_password_v1
+        target: POSTGRES_PASSWORD
+    environment:
+      - POSTGRES_USER_FILE=/run/secrets/POSTGRES_USER
+      - POSTGRES_PASSWORD_FILE=/run/secrets/POSTGRES_PASSWORD
+      - POSTGRES_DB=littypicky
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    deploy:
+      restart_policy:
+        condition: on-failure
     networks:
-      - littypicky-network
-
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: littypicky-mailhog
-    ports:
-      - "1025:1025"  # SMTP server
-      - "8025:8025"  # Web UI
-    networks:
-      - littypicky-network
+      - litty-net
 
   minio:
+    hostname: minio
     image: minio/minio:latest
-    container_name: littypicky-minio
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin123
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadminlitty
     ports:
-      - "9000:9000"  # S3 API
-      - "9001:9001"  # MinIO Console (Web UI)
+      - "9000:9000"
     volumes:
       - minio_data:/data
     healthcheck:
@@ -46,14 +119,32 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      - littypicky-network
+      - litty-net
+
+
+secrets:
+  lp_jwt_secret_v1:
+    external: true
+  lp_smtp_username_v1:
+    external: true
+  lp_smtp_password_v1:
+    external: true
+  lp_google_client_id_v1:
+    external: true
+  lp_google_client_secret_v1:
+    external: true
+  lp_postgres_url_v1:
+    external: true
+  lp_postgres_user_v1:
+    external: true
+  lp_postgres_password_v1:
+    external: true
 
 volumes:
   postgres_data:
-    driver: local
   minio_data:
-    driver: local
 
 networks:
-  littypicky-network:
-    driver: bridge
+  litty-net:
+    driver: overlay
+    attachable: true

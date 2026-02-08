@@ -61,6 +61,7 @@
             (craneLibNative.fileset.commonCargoSources unfilteredSrc)
             ./.sqlx
             ./migrations
+            ./src/templates
           ];
         };
 
@@ -102,12 +103,12 @@
         };
 
         cargoArtifacts = craneLibNative.buildDepsOnly nativeArgs;
-        logSmartBackendNative = craneLibNative.buildPackage (
+        littyPickyBackendNative = craneLibNative.buildPackage (
           nativeArgs
           // {
             inherit cargoArtifacts;
             postInstall = ''
-              patchelf --set-rpath "${pkgs.lib.makeLibraryPath [ pkgs.openssl ]}" $out/bin/logsmart-srv
+              patchelf --set-rpath "${pkgs.lib.makeLibraryPath [ pkgs.openssl ]}" $out/bin/back-end
             '';
           }
         );
@@ -155,7 +156,7 @@
             }
           );
 
-        logSmartBackendCrossAarch64 = pkgsCrossAarch64.callPackage crateExpressionCrossAarch64 { };
+        littyPickyBackendCrossAarch64 = pkgsCrossAarch64.callPackage crateExpressionCrossAarch64 { };
 
         # --- Docker Helper ---
         mkDockerImage =
@@ -171,7 +172,7 @@
             contents = packages;
             config = {
               ExposedPorts = {
-                "6767/tcp" = { };
+                "6780/tcp" = { };
               };
             }
             // config;
@@ -179,7 +180,7 @@
 
         # Target helpers for cross/native logic
         isAarch64Linux = system == "aarch64-linux";
-        targetPkgAarch64 = if isAarch64Linux then logSmartBackendNative else logSmartBackendCrossAarch64;
+        targetPkgAarch64 = if isAarch64Linux then littyPickyBackendNative else littyPickyBackendCrossAarch64;
         targetPkgsAarch64 = if isAarch64Linux then pkgs else pkgsCrossAarch64;
 
         dockerImageAarch64 = mkDockerImage {
@@ -193,7 +194,7 @@
             targetPkgsAarch64.curl
             targetPkgsAarch64.fakeNss
           ];
-          config.Cmd = [ "${targetPkgAarch64}/bin/littypicky" ];
+          config.Cmd = [ "${targetPkgAarch64}/bin/back-end" ];
         };
 
         dockerImagex86_64 = mkDockerImage {
@@ -201,13 +202,13 @@
           tag = "latest-x86-64";
           architecture = "amd64";
           packages = [
-            logSmartBackendNative
+            littyPickyBackendNative
             pkgs.openssl
             pkgs.cacert
             pkgs.curl
             pkgs.fakeNss
           ];
-          config.Cmd = [ "${logSmartBackendNative}/bin/littypicky" ];
+          config.Cmd = [ "${littyPickyBackendNative}/bin/back-end" ];
         };
 
         dockerImageDarwin = mkDockerImage {
@@ -215,12 +216,12 @@
           tag = "latest-darwin";
           architecture = "darwin";
           packages = [
-            logSmartBackendNative
+            littyPickyBackendNative
             pkgs.openssl
             pkgs.cacert
             pkgs.fakeNss
           ];
-          config.Cmd = [ "${logSmartBackendNative}/bin/littypicky" ];
+          config.Cmd = [ "${littyPickyBackendNative}/bin/back-end" ];
         };
 
         deployAarch64Alias = pkgs.writeShellScriptBin "deploy-aarch64" ''
@@ -266,10 +267,10 @@
         };
 
         packages = {
-          aarch64-linux = logSmartBackendCrossAarch64;
-          x86_64-linux = logSmartBackendNative;
-          aarch64-darwin = logSmartBackendNative;
-          default = logSmartBackendNative;
+          aarch64-linux = littyPickyBackendCrossAarch64;
+          x86_64-linux = littyPickyBackendNative;
+          aarch64-darwin = littyPickyBackendNative;
+          default = littyPickyBackendNative;
           docker-image-aarch64 = dockerImageAarch64;
           docker-image-x86_64 = dockerImagex86_64;
           docker-image-darwin = dockerImageDarwin;
@@ -278,11 +279,11 @@
         apps = {
           default = {
             type = "app";
-            program = "${logSmartBackendNative}/bin/littypicky";
+            program = "${littyPickyBackendNative}/bin/back-end";
           };
           aarch64-linux = {
             type = "app";
-            program = "${logSmartBackendCrossAarch64}/bin/littypicky";
+            program = "${littyPickyBackendCrossAarch64}/bin/back-end";
           };
         };
       }

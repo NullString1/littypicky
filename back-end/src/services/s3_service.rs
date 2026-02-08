@@ -7,6 +7,8 @@ use aws_sdk_s3::{
     Client,
 };
 use std::sync::Arc;
+use std::time::Duration;
+use tokio::time::sleep;
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -28,14 +30,18 @@ impl S3Service {
         );
 
         // Build S3 config with custom endpoint (for MinIO)
-        let s3_config = aws_config::defaults(BehaviorVersion::latest())
+        let shared_config = aws_config::defaults(BehaviorVersion::latest())
             .region(Region::new(config.region.clone()))
             .credentials_provider(credentials)
             .endpoint_url(&config.endpoint)
             .load()
             .await;
 
-        let client = Client::new(&s3_config);
+        let s3_config = aws_sdk_s3::config::Builder::from(&shared_config)
+            .force_path_style(true)
+            .build();
+
+        let client = Client::from_conf(s3_config);
 
         Ok(Self {
             client: Arc::new(client),
@@ -45,25 +51,39 @@ impl S3Service {
 
     /// Initialize the S3 bucket (create if doesn't exist)
     pub async fn initialize(&self) -> Result<()> {
-        // Check if bucket exists
-        let bucket_exists = self
-            .client
-            .head_bucket()
-            .bucket(&self.config.bucket)
-            .send()
-            .await
-            .is_ok();
-
-        if !bucket_exists {
-            tracing::info!("Creating S3 bucket: {}", self.config.bucket);
-            self.client
-                .create_bucket()
+        for attempt in 1..=5 {
+            let bucket_exists = self
+                .client
+                .head_bucket()
                 .bucket(&self.config.bucket)
                 .send()
                 .await
-                .map_err(|e| AppError::Internal(anyhow::anyhow!("Failed to create bucket: {}", e)))?;
+                .is_ok();
 
-            // Set bucket policy to allow public read access to images
+            if bucket_exists {
+                tracing::info!("S3 bucket already exists: {}", self.config.bucket);
+                return Ok(());
+            }
+
+            tracing::info!("Creating S3 bucket: {}", self.config.bucket);
+            let create_result = self
+                .client
+                .create_bucket()
+                .bucket(&self.config.bucket)
+                .send()
+                .await;
+
+            if let Err(err) = create_result {
+                if attempt == 5 {
+                    return Err(AppError::Internal(anyhow::anyhow!(
+                        "Failed to create bucket: {}",
+                        err
+                    )));
+                }
+                sleep(Duration::from_secs(2)).await;
+                continue;
+            }
+
             let policy = format!(
                 r#"{{
                     "Version": "2012-10-17",
@@ -90,8 +110,7 @@ impl S3Service {
                 })?;
 
             tracing::info!("Bucket created and configured successfully");
-        } else {
-            tracing::info!("S3 bucket already exists: {}", self.config.bucket);
+            return Ok(());
         }
 
         Ok(())

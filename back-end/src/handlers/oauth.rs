@@ -16,6 +16,8 @@ use utoipa::{IntoParams, ToSchema};
 pub struct OAuthHandlerState {
     pub oauth_service: Arc<OAuthService>,
     pub auth_service: Arc<AuthService>,
+    pub frontend_url: String,
+    pub redirect_url: String,
     /// Store CSRF tokens and nonces temporarily (in production, use Redis or database)
     pub session_store: Arc<RwLock<HashMap<String, String>>>,
 }
@@ -144,11 +146,9 @@ pub async fn google_callback_redirect(
     // Login or create user
     let auth_tokens = state.auth_service.oauth_login(oauth_info).await?;
 
-    // Redirect to frontend with tokens in URL fragment (only accessible client-side)
-    // Change this URL to your frontend URL
     let redirect_url = format!(
-        "http://localhost:5173/auth/callback#access_token={}&refresh_token={}",
-        auth_tokens.access_token, auth_tokens.refresh_token
+        "{}#access_token={}&refresh_token={}",
+        state.redirect_url, auth_tokens.access_token, auth_tokens.refresh_token
     );
 
     Ok(Redirect::to(&redirect_url))

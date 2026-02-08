@@ -1,2 +1,7 @@
-name = "littypicky"
+name = "littypicky-api-proxy"
+main = "worker.ts"
 compatibility_date = "2026-02-08"
+
+routes = [
+	{ pattern = "littypicky.nullstring.one/api/*", zone_name = "nullstring.one" }
+]

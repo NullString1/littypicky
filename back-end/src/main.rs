@@ -77,6 +77,8 @@ async fn main() -> anyhow::Result<()> {
     let oauth_state = Arc::new(handlers::OAuthHandlerState {
         oauth_service: oauth_service.clone(),
         auth_service: auth_service.clone(),
+        frontend_url: config.email.frontend_url.clone(),
+        redirect_url: config.oauth.google_redirect_uri.clone(),
         session_store: Arc::new(tokio::sync::RwLock::new(std::collections::HashMap::new())),
     });
 

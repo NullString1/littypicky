@@ -1,4 +1,4 @@
-use back_end::{auth, config, db, handlers, openapi::ApiDoc, rate_limit, services};
+use back_end::{auth, config, db, handlers, openapi::ApiDoc, services};
 
 use axum::{
     routing::{delete, get, patch, post, put},
@@ -99,17 +99,6 @@ async fn main() -> anyhow::Result<()> {
         .allow_origin(Any)
         .allow_methods(Any)
         .allow_headers(Any);
-
-
-    // Create per-endpoint rate limiters (more strict)
-    let _auth_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.auth_per_min);
-        rate_limit::create_rate_limiter_per_hour(config.rate_limit.reports_per_hour);
-        rate_limit::create_rate_limiter_per_hour(config.rate_limit.verifications_per_hour);
-    let _general_rate_limiter = rate_limit::create_rate_limiter(config.rate_limit.general_per_min);
-    let _email_verification_rate_limiter =
-        rate_limit::create_rate_limiter_per_hour(config.rate_limit.email_verification_per_hour);
-    let _password_reset_rate_limiter =
-        rate_limit::create_rate_limiter_per_hour(config.rate_limit.password_reset_per_hour);
 
     // Build routers - Rate limiting disabled in development
     let auth_routes = Router::new()
@@ -283,7 +272,6 @@ async fn main() -> anyhow::Result<()> {
     let mut app = app
         // Global layers
         .layer(TraceLayer::new_for_http())
-        .layer(CatchPanicLayer::new())
         .layer(cors);
     // Conditionally add test helper routes
     if config.enable_test_helpers {

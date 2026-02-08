@@ -59,6 +59,12 @@
       </a>
     </p>
   </div>
+  {#if fromRegister}
+    <div class="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm text-center w-lg mt-3 self-center">
+      Registration successful! Please check your email for verification instructions.
+    </div>
+  {/if}
+
 
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-slate-200">

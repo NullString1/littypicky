@@ -49,6 +49,7 @@
             }
 
             const comment: Comment = await response.json();
+            comment.author_name = $auth.user?.full_name || 'Unknown';
             comments = [...comments, comment];
             newCommentContent = '';
         } catch (e: any) {

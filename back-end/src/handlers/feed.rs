@@ -60,16 +60,11 @@ pub async fn create_post(
         FeedQueryParams
     ),
     responses(
-        (status = 200, description = "Returns paginated posts", body = Vec<crate::models::feed::FeedPostResponse>),
-        (status = 401, description = "Unauthorized")
-    ),
-    security(
-        ("bearer_auth" = [])
+        (status = 200, description = "Returns paginated posts", body = Vec<crate::models::feed::FeedPostResponse>)
     )
 )]
 pub async fn get_feed(
     State(state): State<Arc<FeedHandlerState>>,
-    _auth_user: AuthUser,
     Query(params): Query<FeedQueryParams>,
 ) -> Result<impl IntoResponse, AppError> {
     let posts = state
@@ -90,16 +85,11 @@ pub async fn get_feed(
     ),
     responses(
         (status = 200, description = "Returns the post", body = crate::models::feed::FeedPostResponse),
-        (status = 401, description = "Unauthorized"),
         (status = 404, description = "Post not found")
-    ),
-    security(
-        ("bearer_auth" = [])
     )
 )]
 pub async fn get_post(
     State(state): State<Arc<FeedHandlerState>>,
-    _auth_user: AuthUser,
     Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
     let post = state.feed_service.get_post(id).await?;
@@ -216,16 +206,11 @@ pub async fn create_comment(
     ),
     responses(
         (status = 200, description = "Returns comments", body = Vec<crate::models::feed::FeedCommentResponse>),
-        (status = 401, description = "Unauthorized"),
         (status = 404, description = "Post not found")
-    ),
-    security(
-        ("bearer_auth" = [])
     )
 )]
 pub async fn get_comments(
     State(state): State<Arc<FeedHandlerState>>,
-    _auth_user: AuthUser,
     Path(post_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
     let comments = state.feed_service.get_comments(post_id).await?;

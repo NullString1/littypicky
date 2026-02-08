@@ -187,19 +187,25 @@
 
     <!-- Add comment form -->
     <div class="mt-3 pt-3 border-t border-slate-200">
-        <textarea
-            bind:value={newCommentContent}
-            placeholder="Add a comment..."
-            class="w-full p-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-primary-300"
-            rows="2"
-            disabled={isSubmittingComment}
-        ></textarea>
-        <button
-            on:click={submitComment}
-            disabled={isSubmittingComment || !newCommentContent.trim()}
-            class="w-full mt-2 bg-primary-600 text-white font-medium py-1 px-3 rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-        >
-            {isSubmittingComment ? 'Posting...' : 'Comment'}
-        </button>
+        {#if $auth.isAuthenticated}
+            <textarea
+                bind:value={newCommentContent}
+                placeholder="Add a comment..."
+                class="w-full p-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-primary-300"
+                rows="2"
+                disabled={isSubmittingComment}
+            ></textarea>
+            <button
+                on:click={submitComment}
+                disabled={isSubmittingComment || !newCommentContent.trim()}
+                class="w-full mt-2 bg-primary-600 text-white font-medium py-1 px-3 rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+                {isSubmittingComment ? 'Posting...' : 'Comment'}
+            </button>
+        {:else}
+            <div class="text-sm text-slate-500 text-center py-2">
+                Sign in to add a comment
+            </div>
+        {/if}
     </div>
 </div>

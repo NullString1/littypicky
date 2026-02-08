@@ -268,6 +268,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/images/reports/{id}/after": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get report after photo
+         * @description GET /api/images/reports/:id/after
+         */
+        get: operations["get_report_after_photo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/images/reports/{id}/before": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get report before photo
+         * @description GET /api/images/reports/:id/before
+         */
+        get: operations["get_report_before_photo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/leaderboards": {
         parameters: {
             query?: never;
@@ -397,7 +437,7 @@ export interface paths {
         };
         /**
          * Get nearby reports
-         * @description GET /api/reports/nearby?latitude=X&longitude=Y&radius_km=Z
+         * @description GET /`api/reports/nearby?latitude=X&longitude=Y&radius_km=Z`
          */
         get: operations["get_nearby_reports"];
         put?: never;
@@ -508,6 +548,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/test/cleanup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Clean up all test data for a specific user
+         * @description Deletes the user and all associated data (reports, verifications, etc.)
+         *
+         *     **WARNING: This endpoint should ONLY be enabled in test/development environments**
+         */
+        delete: operations["cleanup_test_data"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/test/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the current test environment status */
+        get: operations["test_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/test/verify-email/{email}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify an email address for testing purposes
+         * @description This bypasses the normal email verification flow
+         *
+         *     **WARNING: This endpoint should ONLY be enabled in test/development environments**
+         */
+        post: operations["verify_email_for_testing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users/me": {
         parameters: {
             query?: never;
@@ -597,6 +698,9 @@ export interface components {
             /** @example false */
             is_active: boolean;
         };
+        CleanupRequest: {
+            email: string;
+        };
         ClearReportRequest: {
             /** @example data:image/jpeg;base64,... */
             photo_base64: string;
@@ -659,7 +763,7 @@ export interface components {
             page?: number | null;
         };
         LitterReport: {
-            city: string;
+            city?: string | null;
             /** Format: date-time */
             claimed_at?: string | null;
             /** Format: uuid */
@@ -668,7 +772,7 @@ export interface components {
             cleared_at?: string | null;
             /** Format: uuid */
             cleared_by?: string | null;
-            country: string;
+            country?: string | null;
             /** Format: date-time */
             created_at: string;
             description?: string | null;
@@ -679,7 +783,7 @@ export interface components {
             /** Format: double */
             longitude: number;
             photo_after?: string | null;
-            photo_before: string;
+            photo_before?: string | null;
             /** Format: uuid */
             reporter_id: string;
             status: components["schemas"]["ReportStatus"];
@@ -722,7 +826,7 @@ export interface components {
             password: string;
         };
         ReportResponse: {
-            city: string;
+            city?: string | null;
             /** Format: date-time */
             claimed_at?: string | null;
             /** Format: uuid */
@@ -731,7 +835,7 @@ export interface components {
             cleared_at?: string | null;
             /** Format: uuid */
             cleared_by?: string | null;
-            country: string;
+            country?: string | null;
             /** Format: date-time */
             created_at: string;
             description?: string | null;
@@ -742,7 +846,7 @@ export interface components {
             /** Format: double */
             longitude: number;
             photo_after?: string | null;
-            photo_before: string;
+            photo_before?: string | null;
             /** Format: uuid */
             reporter_id: string;
             status: components["schemas"]["ReportStatus"];
@@ -784,6 +888,10 @@ export interface components {
             total_points: number;
             /** Format: uuid */
             user_id: string;
+        };
+        TestHelperResponse: {
+            message: string;
+            success: boolean;
         };
         UpdateUserRequest: {
             /** @example Manchester */
@@ -1381,6 +1489,62 @@ export interface operations {
             };
         };
     };
+    get_report_after_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Report ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Returns image */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Report or image not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_report_before_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Report ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Returns image */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Report or image not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     get_global_leaderboard: {
         parameters: {
             query?: {
@@ -1747,6 +1911,92 @@ export interface operations {
             };
             /** @description Report not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    cleanup_test_data: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CleanupRequest"];
+            };
+        };
+        responses: {
+            /** @description Test data cleaned up successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestHelperResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    test_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Test helpers are enabled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    verify_email_for_testing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Email address to verify */
+                email: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Email verified successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestHelperResponse"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Internal server error */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };

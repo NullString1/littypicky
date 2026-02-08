@@ -8,14 +8,13 @@
   let period: 'weekly' | 'monthly' | 'all_time' = 'weekly';
   let loading = true;
   let error = '';
-  let activeTab: 'leaderboard' | 'feed' = 'leaderboard';
+    let activeTab: 'leaderboard' | 'feed' = 'feed';
 
   async function loadLeaderboard() {
     loading = true;
     error = '';
     try {
-        if (!$auth.token) return;
-        const data = await api.leaderboards.getGlobal(period, $auth.token);
+        const data = await api.leaderboards.getGlobal(period, $auth.token ?? undefined);
         entries = data;
     } catch (e: any) {
         error = e.message || 'Failed to load leaderboard';
@@ -29,14 +28,13 @@
       loadLeaderboard();
   }
 
-  onMount(() => {
-      loadLeaderboard();
-  });
+    onMount(() => {
+            loadLeaderboard();
+    });
 </script>
 
 <div class="bg-slate-50 min-h-full py-8">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-    
     <div class="md:flex md:items-center md:justify-between mb-8">
       <div class="flex-1 min-w-0">
         <h2 class="text-2xl font-bold leading-7 text-slate-900 sm:text-3xl sm:truncate">
@@ -48,7 +46,6 @@
       </div>
     </div>
 
-    <!-- Tabs -->
     <div class="mb-6 border-b border-slate-200">
         <div class="flex -mb-px">
             <button
@@ -75,7 +72,6 @@
     </div>
 
     {#if activeTab === 'leaderboard'}
-        <!-- Leaderboard Toggles and Content -->
         <div class="md:flex md:items-center md:justify-end mb-8">
           <div class="mt-4 flex md:mt-0 bg-white rounded-lg p-1 shadow-sm border border-slate-200">
             <button 
@@ -116,11 +112,11 @@
         {:else}
             <div class="bg-white shadow overflow-hidden sm:rounded-lg border border-slate-200">
                 <ul class="divide-y divide-slate-200">
-                    {#each entries as entry, i}
+                    {#each entries as entry}
                         <li class="px-4 py-4 sm:px-6 hover:bg-slate-50 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center min-w-0 gap-4">
-                                    <div class={`shrink-0 w-8 h-8 flex items-center justify-center font-bold text-lg ${i < 3 ? 'text-yellow-500' : 'text-slate-400'}`}>
+                                    <div class="shrink-0 w-8 h-8 flex items-center justify-center font-bold text-lg text-slate-400">
                                         #{entry.rank}
                                     </div>
                                     <div class="shrink-0">
@@ -156,4 +152,3 @@
     {/if}
   </div>
 </div>
-

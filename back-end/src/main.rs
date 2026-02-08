@@ -186,12 +186,7 @@ async fn main() -> anyhow::Result<()> {
             "/api/leaderboards/country/:country",
             get(handlers::get_country_leaderboard),
         )
-        .with_state(leaderboard_state)
-        //.layer(general_rate_limiter.clone()) // Disabled
-        .route_layer(axum::middleware::from_fn_with_state(
-            jwt_service.clone(),
-            auth::middleware::require_auth,
-        ));
+        .with_state(leaderboard_state);
 
     // Admin routes (authenticated + admin role required)
     let admin_routes = Router::new()
@@ -222,15 +217,19 @@ async fn main() -> anyhow::Result<()> {
 
     // Test helper routes (only enabled in test/dev environments)
     
-    // Feed routes (authenticated)
-    let feed_routes = Router::new()
-        .route("/api/feed", post(handlers::create_post))
+    // Feed routes (public read)
+    let feed_public_routes = Router::new()
         .route("/api/feed", get(handlers::get_feed))
         .route("/api/feed/:id", get(handlers::get_post))
+        .route("/api/feed/:post_id/comments", get(handlers::get_comments))
+        .with_state(feed_state.clone());
+
+    // Feed routes (authenticated write)
+    let feed_routes = Router::new()
+        .route("/api/feed", post(handlers::create_post))
         .route("/api/feed/:id", patch(handlers::update_post))
         .route("/api/feed/:id", delete(handlers::delete_post))
         .route("/api/feed/:post_id/comments", post(handlers::create_comment))
-        .route("/api/feed/:post_id/comments", get(handlers::get_comments))
         .route(
             "/api/feed/comments/:comment_id",
             patch(handlers::update_comment),
@@ -265,6 +264,7 @@ async fn main() -> anyhow::Result<()> {
         .merge(leaderboard_routes)
         .merge(admin_routes)
         .merge(image_routes)
+        .merge(feed_public_routes)
         .merge(feed_routes);
 
     let mut app = app

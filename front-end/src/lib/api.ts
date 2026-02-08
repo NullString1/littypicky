@@ -72,17 +72,16 @@ async function request<T>(
     const response = await fetch(`${API_BASE}${path}`, options);
 
     if (response.status === 401) {
-        // Prevent infinite loop for refresh endpoint or login
         if (path === '/auth/refresh' || path === '/auth/login') {
-             throw new ApiError('Unauthorized', 401);
+            throw new ApiError('Unauthorized', 401);
         }
 
         const state = get(auth);
         const refreshToken = state.refreshToken;
-        
+        const hasAuthContext = Boolean(currentToken || refreshToken);
+
         if (refreshToken) {
             try {
-                // Try to refresh the token
                 const refreshResponse = await fetch(`${API_BASE}/auth/refresh`, {
                     method: 'POST',
                     headers: {
@@ -93,29 +92,27 @@ async function request<T>(
 
                 if (refreshResponse.ok) {
                     const data = await refreshResponse.json();
-                    // Update store with new access token (and refresh token if rotated)
-                    // Note: API might not return a new refresh token, so keep the old one if needed
                     const newAccessToken = data.access_token;
                     const newRefreshToken = data.refresh_token || refreshToken;
-                    
+
                     auth.updateTokens(newAccessToken, newRefreshToken);
-                    
-                    // Retry original request with new token
+
                     return request<T>(method, path, body, newAccessToken);
-                } else {
-                    // Refresh failed (e.g. refresh token expired)
-                    auth.logout();
-                    throw new ApiError('Session expired', 401);
                 }
+
+                auth.logout();
+                throw new ApiError('Session expired', 401);
             } catch (e) {
-                // Network error or other issue during refresh
                 auth.logout();
                 throw e;
             }
-        } else {
-             // No refresh token available
-             auth.logout();
         }
+
+        if (hasAuthContext) {
+            auth.logout();
+        }
+
+        throw new ApiError('Unauthorized', 401);
     }
 
     if (!response.ok) {
@@ -139,9 +136,7 @@ async function request<T>(
             }
         }
         throw new ApiError(errorMessage, response.status);
-    }
-
-    // Handle 204 No Content
+    }                        
     if (response.status === 204) {
         return {} as T;
     }
@@ -182,9 +177,9 @@ export const api = {
         getVerifications: (id: string, token: string) => request<VerificationResponse[]>('GET', `/reports/${id}/verifications`, undefined, token),
     },
     leaderboards: {
-        getGlobal: (period: string = 'weekly', token: string) => request<LeaderboardEntry[]>('GET', `/leaderboards?period=${period}`, undefined, token),
-        getCity: (city: string, period: string = 'weekly', token: string) => request<LeaderboardEntry[]>('GET', `/leaderboards/city/${city}?period=${period}`, undefined, token),
-        getCountry: (country: string, period: string = 'weekly', token: string) => request<LeaderboardEntry[]>('GET', `/leaderboards/country/${country}?period=${period}`, undefined, token),
+        getGlobal: (period: string = 'weekly', token?: string) => request<LeaderboardEntry[]>('GET', `/leaderboards?period=${period}`, undefined, token),
+        getCity: (city: string, period: string = 'weekly', token?: string) => request<LeaderboardEntry[]>('GET', `/leaderboards/city/${city}?period=${period}`, undefined, token),
+        getCountry: (country: string, period: string = 'weekly', token?: string) => request<LeaderboardEntry[]>('GET', `/leaderboards/country/${country}?period=${period}`, undefined, token),
     },
     feed: {
         getAll: (offset: number = 0, limit: number = 20, token?: string) => 

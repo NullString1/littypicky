@@ -161,10 +161,11 @@
     ></textarea>
 
     <div class="mt-4">
-        <label class="block text-sm font-medium text-slate-700 mb-2">
+        <label class="block text-sm font-medium text-slate-700 mb-2" for="file-upload">
             Add Photos (Optional)
         </label>
         <input
+            id="file-upload"
             type="file"
             multiple
             accept="image/*"

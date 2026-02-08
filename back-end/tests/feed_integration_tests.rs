@@ -14,7 +14,7 @@ use helpers::create_test_app;
 // Helper to create a test user and get auth token
 async fn create_user_and_get_token(app: &mut axum::Router, email: &str) -> (Uuid, String) {
     // Register user
-    let register_response = app
+    let _register_response = app
         .clone()
         .oneshot(
             Request::builder()
@@ -76,7 +76,7 @@ async fn create_user_and_get_token(app: &mut axum::Router, email: &str) -> (Uuid
 #[tokio::test]
 async fn test_create_post_success() {
     let mut app = create_test_app().await;
-    let (user_id, token) = create_user_and_get_token(&mut app, "user1@test.com").await;
+    let (_user_id, token) = create_user_and_get_token(&mut app, "user1@test.com").await;
 
     let response = app
         .clone()

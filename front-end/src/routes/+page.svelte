@@ -20,8 +20,8 @@
           <a href="/auth/register" class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 sm:text-base">
             Get Started
           </a>
-          <a href="/app/feed" class="inline-flex items-center justify-center px-6 py-2.5 border border-primary-200 text-sm font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 sm:text-base">
-            View Feed
+          <a href="/community" class="inline-flex items-center justify-center px-6 py-2.5 border border-primary-200 text-sm font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 sm:text-base">
+            Explore Community
           </a>
         </div>
         <div class="mt-8 grid grid-cols-3 gap-3 text-center sm:text-left">

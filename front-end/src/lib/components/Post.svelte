@@ -148,7 +148,7 @@
     <div class="flex justify-around border-t border-slate-200 pt-3">
         <button
             on:click={toggleLike}
-            disabled={isLoadingLike}
+            disabled={isLoadingLike || !$auth.isAuthenticated}
             class="flex items-center gap-1 text-slate-500 hover:text-primary-600 font-medium text-sm py-1 px-3 rounded-md transition-colors disabled:opacity-50"
         >
             {isLiked ? '❤️' : '🤍'} {post.like_count}

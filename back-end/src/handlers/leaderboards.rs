@@ -1,4 +1,3 @@
-use crate::auth::middleware::AuthUser;
 use crate::error::AppError;
 use crate::models::score::LeaderboardEntry;
 use axum::{
@@ -34,14 +33,10 @@ pub struct LeaderboardQuery {
     ),
     responses(
         (status = 200, description = "Returns leaderboard", body = Vec<LeaderboardEntry>)
-    ),
-    security(
-        ("bearer_auth" = [])
     )
 )]
 pub async fn get_global_leaderboard(
     State(state): State<Arc<LeaderboardHandlerState>>,
-    _auth_user: AuthUser,
     Query(query): Query<LeaderboardQuery>,
 ) -> Result<impl IntoResponse, AppError> {
     let leaderboard = get_leaderboard(&state.pool, None, None, query.period).await?;
@@ -60,14 +55,10 @@ pub async fn get_global_leaderboard(
     ),
     responses(
         (status = 200, description = "Returns city leaderboard", body = Vec<LeaderboardEntry>)
-    ),
-    security(
-        ("bearer_auth" = [])
     )
 )]
 pub async fn get_city_leaderboard(
     State(state): State<Arc<LeaderboardHandlerState>>,
-    _auth_user: AuthUser,
     Path(city): Path<String>,
     Query(query): Query<LeaderboardQuery>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -87,14 +78,10 @@ pub async fn get_city_leaderboard(
     ),
     responses(
         (status = 200, description = "Returns country leaderboard", body = Vec<LeaderboardEntry>)
-    ),
-    security(
-        ("bearer_auth" = [])
     )
 )]
 pub async fn get_country_leaderboard(
     State(state): State<Arc<LeaderboardHandlerState>>,
-    _auth_user: AuthUser,
     Path(country): Path<String>,
     Query(query): Query<LeaderboardQuery>,
 ) -> Result<impl IntoResponse, AppError> {

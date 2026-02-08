@@ -66,7 +66,6 @@ utoipa-swagger-ui = { version = "6", features = ["axum"] }
 
 # HTTP Client (for OAuth)
 reqwest = { version = "0.11", features = ["json"] }
-cargo-watch = "8.5.3"
 
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }

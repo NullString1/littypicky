@@ -550,6 +550,66 @@
         }
       }
     },
+    "/api/images/reports/{id}/after": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "Get report after photo",
+        "description": "GET /api/images/reports/:id/after",
+        "operationId": "get_report_after_photo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Report ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns image"
+          },
+          "404": {
+            "description": "Report or image not found"
+          }
+        }
+      }
+    },
+    "/api/images/reports/{id}/before": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "Get report before photo",
+        "description": "GET /api/images/reports/:id/before",
+        "operationId": "get_report_before_photo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Report ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns image"
+          },
+          "404": {
+            "description": "Report or image not found"
+          }
+        }
+      }
+    },
     "/api/leaderboards": {
       "get": {
         "tags": [
@@ -803,7 +863,7 @@
           "Reports"
         ],
         "summary": "Get nearby reports",
-        "description": "GET /api/reports/nearby?latitude=X&longitude=Y&radius_km=Z",
+        "description": "GET /`api/reports/nearby?latitude=X&longitude=Y&radius_km=Z`",
         "operationId": "get_nearby_reports",
         "parameters": [
           {
@@ -1110,6 +1170,94 @@
         ]
       }
     },
+    "/api/test/cleanup": {
+      "delete": {
+        "tags": [
+          "test-helpers"
+        ],
+        "summary": "Clean up all test data for a specific user",
+        "description": "Deletes the user and all associated data (reports, verifications, etc.)\n\n**WARNING: This endpoint should ONLY be enabled in test/development environments**",
+        "operationId": "cleanup_test_data",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CleanupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Test data cleaned up successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestHelperResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/test/status": {
+      "get": {
+        "tags": [
+          "test-helpers"
+        ],
+        "summary": "Get the current test environment status",
+        "operationId": "test_status",
+        "responses": {
+          "200": {
+            "description": "Test helpers are enabled"
+          }
+        }
+      }
+    },
+    "/api/test/verify-email/{email}": {
+      "post": {
+        "tags": [
+          "test-helpers"
+        ],
+        "summary": "Verify an email address for testing purposes",
+        "description": "This bypasses the normal email verification flow\n\n**WARNING: This endpoint should ONLY be enabled in test/development environments**",
+        "operationId": "verify_email_for_testing",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "Email address to verify",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Email verified successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestHelperResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/users/me": {
       "get": {
         "tags": [
@@ -1321,6 +1469,17 @@
           }
         }
       },
+      "CleanupRequest": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
       "ClearReportRequest": {
         "type": "object",
         "required": [
@@ -1469,16 +1628,14 @@
           "reporter_id",
           "latitude",
           "longitude",
-          "photo_before",
           "status",
-          "city",
-          "country",
           "created_at",
           "updated_at"
         ],
         "properties": {
           "city": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "claimed_at": {
             "type": "string",
@@ -1501,7 +1658,8 @@
             "nullable": true
           },
           "country": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "created_at": {
             "type": "string",
@@ -1528,7 +1686,8 @@
             "nullable": true
           },
           "photo_before": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "reporter_id": {
             "type": "string",
@@ -1649,16 +1808,14 @@
           "reporter_id",
           "latitude",
           "longitude",
-          "photo_before",
           "status",
-          "city",
-          "country",
           "created_at",
           "updated_at"
         ],
         "properties": {
           "city": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "claimed_at": {
             "type": "string",
@@ -1681,7 +1838,8 @@
             "nullable": true
           },
           "country": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "created_at": {
             "type": "string",
@@ -1708,7 +1866,8 @@
             "nullable": true
           },
           "photo_before": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "reporter_id": {
             "type": "string",
@@ -1826,6 +1985,21 @@
           "user_id": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "TestHelperResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
           }
         }
       },
@@ -2161,6 +2335,10 @@
       "description": "Litter report management"
     },
     {
+      "name": "Images",
+      "description": "Image serving endpoints"
+    },
+    {
       "name": "Verifications",
       "description": "Report verification"
     },
@@ -2171,6 +2349,10 @@
     {
       "name": "Admin",
       "description": "Administrative endpoints (admin role required)"
+    },
+    {
+      "name": "test-helpers",
+      "description": "Test helper endpoints (TESTING ONLY - DO NOT USE IN PRODUCTION)"
     }
   ]
 }

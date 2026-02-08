@@ -48,8 +48,8 @@
         {#if $auth.isAuthenticated}
         <a href="/app/feed" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Feed</a>
         <a href="/app/verify" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Verify</a>
-        <a href="/community" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Community</a>
         {/if}
+        <a href="/community" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Community</a>
       </nav>
 
       <!-- Actions -->
@@ -95,9 +95,9 @@
         <span class="text-slate-500 font-semibold text-sm">LittyPicky © 2026</span>
       </div>
       <div class="flex gap-6 text-sm text-slate-500">
-        <a href="#" class="hover:text-slate-900">Privacy</a>
-        <a href="#" class="hover:text-slate-900">Terms</a>
-        <a href="#" class="hover:text-slate-900">About</a>
+        <a href="/privacy" class="hover:text-slate-900">Privacy</a>
+        <a href="/terms" class="hover:text-slate-900">Terms</a>
+        <a href="/about" class="hover:text-slate-900">About</a>
       </div>
     </div>
   </footer>

@@ -39,10 +39,13 @@
         error = '';
 
         try {
+            const headers: Record<string, string> = {};
+            if ($auth.token) {
+                headers['Authorization'] = `Bearer ${$auth.token}`;
+            }
+
             const response = await fetch(`/api/feed?offset=${offset}&limit=${limit}`, {
-                headers: {
-                    'Authorization': `Bearer ${$auth.token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
@@ -113,7 +116,9 @@
 </script>
 
 <div class="max-w-3xl mx-auto px-4">
-    <PostForm />
+    {#if $auth.isAuthenticated}
+        <PostForm />
+    {/if}
 
     {#if error}
         <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-6">

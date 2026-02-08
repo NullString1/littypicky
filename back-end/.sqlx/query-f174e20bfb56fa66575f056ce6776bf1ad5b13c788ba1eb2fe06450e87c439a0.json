@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM report_verifications WHERE verifier_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f174e20bfb56fa66575f056ce6776bf1ad5b13c788ba1eb2fe06450e87c439a0"
+}

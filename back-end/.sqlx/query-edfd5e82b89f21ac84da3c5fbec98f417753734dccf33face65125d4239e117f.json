@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM litter_reports WHERE reporter_id = $1 OR cleared_by = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "edfd5e82b89f21ac84da3c5fbec98f417753734dccf33face65125d4239e117f"
+}

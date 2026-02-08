@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE litter_reports SET status = $1 WHERE id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "report_status",
+            "kind": {
+              "Enum": [
+                "pending",
+                "claimed",
+                "cleared",
+                "verified"
+              ]
+            }
+          }
+        },
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a7cb6407d3b8f355ac477f765494e42b2f9ef3c8112571da3f962259309e7e6e"
+}

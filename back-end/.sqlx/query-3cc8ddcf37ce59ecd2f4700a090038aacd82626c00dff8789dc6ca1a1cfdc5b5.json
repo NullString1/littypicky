@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT \n                    u.id as user_id,\n                    u.full_name,\n                    u.city,\n                    u.country,\n                    us.total_points,\n                    us.total_clears as \"reports_cleared!\",\n                    us.current_streak,\n                    ROW_NUMBER() OVER (ORDER BY us.total_points DESC) as \"rank!\"\n                FROM users u\n                INNER JOIN user_scores us ON u.id = us.user_id\n                WHERE u.country = $1 AND us.total_clears > 0\n                ORDER BY us.total_points DESC\n                LIMIT 20\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "full_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "city",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "country",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "total_points",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "reports_cleared!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "current_streak",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "rank!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "3cc8ddcf37ce59ecd2f4700a090038aacd82626c00dff8789dc6ca1a1cfdc5b5"
+}

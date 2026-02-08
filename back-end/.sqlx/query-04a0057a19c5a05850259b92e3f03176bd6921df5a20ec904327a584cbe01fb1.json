@@ -1,0 +1,116 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT id, email, password_hash, full_name, city, country,\n               search_radius_km, role as \"role: UserRole\", is_active,\n               email_verified, email_verified_at, oauth_provider,\n               oauth_subject, created_at, updated_at\n        FROM users\n        WHERE id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "email",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "password_hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "full_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "city",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "country",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "search_radius_km",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "role: UserRole",
+        "type_info": {
+          "Custom": {
+            "name": "user_role",
+            "kind": {
+              "Enum": [
+                "user",
+                "admin"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "is_active",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 9,
+        "name": "email_verified",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 10,
+        "name": "email_verified_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "oauth_provider",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 12,
+        "name": "oauth_subject",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 13,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "04a0057a19c5a05850259b92e3f03176bd6921df5a20ec904327a584cbe01fb1"
+}

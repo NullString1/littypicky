@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT COUNT(*)\n            FROM litter_reports\n            WHERE cleared_by IS NOT NULL\n              AND cleared_at > $1\n              AND ST_DWithin(\n                                    location::geography,\n                                    ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography,\n                                    $4\n              )\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Float8",
+        "Float8",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "0482caaf5aab1c8a80e05c4705a5775de977122bc9af72c30fd5932c4950e7c5"
+}

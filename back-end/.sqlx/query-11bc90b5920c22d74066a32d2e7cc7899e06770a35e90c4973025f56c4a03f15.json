@@ -1,0 +1,93 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE user_scores\n            SET total_points = $1,\n                reports_cleared = $2,\n                current_streak = $3,\n                longest_streak = $4,\n                last_cleared_date = $5,\n                total_reports = total_reports,\n                total_clears = total_clears + 1,\n                total_verifications = total_verifications\n            WHERE user_id = $6\n            RETURNING id, user_id, total_points, reports_cleared,\n                      current_streak, longest_streak, last_cleared_date,\n                      total_reports, total_clears, total_verifications,\n                      created_at, updated_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "total_points",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "reports_cleared",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "current_streak",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "longest_streak",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "last_cleared_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 7,
+        "name": "total_reports",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "total_clears",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "total_verifications",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 10,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Date",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "11bc90b5920c22d74066a32d2e7cc7899e06770a35e90c4973025f56c4a03f15"
+}

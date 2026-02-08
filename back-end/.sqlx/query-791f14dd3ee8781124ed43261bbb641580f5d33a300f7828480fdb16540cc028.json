@@ -1,0 +1,124 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                id, reporter_id, latitude, longitude, description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, city, country, created_at, updated_at\n            FROM litter_reports\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "reporter_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "latitude",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "longitude",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 4,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "photo_before",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "status: ReportStatus",
+        "type_info": {
+          "Custom": {
+            "name": "report_status",
+            "kind": {
+              "Enum": [
+                "pending",
+                "claimed",
+                "cleared",
+                "verified"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "claimed_by",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 8,
+        "name": "claimed_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "cleared_by",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 10,
+        "name": "cleared_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "photo_after",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 12,
+        "name": "city",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 13,
+        "name": "country",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 14,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 15,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "791f14dd3ee8781124ed43261bbb641580f5d33a300f7828480fdb16540cc028"
+}

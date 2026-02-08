@@ -1,0 +1,55 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO report_verifications (report_id, verifier_id, is_verified, comment)\n        VALUES ($1, $2, $3, $4)\n        RETURNING id, report_id, verifier_id, is_verified, comment, created_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "report_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "verifier_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 3,
+        "name": "is_verified",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "comment",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Bool",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "6b136591812aca898b66a467fc031de49bf55b668def827fc4b3c6f869440061"
+}

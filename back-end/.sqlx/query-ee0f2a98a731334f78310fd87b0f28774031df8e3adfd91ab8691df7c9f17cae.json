@@ -1,0 +1,88 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, user_id, total_points, reports_cleared,\n                   current_streak, longest_streak, last_cleared_date,\n                   total_reports, total_clears, total_verifications,\n                   created_at, updated_at\n            FROM user_scores\n            WHERE user_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "total_points",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "reports_cleared",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "current_streak",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "longest_streak",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "last_cleared_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 7,
+        "name": "total_reports",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "total_clears",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "total_verifications",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 10,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ee0f2a98a731334f78310fd87b0f28774031df8e3adfd91ab8691df7c9f17cae"
+}

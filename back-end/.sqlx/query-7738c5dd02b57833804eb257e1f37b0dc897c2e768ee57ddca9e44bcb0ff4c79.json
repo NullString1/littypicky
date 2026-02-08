@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE feed_posts SET comment_count = comment_count + 1 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7738c5dd02b57833804eb257e1f37b0dc897c2e768ee57ddca9e44bcb0ff4c79"
+}

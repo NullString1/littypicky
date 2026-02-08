@@ -120,12 +120,23 @@ async function request<T>(
 
     if (!response.ok) {
         let errorMessage = 'An unknown error occurred';
-        try {
-            const errorData = await response.json();
-             // Adjust based on how backend sends errors, assuming usually a message field or string
-            errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
-        } catch {
-            errorMessage = response.statusText;
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            try {
+                const errorData = await response.json();
+                const baseMessage = errorData.message || errorData.error || JSON.stringify(errorData);
+                const errorId = errorData.error_id ? ` (${errorData.error_id})` : '';
+                errorMessage = `${baseMessage}${errorId}`;
+            } catch {
+                errorMessage = response.statusText;
+            }
+        } else {
+            try {
+                const text = await response.text();
+                errorMessage = text || response.statusText;
+            } catch {
+                errorMessage = response.statusText;
+            }
         }
         throw new ApiError(errorMessage, response.status);
     }

@@ -46,6 +46,9 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let error_id = Uuid::new_v4();
+        let include_details = std::env::var("DEBUG_ERRORS")
+            .map(|value| value == "true" || value == "1")
+            .unwrap_or(false);
 
         let (status, error_message) = match self {
             AppError::Database(ref e) => {
@@ -53,7 +56,11 @@ impl IntoResponse for AppError {
                 eprintln!("DATABASE ERROR: {:?}", e);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Database error occurred (error_id: {})", error_id),
+                    if include_details {
+                        format!("Database error: {e}")
+                    } else {
+                        format!("Database error occurred (error_id: {})", error_id)
+                    },
                 )
             }
             AppError::Auth(ref msg) => {
@@ -80,14 +87,22 @@ impl IntoResponse for AppError {
                 tracing::error!(%error_id, "Internal error: {:?}", e);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    "Internal server error".to_string(),
+                    if include_details {
+                        format!("Internal server error: {e}")
+                    } else {
+                        "Internal server error".to_string()
+                    },
                 )
             }
             AppError::Email(ref msg) => {
                 tracing::error!(%error_id, "Email error: {}", msg);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    "Email service error".to_string(),
+                    if include_details {
+                        format!("Email service error: {msg}")
+                    } else {
+                        "Email service error".to_string()
+                    },
                 )
             }
             AppError::Image(ref msg) => {

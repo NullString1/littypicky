@@ -45,9 +45,11 @@
 
       <!-- Desktop Nav -->
       <nav class="hidden md:flex items-center gap-8">
+        {#if $auth.isAuthenticated}
         <a href="/app/feed" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Feed</a>
         <a href="/app/verify" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Verify</a>
         <a href="/community" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Community</a>
+        {/if}
       </nav>
 
       <!-- Actions -->
@@ -57,15 +59,17 @@
               <span>Report Litter</span>
             </a>
             <div class="relative">
-                <button on:click={() => {
+                <button onclick={() => {
                     const dropdown = document.getElementById('profile-dropdown');
                     dropdown?.classList.toggle('hidden');
                 }} class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors">
-                    <span class="text-xs font-bold">ME</span>
+                    <span class="text-xs font-bold">
+                      {$auth.user?.full_name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() ?? $auth.user?.email?.substring(0, 2).toUpperCase() ?? 'U'}
+                    </span>
                 </button>
                 <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                     <a href="/profile/me" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">My Profile</a>
-                    <button on:click={() => auth.logout()} class="w-full text-left block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
+                    <button onclick={() => auth.logout()} class="w-full text-left block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
                         Sign out
                     </button>
                 </div>

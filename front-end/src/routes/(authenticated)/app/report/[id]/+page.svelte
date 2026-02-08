@@ -250,7 +250,7 @@
       </div>
 
       <!-- Actions based on status -->
-      {#if report.status === 'pending'}
+      {#if report.status === 'pending' && report.reporter_id !== $auth.user?.id}
         <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
           <h2 class="text-xl font-bold text-slate-900 mb-4">Claim This Report</h2>
           <p class="text-slate-600 mb-4">Be the first to clean up this area! Claim this report to let others know you're on it.</p>

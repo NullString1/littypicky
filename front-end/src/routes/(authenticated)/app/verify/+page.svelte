@@ -7,6 +7,8 @@
   let loading = true;
   let error = '';
   let userLocation: { lat: number; lng: number } | null = null;
+    let toastMessage = '';
+    let showToast = false;
 
   async function loadQueue() {
     loading = true;
@@ -52,7 +54,7 @@
     }
   });
 
-  async function handleVerify(id: string, decision: 'accept' | 'deny') {
+    async function handleVerify(id: string, decision: 'accept' | 'deny') {
     if (!$auth.token) return;
     
     // Optimistic update
@@ -63,8 +65,13 @@
             is_verified: decision === 'accept',
             comment: decision === 'accept' ? 'Verified by community' : 'Rejected by community'
         }, $auth.token);
-        
-        // alert(`Claim ${decision === 'accept' ? 'ACCEPTED' : 'DENIED'}. Points updated!`);
+        if (decision === 'accept') {
+            toastMessage = 'Thanks for verifying!';
+            showToast = true;
+            setTimeout(() => {
+                showToast = false;
+            }, 2500);
+        }
     } catch (e: any) {
         alert(`Failed to submit verification: ${e.message}`);
         // Reload on error
@@ -75,6 +82,11 @@
 
 <div class="bg-slate-50 min-h-full py-8">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {#if showToast}
+            <div class="fixed top-20 right-6 z-50 rounded-md bg-green-600 text-white px-4 py-3 shadow-lg">
+                {toastMessage}
+            </div>
+        {/if}
     
     <div class="md:flex md:items-center md:justify-between mb-8">
       <div class="flex-1 min-w-0">

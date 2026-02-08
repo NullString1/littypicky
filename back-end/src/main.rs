@@ -1,8 +1,7 @@
 use back_end::{auth, config, db, handlers, openapi::ApiDoc, services};
 
 use axum::{
-    routing::{delete, get, patch, post, put},
-    Router,
+    Router, extract::DefaultBodyLimit, routing::{delete, get, patch, post, put}
 };
 use std::sync::Arc;
 use tower_http::{
@@ -271,6 +270,7 @@ async fn main() -> anyhow::Result<()> {
     let mut app = app
         // Global layers
         .layer(TraceLayer::new_for_http())
+        .layer(DefaultBodyLimit::disable()) // Disable default 10MB limit - we handle this in the image service
         .layer(cors);
     // Conditionally add test helper routes
     if config.enable_test_helpers {

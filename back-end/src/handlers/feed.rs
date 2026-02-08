@@ -45,6 +45,7 @@ pub async fn create_post(
     auth_user: AuthUser,
     Json(request): Json<CreateFeedPostRequest>,
 ) -> Result<impl IntoResponse, AppError> {
+    println!("Creating post for user_id: {}, content: {}, images: {:?}", auth_user.id, request.content, request.images);
     let post = state.feed_service.create_post(auth_user.id, request).await?;
     Ok((StatusCode::CREATED, Json(post)))
 }

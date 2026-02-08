@@ -4,7 +4,7 @@ const config = {
 	kit: {
 		adapter: adapter({
 			routes: {
-					exclude: ['/api/*'] 
+				exclude: ['/api', '/api/*']
 			}
 		})
 	}

@@ -20,8 +20,8 @@ See it live: <br>
 ### Backend
 Built with performance and reliability in mind using **Rust**.
 - **Framework:** Axum (High-performance async web framework)
-- **Database:** PostgreSQL (Data persistence for users, reports, and feeds)
-- **Storage:** AWS S3 compatible object storage for image assets.
+- **Database:** Postgis (Data persistence for users, reports, and feeds)
+- **Storage:** AWS S3 compatible object storage for image assets (Minio).
 - **Authentication:** Secure user authentication using JWT, Argon2, and OAuth2/OpenID Connect.
 - **Documentation:** Auto-generated OpenAPI/Swagger documentation.
 

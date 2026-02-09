@@ -51,9 +51,9 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose-ci.override.yml up -d --wait
 
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: '18'
+          node-version: 'latest'
           cache: 'npm'
 
       - name: Cache Playwright Browsers

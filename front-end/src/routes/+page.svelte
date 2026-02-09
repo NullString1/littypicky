@@ -1,5 +1,8 @@
 <svelte:head>
   <title>LittyPicky - Clean the World</title>
+  <meta name="description" content="Join the global community of litter pickers. Report messy spots, clean them up, earn points, and make your neighborhood shine." />
+  <link rel="canonical" href="https://littypicky.nullstring.one/" />
+  <meta name="keywords" content="litter picking, community cleanup, environmental action, local impact, global momentum, eco, environment, sustainability, app, report litter" />
 </svelte:head>
 
 <div class="relative bg-slate-900">

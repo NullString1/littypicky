@@ -46,10 +46,16 @@
     }
   }
 
-  onMount(async () => {
-    // Get user location with fallback
-    userLocation = await getCurrentLocation();
-    await loadReports();
+  onMount(() => {
+    if (!userLocation) {
+      userLocation = { lat: 51.5074, lng: -0.1278 };
+      loadReports();
+    }
+
+    getCurrentLocation().then((coords) => {
+      userLocation = coords;
+      loadReports();
+    });
   });
 </script>
 
@@ -121,7 +127,7 @@
                 </div>
                 
                 <h3 class="text-lg leading-6 font-bold text-slate-900 mb-1">
-                  {report.city}
+                  {report.latitude.toFixed(4)}, {report.longitude.toFixed(4)}
                 </h3>
                 <p class="text-sm text-slate-500 line-clamp-2 mb-4">
                   {report.description || 'No description provided.'}

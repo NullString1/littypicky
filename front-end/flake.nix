@@ -24,13 +24,14 @@
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             nodejs
-            pkgs.playwright-driver.browsers
-            ];
-            env = {
-              PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
-              PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
-              PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu-24.04";
-            };
+            pkgs.playwright-driver.browsers-chromium
+            autoPatchelfHook
+          ];
+          env = {
+            PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers-chromium}";
+            PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
+            PLAYWRIGHT_HOST_PLATFORM_OVERRIDE = "ubuntu-24.04";
+          };
         };
       }
     );

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id, reporter_id, latitude, longitude, description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, city, country, created_at, updated_at\n            FROM litter_reports\n            WHERE id = $1\n            ",
+  "query": "\n            SELECT\n                id, reporter_id,\n                ST_Y(location)::double precision as \"latitude!\",\n                ST_X(location)::double precision as \"longitude!\",\n                description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, created_at, updated_at\n            FROM litter_reports\n            WHERE id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -15,12 +15,12 @@
       },
       {
         "ordinal": 2,
-        "name": "latitude",
+        "name": "latitude!",
         "type_info": "Float8"
       },
       {
         "ordinal": 3,
-        "name": "longitude",
+        "name": "longitude!",
         "type_info": "Float8"
       },
       {
@@ -77,21 +77,11 @@
       },
       {
         "ordinal": 12,
-        "name": "city",
-        "type_info": "Varchar"
-      },
-      {
-        "ordinal": 13,
-        "name": "country",
-        "type_info": "Varchar"
-      },
-      {
-        "ordinal": 14,
         "name": "created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 15,
+        "ordinal": 13,
         "name": "updated_at",
         "type_info": "Timestamptz"
       }
@@ -104,8 +94,8 @@
     "nullable": [
       false,
       false,
-      false,
-      false,
+      null,
+      null,
       true,
       true,
       false,
@@ -114,11 +104,9 @@
       true,
       true,
       true,
-      false,
-      false,
       false,
       false
     ]
   },
-  "hash": "791f14dd3ee8781124ed43261bbb641580f5d33a300f7828480fdb16540cc028"
+  "hash": "320a13cd8c6ab0d31e8d6ef4be6d09d02d82d559b6c5217bebdaf9e9b004b23c"
 }

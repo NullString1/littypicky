@@ -3,7 +3,7 @@
   import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
   import imageCompression from 'browser-image-compression';
-  import { getCurrentLocation, reverseGeocode } from '$lib/utils/geolocation';
+  import { getCurrentLocation } from '$lib/utils/geolocation';
 
   let isSubmitting = false;
   let photoPreview: string | null = null;
@@ -12,8 +12,6 @@
   
   let latitude: number | null = null;
   let longitude: number | null = null;
-  let city = '';
-  let country = '';
   let locationStatus = '';
   let error = '';
 
@@ -64,26 +62,26 @@
   }
 
   async function getLocation() {
-    locationStatus = 'Locating...';
-    
+    locationStatus = 'Locating with high accuracy...';
+
     try {
-      // Get coordinates using utility
-      const coords = await getCurrentLocation();
+      const coords = await getCurrentLocation({
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 20000,
+        minAccuracyMeters: 10,
+        maxAttempts: 3
+      });
       latitude = coords.lat;
       longitude = coords.lng;
-      locationStatus = 'Found coordinates. Fetching address...';
 
-      // Reverse geocode using utility
-      const address = await reverseGeocode(latitude, longitude);
-      if (address) {
-        city = address.city;
-        country = address.country;
-        locationStatus = `Located: ${city}, ${country}`;
+      if (coords.accuracy) {
+        locationStatus = `Found coordinates (±${Math.round(coords.accuracy)}m)`;
       } else {
-        locationStatus = 'Coordinates found. Please enter city manually.';
+        locationStatus = 'Found coordinates.';
       }
     } catch (err: any) {
-      locationStatus = 'Location access failed. Please enter manually.';
+      locationStatus = 'Location access failed. Please enter coordinates manually.';
       console.error('Location error:', err);
     }
   }
@@ -96,15 +94,10 @@
         error = 'Please upload a photo.';
         return;
     }
-    if (!latitude || !longitude) {
+    if (latitude === null || longitude === null) {
         error = 'Please set the location.';
         return;
     }
-    if (!city || !country) {
-        error = 'City and Country are required.';
-        return;
-    }
-
     isSubmitting = true;
     
     const form = e.target as HTMLFormElement;
@@ -115,8 +108,6 @@
         if (!$auth.token) throw new Error('Not authenticated');
 
         await api.reports.create({
-            city,
-            country,
             description,
             latitude,
             longitude,
@@ -183,22 +174,22 @@
 
           <!-- Location -->
           <div>
-            <label for="city" class="block text-sm font-medium text-slate-700">Location</label>
+            <label class="block text-sm font-medium text-slate-700">Location</label>
              <div class="mt-2 flex items-center gap-4">
                <button type="button" onclick={getLocation} class="inline-flex items-center px-3 py-2 border border-slate-300 shadow-sm text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none">
                   📍 Use Current Location
                </button>
                <span class="text-sm text-slate-500">{locationStatus}</span>
              </div>
-             
+
              <div class="grid grid-cols-2 gap-4 mt-4">
                 <div>
-                    <label for="city" class="block text-xs font-medium text-slate-500">City</label>
-                    <input type="text" name="city" id="city" bind:value={city} required class="mt-1 shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-slate-300 rounded-md px-3 py-2">
+                    <label for="latitude" class="block text-xs font-medium text-slate-500">Latitude</label>
+                    <input type="number" name="latitude" id="latitude" bind:value={latitude} step="0.000001" required class="mt-1 shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-slate-300 rounded-md px-3 py-2">
                 </div>
                 <div>
-                    <label for="country" class="block text-xs font-medium text-slate-500">Country</label>
-                    <input type="text" name="country" id="country" bind:value={country} required class="mt-1 shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-slate-300 rounded-md px-3 py-2">
+                    <label for="longitude" class="block text-xs font-medium text-slate-500">Longitude</label>
+                    <input type="number" name="longitude" id="longitude" bind:value={longitude} step="0.000001" required class="mt-1 shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-slate-300 rounded-md px-3 py-2">
                 </div>
              </div>
           </div>

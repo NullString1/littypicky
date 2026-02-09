@@ -28,8 +28,6 @@ pub struct LitterReport {
     pub cleared_by: Option<Uuid>,
     pub cleared_at: Option<DateTime<Utc>>,
     pub photo_after: Option<String>,
-    pub city: Option<String>,
-    pub country: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -48,8 +46,6 @@ pub struct ReportResponse {
     pub cleared_by: Option<Uuid>,
     pub cleared_at: Option<DateTime<Utc>>,
     pub photo_after: Option<String>,
-    pub city: Option<String>,
-    pub country: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -71,8 +67,6 @@ impl From<LitterReport> for ReportResponse {
             cleared_at: report.cleared_at,
             // Return S3 URL directly (or None if not set)
             photo_after: report.photo_after,
-            city: report.city,
-            country: report.country,
             created_at: report.created_at,
             updated_at: report.updated_at,
         }
@@ -89,10 +83,6 @@ pub struct CreateReportRequest {
     pub description: Option<String>,
     #[schema(example = "data:image/jpeg;base64,...")]
     pub photo_base64: String,
-    #[schema(example = "London")]
-    pub city: String,
-    #[schema(example = "UK")]
-    pub country: String,
 }
 
 #[derive(Debug, Deserialize, ToSchema)]

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            UPDATE litter_reports\n            SET status = $1,\n                cleared_by = $2,\n                cleared_at = $3,\n                photo_after = $4\n            WHERE id = $5\n            RETURNING\n                id, reporter_id, latitude, longitude, description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, city, country, created_at, updated_at\n            ",
+  "query": "\n            SELECT\n                id, reporter_id,\n                ST_Y(location)::double precision as \"latitude!\",\n                ST_X(location)::double precision as \"longitude!\",\n                description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, created_at, updated_at\n            FROM litter_reports\n            WHERE ST_DWithin(\n                location::geography,\n                ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,\n                $3\n            )\n            AND status = 'cleared'\n            AND (cleared_by IS NULL OR cleared_by != $4)\n            AND id NOT IN (\n                SELECT report_id FROM report_verifications WHERE verifier_id = $4\n            )\n            ORDER BY cleared_at DESC\n            LIMIT 50\n            ",
   "describe": {
     "columns": [
       {
@@ -15,12 +15,12 @@
       },
       {
         "ordinal": 2,
-        "name": "latitude",
+        "name": "latitude!",
         "type_info": "Float8"
       },
       {
         "ordinal": 3,
-        "name": "longitude",
+        "name": "longitude!",
         "type_info": "Float8"
       },
       {
@@ -77,51 +77,28 @@
       },
       {
         "ordinal": 12,
-        "name": "city",
-        "type_info": "Varchar"
-      },
-      {
-        "ordinal": 13,
-        "name": "country",
-        "type_info": "Varchar"
-      },
-      {
-        "ordinal": 14,
         "name": "created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 15,
+        "ordinal": 13,
         "name": "updated_at",
         "type_info": "Timestamptz"
       }
     ],
     "parameters": {
       "Left": [
-        {
-          "Custom": {
-            "name": "report_status",
-            "kind": {
-              "Enum": [
-                "pending",
-                "claimed",
-                "cleared",
-                "verified"
-              ]
-            }
-          }
-        },
-        "Uuid",
-        "Timestamptz",
-        "Varchar",
+        "Float8",
+        "Float8",
+        "Float8",
         "Uuid"
       ]
     },
     "nullable": [
       false,
       false,
-      false,
-      false,
+      null,
+      null,
       true,
       true,
       false,
@@ -130,11 +107,9 @@
       true,
       true,
       true,
-      false,
-      false,
       false,
       false
     ]
   },
-  "hash": "ea5e7ce86e4983ec0597f08d402be6c7667c3802c2adde556bf259f05050f642"
+  "hash": "95dc8ee24d6062b2b9159edd4508c20312e45b2fd5442fd9b98eeaaf085130d9"
 }

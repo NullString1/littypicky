@@ -118,7 +118,7 @@
             <div class="bg-white shadow overflow-hidden sm:rounded-lg border border-slate-200">
                 <div class="px-4 py-5 border-b border-slate-200 sm:px-6">
                     <h3 class="text-lg leading-6 font-medium text-slate-900">
-                        Cleanup at {report.city}
+                        Cleanup at {report.latitude.toFixed(4)}, {report.longitude.toFixed(4)}
                     </h3>
                     <p class="mt-1 text-sm text-slate-500">
                         Cleared on {report.cleared_at ? new Date(report.cleared_at).toLocaleDateString() : 'Unknown'}

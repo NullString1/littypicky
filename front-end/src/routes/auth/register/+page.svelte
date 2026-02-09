@@ -4,14 +4,35 @@
   import { auth } from '$lib/stores/auth';
   import { goto, replaceState } from '$app/navigation';
   import { browser } from '$app/environment';
+  import { getCurrentLocation, reverseGeocode } from '$lib/utils/geolocation';
+
 
   let isLoading = false;
   let error = '';
+  let isLocating = false;
+  let locationStatus = '';
+  type LocationOption = {
+    label: string;
+    city: string;
+    country: string;
+  };
+
+  let locationOptions: LocationOption[] = [];
+  let citySearchTimeout: ReturnType<typeof setTimeout> | null = null;
+  let citySearchStatus = '';
+  let showCityDropdown = false;
+  let hideCityDropdownTimeout: ReturnType<typeof setTimeout> | null = null;
+  let city = '';
+  let country = '';
+  let locationQuery = '';
+  let locationPlaceholder = 'Start typing your city';
+  let hasSelectedLocation = false;
 
   onMount(() => {
     if (browser && $auth.isAuthenticated) {
       goto('/app/feed');
     }
+    locationPlaceholder = 'Start typing your city';
   });
 
   async function handleSubmit(event: Event) {
@@ -25,8 +46,20 @@
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const full_name = formData.get('name') as string;
-    const city = formData.get('city') as string;
-    const country = formData.get('country') as string;
+    if (!hasSelectedLocation || !city || !country) {
+      error = 'Please select a location from the suggestions.';
+      isLoading = false;
+      return;
+    }
+
+    if (!hasSelectedLocation) {
+      const locationIsValid = await validateLocationSelection(city, country);
+      if (!locationIsValid) {
+        error = 'Please select a location from the suggestions.';
+        isLoading = false;
+        return;
+      }
+    }
     
     try {
       await api.auth.register({
@@ -44,6 +77,158 @@
     } finally {
       isLoading = false;
     }
+  }
+
+  async function handleUseLocation() {
+    isLocating = true;
+    error = '';
+    locationStatus = 'Locating...';
+
+    try {
+      const coords = await getCurrentLocation({
+        maximumAge: 0,
+        timeout: 15000
+      });
+      locationStatus = 'Looking up your city and country...';
+
+      const address = await reverseGeocode(coords.lat, coords.lng) as {
+        city: string;
+        region?: string;
+        country: string;
+      } | null;
+      if (!address || !address.city || !address.country) {
+        locationStatus = 'Unable to determine city/country. Please select manually.';
+        return;
+      }
+
+      const regionLabel = address.region ? `${address.city}, ${address.region}` : address.city;
+      const fullLabel = address.region ? `${address.city}, ${address.region}, ${address.country}` : `${address.city}, ${address.country}`;
+      city = regionLabel;
+      country = address.country;
+      locationOptions = [{
+        label: fullLabel,
+        city: regionLabel,
+        country: address.country
+      }];
+      locationQuery = fullLabel;
+      locationPlaceholder = fullLabel;
+      hasSelectedLocation = true;
+      showCityDropdown = false;
+
+      locationStatus = `Found: ${address.city}, ${address.country}`;
+    } catch (err: any) {
+      locationStatus = 'Location access failed. Please select manually.';
+      console.error('Location error:', err);
+    } finally {
+      isLocating = false;
+    }
+  }
+
+  function handleCityQueryInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value.trim();
+    locationQuery = value;
+    city = '';
+    country = '';
+    hasSelectedLocation = false;
+    citySearchStatus = '';
+    if (!value || value.length < 2) {
+      showCityDropdown = false;
+      return;
+    }
+
+    if (citySearchTimeout) {
+      clearTimeout(citySearchTimeout);
+    }
+
+    citySearchTimeout = setTimeout(() => {
+      void loadLocationOptions(value);
+    }, 300);
+  }
+
+  function handleCityFocus() {
+    if (locationOptions.length) {
+      showCityDropdown = true;
+    }
+  }
+
+  function handleCityBlur() {
+    if (hideCityDropdownTimeout) {
+      clearTimeout(hideCityDropdownTimeout);
+    }
+    hideCityDropdownTimeout = setTimeout(() => {
+      showCityDropdown = false;
+    }, 150);
+  }
+
+  function handleCitySelect(option: LocationOption) {
+    city = option.city;
+    country = option.country;
+    locationQuery = option.label;
+    hasSelectedLocation = true;
+    showCityDropdown = false;
+    citySearchStatus = '';
+  }
+
+  async function loadLocationOptions(query: string): Promise<LocationOption[]> {
+    try {
+      citySearchStatus = 'Searching...';
+      const response = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=en&format=json`
+      );
+      const data = await response.json();
+      const results = Array.isArray(data?.results) ? data.results : [];
+      const mapped = results
+        .map((item: any) => {
+          const name = item?.name as string | undefined;
+          if (!name) return null;
+          const admin = item?.admin1 as string | undefined;
+          const admin2 = item?.admin2 as string | undefined;
+          const countryName = item?.country as string | undefined;
+          const labelParts = [name, admin, admin2, countryName].filter(Boolean);
+          return {
+            label: labelParts.join(', '),
+            city: admin ? `${name}, ${admin}` : name,
+            country: countryName || ''
+          };
+        })
+        .filter((item: LocationOption | null): item is LocationOption => Boolean(item));
+
+      const uniqueMap = new Map<string, LocationOption>();
+      mapped.forEach((item: LocationOption) => {
+        if (!uniqueMap.has(item.label)) {
+          uniqueMap.set(item.label, item);
+        }
+      });
+
+      const unique = Array.from(uniqueMap.values()).slice(0, 10);
+      locationOptions = unique;
+      citySearchStatus = locationOptions.length ? '' : 'No matches found.';
+      showCityDropdown = locationOptions.length > 0;
+      return locationOptions;
+    } catch (err) {
+      console.error('City lookup failed:', err);
+      locationOptions = [];
+      citySearchStatus = 'No matches found.';
+      showCityDropdown = false;
+      return [];
+    }
+  }
+
+  async function validateLocationSelection(candidateCity: string, candidateCountry: string): Promise<boolean> {
+    if (!candidateCity || !candidateCountry) {
+      return false;
+    }
+
+    if (locationOptions.some((option) => option.city === candidateCity && option.country === candidateCountry)) {
+      return true;
+    }
+
+    const options = await loadLocationOptions(locationQuery || candidateCity);
+    return options.some((option) => option.city === candidateCity && option.country === candidateCountry);
+  }
+
+  function availableCityOptions(): LocationOption[] {
+    return locationOptions;
   }
 </script>
 
@@ -87,17 +272,47 @@
         </div>
 
         <div>
-          <label for="city" class="block text-sm font-medium text-slate-700"> City </label>
-          <div class="mt-1">
-            <input id="city" name="city" type="text" autocomplete="address-level2" required class="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+          <label for="city" class="block text-sm font-medium text-slate-700"> Location </label>
+          <div class="mt-1 relative">
+            <input
+              id="city"
+              name="city"
+              type="text"
+              autocomplete="off"
+              placeholder={locationPlaceholder}
+              required
+              bind:value={locationQuery}
+              oninput={handleCityQueryInput}
+              onfocus={handleCityFocus}
+              onblur={handleCityBlur}
+              class="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            >
+            {#if showCityDropdown && availableCityOptions().length}
+              <div class="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-56 overflow-auto">
+                {#each availableCityOptions() as option}
+                  <button
+                    type="button"
+                    class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    onmousedown={() => handleCitySelect(option)}
+                  >
+                    {option.label}
+                  </button>
+                {/each}
+              </div>
+            {/if}
           </div>
+          {#if citySearchStatus}
+            <p class="mt-2 text-xs text-slate-500">{citySearchStatus}</p>
+          {/if}
         </div>
 
         <div>
-          <label for="country" class="block text-sm font-medium text-slate-700"> Country </label>
-          <div class="mt-1">
-            <input id="country" name="country" type="text" autocomplete="country-name" required class="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
-          </div>
+          <button type="button" onclick={handleUseLocation} disabled={isLocating} class="inline-flex items-center px-3 py-2 border border-slate-300 shadow-sm text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50">
+            Use GPS to fill city/country
+          </button>
+          {#if locationStatus}
+            <p class="mt-2 text-xs text-slate-500">{locationStatus}</p>
+          {/if}
         </div>
 
         <div>

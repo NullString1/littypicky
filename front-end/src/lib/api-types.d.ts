@@ -658,7 +658,6 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         AdminReportView: {
-            city: string;
             /** Format: date-time */
             claimed_at?: string | null;
             /** Format: uuid */
@@ -667,7 +666,6 @@ export interface components {
             cleared_at?: string | null;
             /** Format: uuid */
             cleared_by?: string | null;
-            country: string;
             /** Format: date-time */
             created_at: string;
             description?: string | null;
@@ -706,10 +704,6 @@ export interface components {
             photo_base64: string;
         };
         CreateReportRequest: {
-            /** @example London */
-            city: string;
-            /** @example UK */
-            country: string;
             /** @example Plastic bottles near the park entrance */
             description?: string | null;
             /**
@@ -763,7 +757,6 @@ export interface components {
             page?: number | null;
         };
         LitterReport: {
-            city?: string | null;
             /** Format: date-time */
             claimed_at?: string | null;
             /** Format: uuid */
@@ -772,7 +765,6 @@ export interface components {
             cleared_at?: string | null;
             /** Format: uuid */
             cleared_by?: string | null;
-            country?: string | null;
             /** Format: date-time */
             created_at: string;
             description?: string | null;
@@ -826,7 +818,6 @@ export interface components {
             password: string;
         };
         ReportResponse: {
-            city?: string | null;
             /** Format: date-time */
             claimed_at?: string | null;
             /** Format: uuid */
@@ -835,7 +826,6 @@ export interface components {
             cleared_at?: string | null;
             /** Format: uuid */
             cleared_by?: string | null;
-            country?: string | null;
             /** Format: date-time */
             created_at: string;
             description?: string | null;

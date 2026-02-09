@@ -5,6 +5,7 @@
 export interface Coordinates {
   lat: number;
   lng: number;
+  accuracy?: number;
 }
 
 export interface GeolocationOptions {
@@ -12,6 +13,9 @@ export interface GeolocationOptions {
   fallbackLng?: number;
   timeout?: number;
   maximumAge?: number;
+  enableHighAccuracy?: boolean;
+  minAccuracyMeters?: number;
+  maxAttempts?: number;
 }
 
 const DEFAULT_FALLBACK: Coordinates = {
@@ -31,7 +35,10 @@ export async function getCurrentLocation(
     fallbackLat = DEFAULT_FALLBACK.lat,
     fallbackLng = DEFAULT_FALLBACK.lng,
     timeout = 10000,
-    maximumAge = 0
+    maximumAge = 0,
+    enableHighAccuracy = false,
+    minAccuracyMeters,
+    maxAttempts = 2
   } = options;
 
   if (!navigator.geolocation) {
@@ -40,23 +47,43 @@ export async function getCurrentLocation(
   }
 
   return new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        resolve({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
-      },
-      (error) => {
-        console.warn('Geolocation denied or failed:', error.message);
-        resolve({ lat: fallbackLat, lng: fallbackLng });
-      },
-      {
-        timeout,
-        maximumAge,
-        enableHighAccuracy: false
-      }
-    );
+    let attempts = 0;
+
+    const requestPosition = () => {
+      attempts += 1;
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          };
+
+          if (
+            minAccuracyMeters &&
+            typeof coords.accuracy === 'number' &&
+            coords.accuracy > minAccuracyMeters &&
+            attempts < maxAttempts
+          ) {
+            requestPosition();
+            return;
+          }
+
+          resolve(coords);
+        },
+        (error) => {
+          console.warn('Geolocation denied or failed:', error.message);
+          resolve({ lat: fallbackLat, lng: fallbackLng });
+        },
+        {
+          timeout,
+          maximumAge,
+          enableHighAccuracy
+        }
+      );
+    };
+
+    requestPosition();
   });
 }
 
@@ -102,20 +129,23 @@ function deg2rad(deg: number): number {
  */
 export async function reverseGeocode(lat: number, lng: number): Promise<{
   city: string;
+  region?: string;
   country: string;
 } | null> {
   try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+    const nominatimResponse = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&email=hello@littypicky.app`
     );
-    const data = await response.json();
+    const nominatimData = await nominatimResponse.json();
 
-    if (data && data.address) {
+    if (nominatimData && nominatimData.address) {
       return {
-        city: data.address.city || data.address.town || data.address.village || data.address.hamlet || '',
-        country: data.address.country || ''
+        city: nominatimData.address.city || nominatimData.address.town || nominatimData.address.village || nominatimData.address.hamlet || '',
+        region: nominatimData.address.state || nominatimData.address.region || nominatimData.address.county || '',
+        country: nominatimData.address.country || ''
       };
     }
+
     return null;
   } catch (error) {
     console.error('Reverse geocoding failed:', error);

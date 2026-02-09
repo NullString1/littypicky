@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id, reporter_id, latitude, longitude, description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, city, country, created_at, updated_at\n            FROM litter_reports\n            WHERE ST_DWithin(\n                location::geography,\n                ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,\n                $3\n            )\n            AND status IN ('pending', 'claimed')\n            ORDER BY created_at DESC\n            LIMIT 100\n            ",
+  "query": "\n            SELECT\n                id, reporter_id,\n                ST_Y(location)::double precision as \"latitude!\",\n                ST_X(location)::double precision as \"longitude!\",\n                description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, created_at, updated_at\n            FROM litter_reports\n            WHERE cleared_by = $1\n            ORDER BY cleared_at DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -15,12 +15,12 @@
       },
       {
         "ordinal": 2,
-        "name": "latitude",
+        "name": "latitude!",
         "type_info": "Float8"
       },
       {
         "ordinal": 3,
-        "name": "longitude",
+        "name": "longitude!",
         "type_info": "Float8"
       },
       {
@@ -77,37 +77,25 @@
       },
       {
         "ordinal": 12,
-        "name": "city",
-        "type_info": "Varchar"
-      },
-      {
-        "ordinal": 13,
-        "name": "country",
-        "type_info": "Varchar"
-      },
-      {
-        "ordinal": 14,
         "name": "created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 15,
+        "ordinal": 13,
         "name": "updated_at",
         "type_info": "Timestamptz"
       }
     ],
     "parameters": {
       "Left": [
-        "Float8",
-        "Float8",
-        "Float8"
+        "Uuid"
       ]
     },
     "nullable": [
       false,
       false,
-      false,
-      false,
+      null,
+      null,
       true,
       true,
       false,
@@ -116,11 +104,9 @@
       true,
       true,
       true,
-      false,
-      false,
       false,
       false
     ]
   },
-  "hash": "b5b9afbef64715a992bf551a8f1d06f79969fc0d44554a53cc764b627b6e70c4"
+  "hash": "19f63a010d4d02344abce143643a6a22911df3251920d08e9ed0c0c03655e02e"
 }

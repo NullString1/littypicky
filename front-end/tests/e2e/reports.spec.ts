@@ -305,7 +305,7 @@ test.describe('Report Management', () => {
 
 			// Should show all report details
 			await expect(page.locator('text=/status/i')).toBeVisible();
-			await expect(page.locator('text=/location|city|country/i')).toBeVisible();
+    await expect(page.locator('text=/location|coordinates|latitude|longitude/i')).toBeVisible();
 			await expect(page.locator('img[alt*="before"], img[alt*="litter"]')).toBeVisible();
 		});
 

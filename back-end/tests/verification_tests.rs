@@ -89,9 +89,7 @@ async fn create_test_report(app: &axum::Router, token: &str) -> String {
                         "latitude": 51.5074,
                         "longitude": -0.1278,
                         "description": "Test litter",
-                        "photo_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-                        "city": "London",
-                        "country": "UK"
+                        "photo_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
                     })
                     .to_string(),
                 ))

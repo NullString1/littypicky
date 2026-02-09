@@ -188,8 +188,8 @@ impl Config {
                 public_url: env_or_default("S3_PUBLIC_URL", "http://127.0.0.1:9000/littypicky-images")?,
             },
             tls: match (
-                read_env_file_value("TLS_CERT_PATH"),
-                read_env_file_value("TLS_KEY_PATH"),
+                read_env_file_value("TLS_CERT_PATH").filter(|s|!s.is_empty()),
+                read_env_file_value("TLS_KEY_PATH").filter(|s|!s.is_empty()),
             ) {
                 (Some(cert_path), Some(key_path)) => Some(TlsConfig { cert_path, key_path }),
                 _ => None,

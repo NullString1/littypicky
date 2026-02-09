@@ -52,28 +52,29 @@ impl ReportService {
             LitterReport,
             r#"
             INSERT INTO litter_reports (
-                reporter_id, latitude, longitude, location, description,
-                photo_before, status, city, country
+                reporter_id, location, description,
+                photo_before, status
             )
             VALUES (
-                $1, $2, $3,
+                $1,
                 ST_SetSRID(ST_MakePoint($3, $2), 4326),
-                $4, $5, $6, $7, $8
+                $4, $5, $6
             )
             RETURNING
-                id, reporter_id, latitude, longitude, description,
+                id, reporter_id,
+                ST_Y(location)::double precision as "latitude!",
+                ST_X(location)::double precision as "longitude!",
+                description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, city, country, created_at, updated_at
+                photo_after, created_at, updated_at
             "#,
             user_id,
             request.latitude,
             request.longitude,
             request.description,
             photo_url,
-            ReportStatus::Pending as ReportStatus,
-            request.city,
-            request.country
+            ReportStatus::Pending as ReportStatus
         )
         .fetch_one(&self.pool)
         .await?;
@@ -94,10 +95,13 @@ impl ReportService {
             LitterReport,
             r#"
             SELECT
-                id, reporter_id, latitude, longitude, description,
+                id, reporter_id,
+                ST_Y(location)::double precision as "latitude!",
+                ST_X(location)::double precision as "longitude!",
+                description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, city, country, created_at, updated_at
+                photo_after, created_at, updated_at
             FROM litter_reports
             WHERE ST_DWithin(
                 location::geography,
@@ -132,10 +136,13 @@ impl ReportService {
             LitterReport,
             r#"
             SELECT
-                id, reporter_id, latitude, longitude, description,
+                id, reporter_id,
+                ST_Y(location)::double precision as "latitude!",
+                ST_X(location)::double precision as "longitude!",
+                description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, city, country, created_at, updated_at
+                photo_after, created_at, updated_at
             FROM litter_reports
             WHERE ST_DWithin(
                 location::geography,
@@ -167,10 +174,13 @@ impl ReportService {
             LitterReport,
             r#"
             SELECT
-                id, reporter_id, latitude, longitude, description,
+                id, reporter_id,
+                ST_Y(location)::double precision as "latitude!",
+                ST_X(location)::double precision as "longitude!",
+                description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, city, country, created_at, updated_at
+                photo_after, created_at, updated_at
             FROM litter_reports
             WHERE id = $1
             "#,
@@ -214,10 +224,13 @@ impl ReportService {
                 claimed_at = $3
             WHERE id = $4
             RETURNING
-                id, reporter_id, latitude, longitude, description,
+                id, reporter_id,
+                ST_Y(location)::double precision as "latitude!",
+                ST_X(location)::double precision as "longitude!",
+                description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, city, country, created_at, updated_at
+                photo_after, created_at, updated_at
             "#,
             ReportStatus::Claimed as ReportStatus,
             user_id,
@@ -269,10 +282,13 @@ impl ReportService {
                 photo_after = $4
             WHERE id = $5
             RETURNING
-                id, reporter_id, latitude, longitude, description,
+                id, reporter_id,
+                ST_Y(location)::double precision as "latitude!",
+                ST_X(location)::double precision as "longitude!",
+                description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, city, country, created_at, updated_at
+                photo_after, created_at, updated_at
             "#,
             ReportStatus::Cleared as ReportStatus,
             user_id,
@@ -291,10 +307,13 @@ impl ReportService {
             LitterReport,
             r#"
             SELECT
-                id, reporter_id, latitude, longitude, description,
+                id, reporter_id,
+                ST_Y(location)::double precision as "latitude!",
+                ST_X(location)::double precision as "longitude!",
+                description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, city, country, created_at, updated_at
+                photo_after, created_at, updated_at
             FROM litter_reports
             WHERE reporter_id = $1
             ORDER BY created_at DESC
@@ -316,10 +335,13 @@ impl ReportService {
             LitterReport,
             r#"
             SELECT
-                id, reporter_id, latitude, longitude, description,
+                id, reporter_id,
+                ST_Y(location)::double precision as "latitude!",
+                ST_X(location)::double precision as "longitude!",
+                description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, city, country, created_at, updated_at
+                photo_after, created_at, updated_at
             FROM litter_reports
             WHERE cleared_by = $1
             ORDER BY cleared_at DESC

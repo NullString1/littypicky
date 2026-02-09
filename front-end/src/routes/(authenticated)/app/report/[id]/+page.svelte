@@ -150,7 +150,7 @@
       <div class="mb-6">
         <a href="/app/feed" class="text-primary-600 hover:text-primary-700 text-sm font-medium mb-4 inline-block">← Back to Feed</a>
         <div class="flex items-center justify-between">
-          <h1 class="text-3xl font-bold text-slate-900">{report.city}</h1>
+          <h1 class="text-3xl font-bold text-slate-900">{report.latitude.toFixed(4)}, {report.longitude.toFixed(4)}</h1>
           <span class={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(report.status)} uppercase tracking-wide`}>
             {report.status}
           </span>
@@ -216,7 +216,7 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <dt class="text-sm font-medium text-slate-500">Location</dt>
-              <dd class="mt-1 text-sm text-slate-900">{report.city}, {report.country}</dd>
+              <dd class="mt-1 text-sm text-slate-900">{report.latitude.toFixed(4)}, {report.longitude.toFixed(4)}</dd>
             </div>
             <div>
               <dt class="text-sm font-medium text-slate-500">Coordinates</dt>

@@ -644,12 +644,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "bearer_auth": []
-          }
-        ]
+        }
       }
     },
     "/api/leaderboards/city/{city}": {
@@ -695,12 +690,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "bearer_auth": []
-          }
-        ]
+        }
       }
     },
     "/api/leaderboards/country/{country}": {
@@ -746,12 +736,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "bearer_auth": []
-          }
-        ]
+        }
       }
     },
     "/api/reports": {
@@ -1367,16 +1352,11 @@
           "latitude",
           "longitude",
           "status",
-          "city",
-          "country",
           "created_at",
           "reporter_name",
           "reporter_email"
         ],
         "properties": {
-          "city": {
-            "type": "string"
-          },
           "claimed_at": {
             "type": "string",
             "format": "date-time",
@@ -1396,9 +1376,6 @@
             "type": "string",
             "format": "uuid",
             "nullable": true
-          },
-          "country": {
-            "type": "string"
           },
           "created_at": {
             "type": "string",
@@ -1497,19 +1474,9 @@
         "required": [
           "latitude",
           "longitude",
-          "photo_base64",
-          "city",
-          "country"
+          "photo_base64"
         ],
         "properties": {
-          "city": {
-            "type": "string",
-            "example": "London"
-          },
-          "country": {
-            "type": "string",
-            "example": "UK"
-          },
           "description": {
             "type": "string",
             "example": "Plastic bottles near the park entrance",
@@ -1633,10 +1600,6 @@
           "updated_at"
         ],
         "properties": {
-          "city": {
-            "type": "string",
-            "nullable": true
-          },
           "claimed_at": {
             "type": "string",
             "format": "date-time",
@@ -1655,10 +1618,6 @@
           "cleared_by": {
             "type": "string",
             "format": "uuid",
-            "nullable": true
-          },
-          "country": {
-            "type": "string",
             "nullable": true
           },
           "created_at": {
@@ -1813,10 +1772,6 @@
           "updated_at"
         ],
         "properties": {
-          "city": {
-            "type": "string",
-            "nullable": true
-          },
           "claimed_at": {
             "type": "string",
             "format": "date-time",
@@ -1835,10 +1790,6 @@
           "cleared_by": {
             "type": "string",
             "format": "uuid",
-            "nullable": true
-          },
-          "country": {
-            "type": "string",
             "nullable": true
           },
           "created_at": {

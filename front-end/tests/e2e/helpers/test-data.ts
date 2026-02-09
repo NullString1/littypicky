@@ -30,8 +30,6 @@ export function generateReportData() {
 		latitude: baseLat + offset(),
 		longitude: baseLng + offset(),
 		description: `Test litter report - ${Date.now()}`,
-		city: 'London',
-		country: 'UK',
 	};
 }
 

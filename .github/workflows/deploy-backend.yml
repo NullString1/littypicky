@@ -28,7 +28,7 @@ jobs:
       - name: Use Cachix Cache 📦
         uses: cachix/cachix-action@v16
         with:
-          name: litty-cache
+          name: littycache
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           extraPullNames: nixpkgs, nix-community, arm, rust
 

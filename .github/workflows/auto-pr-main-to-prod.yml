@@ -1,0 +1,86 @@
+name: Auto PR from main to prod
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  create-prod-pr:
+    # Only run if the PR was merged (not just closed)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      
+      - name: Check if PR already exists
+        id: check-pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if there's already an open PR from main to prod
+          existing_pr=$(gh pr list --base prod --head main --state open --json number --jq '.[0].number')
+          if [ -n "$existing_pr" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "pr_number=$existing_pr" >> $GITHUB_OUTPUT
+            echo "An open PR already exists: #$existing_pr"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "No existing PR found"
+          fi
+      
+      - name: Create Pull Request
+        if: steps.check-pr.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base prod \
+            --head main \
+            --title "Deploy to Production: Merge main to prod" \
+            --body "## Automated Production Deployment PR
+
+          This PR was automatically created after a PR was merged into \`main\`.
+
+          **Source Branch:** \`main\`
+          **Target Branch:** \`prod\`
+
+          ### Recent Changes Merged to Main
+          - PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
+
+          ### Deployment Information
+          Once this PR is merged to \`prod\`, the following will be automatically deployed:
+          - ✅ Frontend: Cloudflare Pages
+          - ✅ Backend: Oracle VPS (ARM64)
+
+          ### Pre-Merge Checklist
+          - [ ] All tests are passing on \`main\`
+          - [ ] Integration testing has been completed
+          - [ ] Team has reviewed and approved changes
+
+          **Triggered by:** @${{ github.event.pull_request.user.login }}
+          **Original PR:** #${{ github.event.pull_request.number }}" \
+            --label "deployment,automated"
+      
+      - name: Update existing PR
+        if: steps.check-pr.outputs.exists == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_number="${{ steps.check-pr.outputs.pr_number }}"
+          echo "Updating existing PR #$pr_number with information about newly merged PR #${{ github.event.pull_request.number }}"
+          
+          # Add a comment to the existing PR
+          gh pr comment "$pr_number" --body "✅ **New changes merged to main**
+
+          PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
+          Merged by: @${{ github.event.pull_request.user.login }}"

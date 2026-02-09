@@ -1,0 +1,73 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - prod
+    paths:
+      - 'back-end/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-24.04-arm
+    name: Build Docker Image and Deploy
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            download-buffer-size = 512000000
+
+      - name: Use Cachix Cache 📦
+        uses: cachix/cachix-action@v16
+        with:
+          name: litty-cache
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          extraPullNames: nixpkgs, nix-community, arm, rust
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        working-directory: ./back-end
+        run: |
+          TAG=${GITHUB_SHA::8}
+          echo "🔨 Building Docker Image from Nix..."
+          nix build .#docker-image-aarch64
+          
+          echo "📥 Loading and Tagging Image..."
+          docker load < result
+          docker tag nullstring1/littypicky:latest-aarch64 nullstring1/littypicky:${TAG}-aarch64
+
+          echo "📤 Pushing..."
+          docker push nullstring1/littypicky:latest-aarch64
+          docker push nullstring1/littypicky:${TAG}-aarch64
+      - name: Deploy to Swarm
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          envs: 
+            GITHUB_SHA
+          script: |
+            TAG=${GITHUB_SHA:0:8}
+            # 1. Pull the new image explicitly
+            docker pull nullstring1/littypicky:${TAG}-aarch64
+            
+            # 2. Update the service in the swarm
+            # Note: 'littypicky_stack' is the stack name, 'backend' is the service name in compose
+            docker service update --image nullstring1/littypicky:${TAG}-aarch64 litty_stack_backend --with-registry-auth

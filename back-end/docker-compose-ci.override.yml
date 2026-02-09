@@ -1,0 +1,6 @@
+services:
+  backend:
+    image: nullstring1/littypicky:latest-x86-64
+    volumes: !reset null
+    working_dir: !reset null
+    command: !reset null

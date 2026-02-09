@@ -73,7 +73,7 @@ services:
       - GOOGLE_REDIRECT_URI=http://localhost:6780/auth/google/callback
       - FRONTEND_URL=http://localhost:5173
       - S3_ENDPOINT=http://minio:2096
-      - S3_PUBLIC_URL=http://minio:2096/littypicky-images
+      - S3_PUBLIC_URL=http://localhost:2096/littypicky-images
       - POSTGRES_PASSWORD_FILE=
       - POSTGRES_USER_FILE=
       - MONGODB_URI_FILE=

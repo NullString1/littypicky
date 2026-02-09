@@ -4,6 +4,9 @@
   import { goto } from '$app/navigation';
   import imageCompression from 'browser-image-compression';
   import { getCurrentLocation } from '$lib/utils/geolocation';
+  import { onMount, onDestroy } from 'svelte';
+  import { browser } from '$app/environment';
+  import 'leaflet/dist/leaflet.css';
 
   let isSubmitting = false;
   let photoPreview: string | null = null;
@@ -14,6 +17,84 @@
   let longitude: number | null = null;
   let locationStatus = '';
   let error = '';
+
+  let mapElement: HTMLElement;
+  let map: any;
+  let marker: any;
+  let L: any;
+
+  onMount(async () => {
+    if (browser) {
+      L = (await import('leaflet')).default;
+      
+      // Fix Leaflet's default icon path issues
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      });
+
+      initMap();
+    }
+  });
+
+  onDestroy(() => {
+    if (map) {
+      map.remove();
+    }
+  });
+
+  function initMap() {
+    if (!mapElement || map) return;
+
+    // Default to London if no location yet
+    const centerLat = latitude || 51.505;
+    const centerLng = longitude || -0.09;
+
+    map = L.map(mapElement).setView([centerLat, centerLng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    map.on('click', (e: any) => {
+        updateLocation(e.latlng.lat, e.latlng.lng);
+    });
+
+    if (latitude && longitude) {
+      updateMarker(latitude, longitude);
+    }
+  }
+
+  function updateLocation(lat: number, lng: number) {
+    latitude = parseFloat(lat.toFixed(6));
+    longitude = parseFloat(lng.toFixed(6));
+  }
+
+  function updateMarker(lat: number, lng: number) {
+    if (!map || !L) return;
+
+    if (marker) {
+      const cur = marker.getLatLng();
+      // Only update if position is significantly different to avoid feedback loops during drag
+      if (Math.abs(cur.lat - lat) > 0.000001 || Math.abs(cur.lng - lng) > 0.000001) {
+        marker.setLatLng([lat, lng]);
+        map.setView([lat, lng], map.getZoom());
+      }
+    } else {
+      marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+      marker.on('dragend', (event: any) => {
+        const position = event.target.getLatLng();
+        updateLocation(position.lat, position.lng);
+      });
+      map.setView([lat, lng], 16);
+    }
+  }
+
+  $: if (browser && map && latitude !== null && longitude !== null) {
+    updateMarker(latitude, longitude);
+  }
 
   async function handleFileSelect(e: Event) {
     const input = e.target as HTMLInputElement;
@@ -175,11 +256,16 @@
           <!-- Location -->
           <div>
             <label class="block text-sm font-medium text-slate-700">Location</label>
-             <div class="mt-2 flex items-center gap-4">
-               <button type="button" onclick={getLocation} class="inline-flex items-center px-3 py-2 border border-slate-300 shadow-sm text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none">
-                  📍 Use Current Location
-               </button>
-               <span class="text-sm text-slate-500">{locationStatus}</span>
+             <div class="mt-2 flex flex-col gap-4">
+               <div class="flex items-center gap-4">
+                 <button type="button" onclick={getLocation} class="inline-flex items-center px-3 py-2 border border-slate-300 shadow-sm text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none">
+                    📍 Use Current Location
+                 </button>
+                 <span class="text-sm text-slate-500">{locationStatus}</span>
+               </div>
+               
+               <div class="h-64 w-full rounded-md border border-slate-300 z-0" bind:this={mapElement}></div>
+               <p class="text-xs text-slate-500">Drag the marker or click on the map to refine location.</p>
              </div>
 
              <div class="grid grid-cols-2 gap-4 mt-4">

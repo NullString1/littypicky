@@ -125,13 +125,14 @@
   }
 
   function handleCityQueryInput(event: Event) {
-    const value = (event.target as HTMLInputElement).value.trim();
-    locationQuery = value;
+    const rawValue = (event.target as HTMLInputElement).value;
+    const query = rawValue.trim();
+    locationQuery = rawValue;
     city = '';
     country = '';
     hasSelectedLocation = false;
     citySearchStatus = '';
-    if (!value || value.length < 2) {
+    if (!query || query.length < 2) {
       showCityDropdown = false;
       return;
     }
@@ -141,7 +142,7 @@
     }
 
     citySearchTimeout = setTimeout(() => {
-      void loadLocationOptions(value);
+      void loadLocationOptions(query);
     }, 300);
   }
 

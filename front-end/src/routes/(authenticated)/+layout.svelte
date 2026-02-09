@@ -3,6 +3,7 @@
   import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
+  import { page } from '$app/stores';
 
   let { children } = $props();
   let checked = $state(false);
@@ -31,6 +32,19 @@
   $effect(() => {
       if (browser && checked && !$auth.isAuthenticated) {
           goto('/auth/login');
+      }
+  });
+
+  $effect(() => {
+      if (!browser || !checked || !$auth.isAuthenticated || !$auth.user) {
+          return;
+      }
+      const path = $page.url.pathname;
+      const isProfileEdit = path === '/profile/me/edit';
+      const hasUnknownLocation =
+          $auth.user.city === 'Unknown' || $auth.user.country === 'Unknown';
+      if (hasUnknownLocation && !isProfileEdit) {
+          goto('/profile/me/edit');
       }
   });
 </script>

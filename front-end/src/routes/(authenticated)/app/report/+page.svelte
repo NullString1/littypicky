@@ -275,7 +275,7 @@
 
           <!-- Location -->
           <div>
-            <label class="block text-sm font-medium text-slate-700">Location</label>
+            <span class="block text-sm font-medium text-slate-700">Location</span>
              <div class="mt-2 flex flex-col gap-4">
                <div class="flex items-center gap-4">
                  <button type="button" onclick={getLocation} class="inline-flex items-center px-3 py-2 border border-slate-300 shadow-sm text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none">

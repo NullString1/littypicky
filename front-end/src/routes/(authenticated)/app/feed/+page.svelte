@@ -5,11 +5,15 @@
   import { getCurrentLocation, calculateDistance, getProfileLocationCoordinates } from '$lib/utils/geolocation';
   import { getStatusColor } from '$lib/utils/status';
   import { formatDateShort } from '$lib/utils/date';
+  import LocationPickerModal from '$lib/components/LocationPickerModal.svelte';
 
   let reports = $state<Report[]>([]);
   let loading = $state(true);
   let error = $state('');
   let userLocation = $state<{ lat: number; lng: number } | null>(null);
+  let searchRadius = $state(10);
+  let showLocationModal = $state(false);
+  let locationOverrideLabel = $state('');
 
   // Use Svelte 5 $derived for automatic memoization
   // Only recalculates when reports or userLocation changes
@@ -37,7 +41,7 @@
         if (!$auth.token) return;
 
         const { lat, lng } = userLocation || { lat: 51.5074, lng: -0.1278 };
-        const data = await api.reports.getNearby(lat, lng, 10, $auth.token); // 10km radius
+        const data = await api.reports.getNearby(lat, lng, searchRadius, $auth.token);
         reports = data;
     } catch (e: any) {
         error = e.message || 'Failed to load reports';
@@ -64,6 +68,10 @@
         }
     }
     
+    if ($auth.user?.search_radius_km) {
+        searchRadius = $auth.user.search_radius_km;
+    }
+    
     loadReports();
   });
 </script>
@@ -81,12 +89,56 @@
           Find a messy spot near you and clean it up! First come, first serve.
         </p>
       </div>
-      <div class="mt-4 flex md:mt-0 md:ml-4">
-        <a href="/app/report" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+      <div class="mt-4 flex flex-col md:flex-row gap-2 md:mt-0 md:ml-4">
+        <button 
+          onclick={() => showLocationModal = true}
+          class="inline-flex items-center justify-center px-4 py-2 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        >
+          <span>📍</span>
+          <span class="ml-2">{locationOverrideLabel || 'Change Location'}</span>
+        </button>
+        <a href="/app/report" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
           Report New Spot
         </a>
       </div>
     </div>
+
+    <!-- Search Radius Slider -->
+    <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+      <label for="feedRadius" class="flex items-center justify-between text-sm font-medium text-slate-700 mb-2">
+        <span>Search Radius</span>
+        <span class="text-primary-600 font-bold">{searchRadius} km</span>
+      </label>
+      <input 
+        id="feedRadius"
+        type="range" 
+        min="1" 
+        max="100" 
+        bind:value={searchRadius} 
+        onchange={loadReports}
+        class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+      />
+      <div class="flex justify-between text-xs text-slate-400 mt-1">
+        <span>1 km</span>
+        <span>50 km</span>
+        <span>100 km</span>
+      </div>
+    </div>
+
+    {#if showLocationModal}
+      <LocationPickerModal 
+        initialLat={userLocation?.lat || 51.5074} 
+        initialLng={userLocation?.lng || -0.1278}
+        initialRadius={searchRadius}
+        on:close={() => showLocationModal = false}
+        on:select={(e) => {
+          userLocation = { lat: e.detail.lat, lng: e.detail.lng };
+          searchRadius = e.detail.radius;
+          locationOverrideLabel = e.detail.label.length > 20 ? e.detail.label.substring(0, 20) + '...' : e.detail.label;
+          loadReports();
+        }}
+      />
+    {/if}
 
     {#if loading}
         <div class="flex justify-center py-12">

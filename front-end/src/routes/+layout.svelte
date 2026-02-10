@@ -47,6 +47,7 @@
       <nav class="hidden md:flex items-center gap-8">
         {#if $auth.isAuthenticated}
         <a href="/app/feed" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Feed</a>
+        <a href="/app/map" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Map</a>
         <a href="/app/verify" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Verify</a>
         {/if}
         <a href="/community" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Community</a>

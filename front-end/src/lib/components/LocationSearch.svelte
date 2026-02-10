@@ -146,11 +146,12 @@
 </script>
 
 <div class="relative">
-  <label class="block text-sm font-medium text-slate-700 mb-1">
+  <label class="block text-sm font-medium text-slate-700 mb-1" for="location-search">
     {label} {required ? '*' : ''}
   </label>
   <div class="relative">
     <input
+      id="location-search"
       type="text"
       bind:value={query}
       {placeholder}

@@ -2,6 +2,7 @@
   import '../app.css';
   import { onMount } from 'svelte';
   import { auth } from '$lib/stores/auth';
+  import PWAInstallPrompt from '$lib/components/PWAInstallPrompt.svelte';
 
   let { children } = $props();
 
@@ -88,6 +89,8 @@
   <main class="grow">
     {@render children()}
   </main>
+
+  <PWAInstallPrompt />
 
   <footer class="bg-white border-t border-slate-200 py-12 mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">

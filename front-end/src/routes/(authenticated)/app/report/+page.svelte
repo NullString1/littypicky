@@ -7,6 +7,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import 'leaflet/dist/leaflet.css';
+  import 'maplibre-gl/dist/maplibre-gl.css';
 
   let isSubmitting = false;
   let photoPreview: string | null = null;
@@ -26,6 +27,7 @@
   onMount(async () => {
     if (browser) {
       L = (await import('leaflet')).default;
+      await import('@maplibre/maplibre-gl-leaflet');
       
       // Fix Leaflet's default icon path issues
       delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -54,8 +56,9 @@
 
     map = L.map(mapElement).setView([centerLat, centerLng], 13);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    (L as any).maplibreGL({
+      style: 'https://tiles.openfreemap.org/styles/bright',
+      attribution: '&copy; <a href="https://openfreemap.org/">OpenFreeMap</a> contributors'
     }).addTo(map);
 
     map.on('click', (e: any) => {

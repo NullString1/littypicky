@@ -7,6 +7,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import 'leaflet/dist/leaflet.css';
+  import 'maplibre-gl/dist/maplibre-gl.css';
 
   let isSubmitting = false;
   let photoPreview: string | null = null;
@@ -25,8 +26,15 @@
 
   onMount(async () => {
     if (browser) {
-      L = (await import('leaflet')).default;
+      const leafletModule = await import('leaflet');
+      L = leafletModule.default;
+      window.L = L; // Make Leaflet global for the plugin
       
+      const maplibreModule = await import('maplibre-gl');
+      window.maplibregl = maplibreModule.default; // Plugin needs this global
+      
+      await import('@maplibre/maplibre-gl-leaflet');
+
       // Fix Leaflet's default icon path issues
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
@@ -54,9 +62,21 @@
 
     map = L.map(mapElement).setView([centerLat, centerLng], 13);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    if (typeof (L as any).maplibreGL === 'function') {
+      (L as any).maplibreGL({
+        style: 'https://tiles.openfreemap.org/styles/bright',
+        attribution: '&copy; <a href="https://openfreemap.org/">OpenFreeMap</a> contributors'
+      }).addTo(map);
+    } else {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+    }
+
+    // Force map to recalculate container size
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
 
     map.on('click', (e: any) => {
         updateLocation(e.latlng.lat, e.latlng.lng);
@@ -255,7 +275,7 @@
 
           <!-- Location -->
           <div>
-            <label class="block text-sm font-medium text-slate-700">Location</label>
+            <span class="block text-sm font-medium text-slate-700">Location</span>
              <div class="mt-2 flex flex-col gap-4">
                <div class="flex items-center gap-4">
                  <button type="button" onclick={getLocation} class="inline-flex items-center px-3 py-2 border border-slate-300 shadow-sm text-sm leading-4 font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none">

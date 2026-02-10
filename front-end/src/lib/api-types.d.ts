@@ -757,6 +757,7 @@ export interface components {
             page?: number | null;
         };
         LitterReport: {
+            address?: string | null;
             /** Format: date-time */
             claimed_at?: string | null;
             /** Format: uuid */
@@ -818,6 +819,7 @@ export interface components {
             password: string;
         };
         ReportResponse: {
+            address?: string | null;
             /** Format: date-time */
             claimed_at?: string | null;
             /** Format: uuid */

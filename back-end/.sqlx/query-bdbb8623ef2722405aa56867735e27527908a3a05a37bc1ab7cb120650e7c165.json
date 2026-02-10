@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            UPDATE litter_reports\n            SET status = $1,\n                cleared_by = $2,\n                cleared_at = $3,\n                photo_after = $4\n            WHERE id = $5\n            RETURNING\n                id, reporter_id,\n                ST_Y(location)::double precision as \"latitude!\",\n                ST_X(location)::double precision as \"longitude!\",\n                description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, created_at, updated_at\n            ",
+  "query": "\n            SELECT\n                id, reporter_id,\n                ST_Y(location)::double precision as \"latitude!\",\n                ST_X(location)::double precision as \"longitude!\",\n                description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, created_at, updated_at, address\n            FROM litter_reports\n            WHERE cleared_by = $1\n            ORDER BY cleared_at DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -84,26 +84,15 @@
         "ordinal": 13,
         "name": "updated_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "address",
+        "type_info": "Text"
       }
     ],
     "parameters": {
       "Left": [
-        {
-          "Custom": {
-            "name": "report_status",
-            "kind": {
-              "Enum": [
-                "pending",
-                "claimed",
-                "cleared",
-                "verified"
-              ]
-            }
-          }
-        },
-        "Uuid",
-        "Timestamptz",
-        "Varchar",
         "Uuid"
       ]
     },
@@ -121,8 +110,9 @@
       true,
       true,
       false,
-      false
+      false,
+      true
     ]
   },
-  "hash": "9ad7d8449d4dfd4e8557483819299c1a97b45c90c18f5ac7258684b7dbc51eb7"
+  "hash": "bdbb8623ef2722405aa56867735e27527908a3a05a37bc1ab7cb120650e7c165"
 }

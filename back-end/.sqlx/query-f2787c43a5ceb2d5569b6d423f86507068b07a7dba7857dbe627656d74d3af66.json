@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            UPDATE litter_reports\n            SET status = $1,\n                claimed_by = $2,\n                claimed_at = $3\n            WHERE id = $4\n            RETURNING\n                id, reporter_id,\n                ST_Y(location)::double precision as \"latitude!\",\n                ST_X(location)::double precision as \"longitude!\",\n                description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, created_at, updated_at\n            ",
+  "query": "\n            UPDATE litter_reports\n            SET status = $1,\n                claimed_by = $2,\n                claimed_at = $3\n            WHERE id = $4\n            RETURNING\n                id, reporter_id,\n                ST_Y(location)::double precision as \"latitude!\",\n                ST_X(location)::double precision as \"longitude!\",\n                description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, created_at, updated_at, address\n            ",
   "describe": {
     "columns": [
       {
@@ -84,6 +84,11 @@
         "ordinal": 13,
         "name": "updated_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "address",
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -120,8 +125,9 @@
       true,
       true,
       false,
-      false
+      false,
+      true
     ]
   },
-  "hash": "2586e9502c733ea1fbc947e7dac82a8084a567bbaf17b4e9deab499deeb3de46"
+  "hash": "f2787c43a5ceb2d5569b6d423f86507068b07a7dba7857dbe627656d74d3af66"
 }

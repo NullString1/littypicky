@@ -2,6 +2,7 @@
   import '../app.css';
   import { onMount } from 'svelte';
   import { auth } from '$lib/stores/auth';
+  import PWAInstallPrompt from '$lib/components/PWAInstallPrompt.svelte';
 
   let { children } = $props();
 
@@ -47,6 +48,7 @@
       <nav class="hidden md:flex items-center gap-8">
         {#if $auth.isAuthenticated}
         <a href="/app/feed" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Feed</a>
+        <a href="/app/map" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Map</a>
         <a href="/app/verify" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Verify</a>
         {/if}
         <a href="/community" class="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">Community</a>
@@ -87,6 +89,8 @@
   <main class="grow">
     {@render children()}
   </main>
+
+  <PWAInstallPrompt />
 
   <footer class="bg-white border-t border-slate-200 py-12 mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">

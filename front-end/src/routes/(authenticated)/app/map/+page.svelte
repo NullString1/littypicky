@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { auth } from '$lib/stores/auth';
   import { api, type Report } from '$lib/api';
-  import { getCurrentLocation } from '$lib/utils/geolocation';
+  import { getCurrentLocation, getProfileLocationCoordinates } from '$lib/utils/geolocation';
   import 'leaflet/dist/leaflet.css';
   import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -73,19 +73,9 @@
     const coords = await getCurrentLocation({ timeout: 5000 });
     if (coords.accuracy) return { lat: coords.lat, lng: coords.lng };
 
-    // 2. Try Profile Location
-    if ($auth.user?.city && $auth.user?.country && $auth.user.city !== 'Unknown') {
-      try {
-        const query = `${$auth.user.city}, ${$auth.user.country}`;
-        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`);
-        const data = await res.json();
-        if (data.results?.[0]) {
-          return { lat: data.results[0].latitude, lng: data.results[0].longitude };
-        }
-      } catch (e) {
-        console.error('Geocoding failed:', e);
-      }
-    }
+    // 2. Try Profile Location (Fallback if GPS failed/denied)
+    const profileCoords = await getProfileLocationCoordinates($auth.user);
+    if (profileCoords) return { lat: profileCoords.lat, lng: profileCoords.lng };
 
     // 3. Fallback London
     return { lat: 51.5074, lng: -0.1278 };

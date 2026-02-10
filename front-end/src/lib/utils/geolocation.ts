@@ -152,3 +152,53 @@ export async function reverseGeocode(lat: number, lng: number): Promise<{
     return null;
   }
 }
+
+/**
+ * Get coordinates from a user's profile location
+ */
+export async function getProfileLocationCoordinates(user: { city?: string; country?: string } | null): Promise<Coordinates | null> {
+  if (!user?.city || !user?.country || user.city === 'Unknown') {
+    return null;
+  }
+
+  const cacheKey = `lp_geo_${user.city}_${user.country}`;
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch {}
+
+  const citySimple = user.city.split(',')[0].trim();
+  const queries = [
+    `${citySimple}, ${user.country}`, // Priority 1: "Plymouth, United Kingdom"
+    `${user.city}, ${user.country}`,  // Priority 2: "Plymouth, England, United Kingdom"
+    user.city,                        // Priority 3: "Plymouth, England"
+    citySimple                        // Priority 4: "Plymouth"
+  ];
+
+  // Remove duplicates and empty strings
+  const uniqueQueries = [...new Set(queries.filter(q => q && q.trim().length > 0))];
+
+  for (const query of uniqueQueries) {
+    try {
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`);
+      const data = await res.json();
+      
+      if (data.results?.[0]) {
+        const result = { 
+          lat: data.results[0].latitude, 
+          lng: data.results[0].longitude 
+        };
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(result));
+        } catch {}
+        return result;
+      }
+    } catch (e) {
+      console.warn(`Geocoding failed for query "${query}":`, e);
+    }
+  }
+  
+  return null;
+}

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { api, type Report } from '$lib/api';
   import { auth } from '$lib/stores/auth';
-  import { getCurrentLocation, calculateDistance } from '$lib/utils/geolocation';
+  import { getCurrentLocation, calculateDistance, getProfileLocationCoordinates } from '$lib/utils/geolocation';
   import { getStatusColor } from '$lib/utils/status';
   import { formatDateShort } from '$lib/utils/date';
 
@@ -46,16 +46,25 @@
     }
   }
 
-  onMount(() => {
-    if (!userLocation) {
-      userLocation = { lat: 51.5074, lng: -0.1278 };
-      loadReports();
+  onMount(async () => {
+    // 1. Try to get current location
+    const coords = await getCurrentLocation();
+    
+    // 2. If accurate, use it
+    if (coords.accuracy) {
+        userLocation = coords;
+    } else {
+        // 3. If failed, try profile location
+        const profileCoords = await getProfileLocationCoordinates($auth.user);
+        if (profileCoords) {
+            userLocation = profileCoords;
+        } else {
+            // 4. Fallback to London (default from getCurrentLocation was mostly likely London anyway, but be explicit)
+            userLocation = { lat: 51.5074, lng: -0.1278 };
+        }
     }
-
-    getCurrentLocation().then((coords) => {
-      userLocation = coords;
-      loadReports();
-    });
+    
+    loadReports();
   });
 </script>
 

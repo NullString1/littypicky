@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { api, type Report } from '$lib/api';
   import { auth } from '$lib/stores/auth';
+  import { getCurrentLocation, getProfileLocationCoordinates } from '$lib/utils/geolocation';
 
   let queue: Report[] = [];
   let loading = true;
@@ -34,24 +35,23 @@
     }
   }
 
-  onMount(() => {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                loadQueue();
-            },
-            (err) => {
-                console.warn('Geolocation denied or failed:', err);
-                loadQueue();
-            }
-        );
+  onMount(async () => {
+    // 1. Try to get current location
+    const coords = await getCurrentLocation();
+    
+    // 2. If accurate, use it
+    if (coords.accuracy) {
+        userLocation = coords;
     } else {
-        loadQueue();
+        // 3. If failed, try profile location
+        const profileCoords = await getProfileLocationCoordinates($auth.user);
+        if (profileCoords) {
+            userLocation = profileCoords;
+        } else {
+            userLocation = { lat: 51.5074, lng: -0.1278 };
+        }
     }
+    loadQueue();
   });
 
     async function handleVerify(id: string, decision: 'accept' | 'deny') {

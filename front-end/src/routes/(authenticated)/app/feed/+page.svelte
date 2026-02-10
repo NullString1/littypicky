@@ -13,7 +13,20 @@
   let userLocation = $state<{ lat: number; lng: number } | null>(null);
   let searchRadius = $state(10);
   let showLocationModal = $state(false);
+  let showRadiusSlider = $state(false);
   let locationOverrideLabel = $state('');
+  let radiusButtonRef: HTMLElement;
+  let radiusPopoverRef: HTMLElement;
+
+  function handleWindowClick(event: MouseEvent) {
+    if (showRadiusSlider && 
+        radiusButtonRef && 
+        radiusPopoverRef && 
+        !radiusButtonRef.contains(event.target as Node) && 
+        !radiusPopoverRef.contains(event.target as Node)) {
+      showRadiusSlider = false;
+    }
+  }
 
   // Use Svelte 5 $derived for automatic memoization
   // Only recalculates when reports or userLocation changes
@@ -76,6 +89,8 @@
   });
 </script>
 
+<svelte:window onclick={handleWindowClick} />
+
 <div class="bg-slate-50 min-h-full py-8">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
@@ -90,6 +105,42 @@
         </p>
       </div>
       <div class="mt-4 flex flex-col md:flex-row gap-2 md:mt-0 md:ml-4">
+        <div class="relative">
+            <button 
+                bind:this={radiusButtonRef}
+                onclick={() => showRadiusSlider = !showRadiusSlider}
+                class="h-full inline-flex items-center justify-center px-3 py-2 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                title="Adjust search radius"
+            >
+                <span>📏</span>
+            </button>
+            
+            {#if showRadiusSlider}
+                <div 
+                    bind:this={radiusPopoverRef}
+                    class="absolute right-0 top-full mt-2 w-64 bg-white p-4 rounded-lg shadow-lg border border-slate-200 z-10"
+                >
+                    <label for="feedRadius" class="flex items-center justify-between text-sm font-medium text-slate-700 mb-2">
+                        <span>Radius</span>
+                        <span class="text-primary-600 font-bold">{searchRadius} km</span>
+                    </label>
+                    <input 
+                        id="feedRadius"
+                        type="range" 
+                        min="1" 
+                        max="100" 
+                        bind:value={searchRadius} 
+                        onchange={loadReports}
+                        class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                    />
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1km</span>
+                        <span>100km</span>
+                    </div>
+                </div>
+            {/if}
+        </div>
+
         <button 
           onclick={() => showLocationModal = true}
           class="inline-flex items-center justify-center px-4 py-2 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -100,28 +151,6 @@
         <a href="/app/report" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
           Report New Spot
         </a>
-      </div>
-    </div>
-
-    <!-- Search Radius Slider -->
-    <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-      <label for="feedRadius" class="flex items-center justify-between text-sm font-medium text-slate-700 mb-2">
-        <span>Search Radius</span>
-        <span class="text-primary-600 font-bold">{searchRadius} km</span>
-      </label>
-      <input 
-        id="feedRadius"
-        type="range" 
-        min="1" 
-        max="100" 
-        bind:value={searchRadius} 
-        onchange={loadReports}
-        class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
-      />
-      <div class="flex justify-between text-xs text-slate-400 mt-1">
-        <span>1 km</span>
-        <span>50 km</span>
-        <span>100 km</span>
       </div>
     </div>
 

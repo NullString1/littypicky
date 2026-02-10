@@ -3,8 +3,28 @@ use crate::models::report::{CreateReportRequest, LitterReport, ReportStatus};
 use crate::services::image_service::ImageService;
 use crate::services::s3_service::S3Service;
 use chrono::Utc;
+use serde::Deserialize;
 use sqlx::PgPool;
 use uuid::Uuid;
+
+#[derive(Debug, Deserialize)]
+struct NominatimAddress {
+    road: Option<String>,
+    amenity: Option<String>,
+    shop: Option<String>,
+    building: Option<String>,
+    house_number: Option<String>,
+    suburb: Option<String>,
+    city: Option<String>,
+    town: Option<String>,
+    village: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct NominatimResponse {
+    address: Option<NominatimAddress>,
+    display_name: Option<String>,
+}
 
 #[derive(Clone)]
 pub struct ReportService {
@@ -20,6 +40,54 @@ impl ReportService {
             pool,
             image_service,
             s3_service,
+        }
+    }
+
+    async fn get_address_from_coords(&self, lat: f64, lon: f64) -> Option<String> {
+        let client = reqwest::Client::new();
+        let url = format!(
+            "https://nominatim.openstreetmap.org/reverse?format=json&lat={}&lon={}&zoom=18&addressdetails=1",
+            lat, lon
+        );
+
+        match client
+            .get(&url)
+            .header("User-Agent", "LittyPicky/1.0")
+            .send()
+            .await
+        {
+            Ok(resp) => match resp.json::<NominatimResponse>().await {
+                Ok(data) => {
+                    if let Some(addr) = data.address {
+                        // Prioritize specific POI names if close (Nominatim handles distance logic for us somewhat by returning the specific object)
+                        // We want "Tesco, Example Street" or "52 Example Street" or "Example Street"
+                        
+                        let street = addr.road.or(addr.suburb).or(addr.village).or(addr.town).or(addr.city);
+                        
+                        // Check for POI/Building
+                        let poi = addr.amenity.or(addr.shop).or(addr.building);
+                        
+                        match (poi, addr.house_number, street) {
+                            (Some(p), Some(s), _) if p.eq_ignore_ascii_case(&s) => Some(p), // Avoid duplication
+                            (Some(p), _, Some(s)) => Some(format!("{}, {}", p, s)),
+                            (Some(p), _, None) => Some(p),
+                            (None, Some(n), Some(s)) => Some(format!("{} {}", n, s)),
+                            (None, None, Some(s)) => Some(s),
+                            _ => data.display_name, // Fallback to full display name if nothing clean is found
+                        }
+                    } else {
+                        None
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Failed to parse Nominatim response: {}", e);
+                    None
+                }
+            },
+            Err(e) => {
+                eprintln!("Failed to fetch address: {}", e);
+                None
+            }
         }
     }
 
@@ -47,18 +115,23 @@ impl ReportService {
         // Upload to S3
         let photo_url = self.s3_service.upload_image(processed_image, "reports/before").await?;
 
+        // Get address from coordinates
+        let address = self
+            .get_address_from_coords(request.latitude, request.longitude)
+            .await;
+
         // Create the report with PostGIS geometry
         let report = sqlx::query_as!(
             LitterReport,
             r#"
             INSERT INTO litter_reports (
                 reporter_id, location, description,
-                photo_before, status
+                photo_before, status, address
             )
             VALUES (
                 $1,
                 ST_SetSRID(ST_MakePoint($3, $2), 4326),
-                $4, $5, $6
+                $4, $5, $6, $7
             )
             RETURNING
                 id, reporter_id,
@@ -67,14 +140,15 @@ impl ReportService {
                 description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, created_at, updated_at
+                photo_after, created_at, updated_at, address
             "#,
             user_id,
             request.latitude,
             request.longitude,
             request.description,
             photo_url,
-            ReportStatus::Pending as ReportStatus
+            ReportStatus::Pending as ReportStatus,
+            address
         )
         .fetch_one(&self.pool)
         .await?;
@@ -101,7 +175,7 @@ impl ReportService {
                 description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, created_at, updated_at
+                photo_after, created_at, updated_at, address
             FROM litter_reports
             WHERE ST_DWithin(
                 location::geography,
@@ -142,7 +216,7 @@ impl ReportService {
                 description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, created_at, updated_at
+                photo_after, created_at, updated_at, address
             FROM litter_reports
             WHERE ST_DWithin(
                 location::geography,
@@ -180,7 +254,7 @@ impl ReportService {
                 description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, created_at, updated_at
+                photo_after, created_at, updated_at, address
             FROM litter_reports
             WHERE id = $1
             "#,
@@ -230,7 +304,7 @@ impl ReportService {
                 description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, created_at, updated_at
+                photo_after, created_at, updated_at, address
             "#,
             ReportStatus::Claimed as ReportStatus,
             user_id,
@@ -288,7 +362,7 @@ impl ReportService {
                 description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, created_at, updated_at
+                photo_after, created_at, updated_at, address
             "#,
             ReportStatus::Cleared as ReportStatus,
             user_id,
@@ -313,7 +387,7 @@ impl ReportService {
                 description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, created_at, updated_at
+                photo_after, created_at, updated_at, address
             FROM litter_reports
             WHERE reporter_id = $1
             ORDER BY created_at DESC
@@ -341,7 +415,7 @@ impl ReportService {
                 description,
                 photo_before, status as "status: ReportStatus",
                 claimed_by, claimed_at, cleared_by, cleared_at,
-                photo_after, created_at, updated_at
+                photo_after, created_at, updated_at, address
             FROM litter_reports
             WHERE cleared_by = $1
             ORDER BY cleared_at DESC

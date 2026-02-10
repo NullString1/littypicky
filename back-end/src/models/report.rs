@@ -30,6 +30,7 @@ pub struct LitterReport {
     pub photo_after: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub address: Option<String>,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -48,6 +49,7 @@ pub struct ReportResponse {
     pub photo_after: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub address: Option<String>,
 }
 
 impl From<LitterReport> for ReportResponse {
@@ -69,6 +71,7 @@ impl From<LitterReport> for ReportResponse {
             photo_after: report.photo_after,
             created_at: report.created_at,
             updated_at: report.updated_at,
+            address: report.address,
         }
     }
 }

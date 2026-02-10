@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id, reporter_id,\n                ST_Y(location)::double precision as \"latitude!\",\n                ST_X(location)::double precision as \"longitude!\",\n                description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, created_at, updated_at\n            FROM litter_reports\n            WHERE reporter_id = $1\n            ORDER BY created_at DESC\n            ",
+  "query": "\n            INSERT INTO litter_reports (\n                reporter_id, location, description,\n                photo_before, status, address\n            )\n            VALUES (\n                $1,\n                ST_SetSRID(ST_MakePoint($3, $2), 4326),\n                $4, $5, $6, $7\n            )\n            RETURNING\n                id, reporter_id,\n                ST_Y(location)::double precision as \"latitude!\",\n                ST_X(location)::double precision as \"longitude!\",\n                description,\n                photo_before, status as \"status: ReportStatus\",\n                claimed_by, claimed_at, cleared_by, cleared_at,\n                photo_after, created_at, updated_at, address\n            ",
   "describe": {
     "columns": [
       {
@@ -84,11 +84,34 @@
         "ordinal": 13,
         "name": "updated_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "address",
+        "type_info": "Text"
       }
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Uuid",
+        "Float8",
+        "Float8",
+        "Text",
+        "Varchar",
+        {
+          "Custom": {
+            "name": "report_status",
+            "kind": {
+              "Enum": [
+                "pending",
+                "claimed",
+                "cleared",
+                "verified"
+              ]
+            }
+          }
+        },
+        "Text"
       ]
     },
     "nullable": [
@@ -105,8 +128,9 @@
       true,
       true,
       false,
-      false
+      false,
+      true
     ]
   },
-  "hash": "8ec095a477f5fbaa4717eab95444e8fa983c0682ea35935abe1c53e42c280683"
+  "hash": "bd194ba3c82ce7e77a6bb410977ad55c274e2ffe0d5a4a3ab95563987cb42b76"
 }

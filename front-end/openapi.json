@@ -1600,6 +1600,10 @@
           "updated_at"
         ],
         "properties": {
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
           "claimed_at": {
             "type": "string",
             "format": "date-time",
@@ -1772,6 +1776,10 @@
           "updated_at"
         ],
         "properties": {
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
           "claimed_at": {
             "type": "string",
             "format": "date-time",

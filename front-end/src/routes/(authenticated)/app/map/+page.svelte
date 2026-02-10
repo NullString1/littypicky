@@ -20,7 +20,13 @@
 
   onMount(async () => {
     if (browser) {
-      L = (await import('leaflet')).default;
+      const leafletModule = await import('leaflet');
+      L = leafletModule.default;
+      window.L = L; // Make Leaflet global for the plugin
+      
+      const maplibreModule = await import('maplibre-gl');
+      window.maplibregl = maplibreModule.default; // Plugin needs this global
+      
       await import('@maplibre/maplibre-gl-leaflet');
 
       // Fix Leaflet's default icon path issues
@@ -87,10 +93,21 @@
 
     map = L.map(mapElement).setView([pos.lat, pos.lng], zoom);
 
-    (L as any).maplibreGL({
-      style: 'https://tiles.openfreemap.org/styles/bright',
-      attribution: '&copy; <a href="https://openfreemap.org/">OpenFreeMap</a> contributors'
-    }).addTo(map);
+    if (typeof (L as any).maplibreGL === 'function') {
+      (L as any).maplibreGL({
+        style: 'https://tiles.openfreemap.org/styles/bright',
+        attribution: '&copy; <a href="https://openfreemap.org/">OpenFreeMap</a> contributors'
+      }).addTo(map);
+    } else {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+    }
+
+    // Force map to recalculate container size
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
 
     // Initial fetch
     await loadReports(pos.lat, pos.lng, radius);

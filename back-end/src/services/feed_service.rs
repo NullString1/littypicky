@@ -1,7 +1,7 @@
 use crate::error::AppError;
 use crate::models::feed::{
-    CreateFeedCommentRequest, CreateFeedPostRequest, FeedComment, FeedCommentResponse,
-    FeedPost, FeedPostResponse, UpdateFeedCommentRequest, UpdateFeedPostRequest,
+    CreateFeedCommentRequest, CreateFeedPostRequest, FeedComment, FeedCommentResponse, FeedPost,
+    FeedPostResponse, UpdateFeedCommentRequest, UpdateFeedPostRequest,
 };
 use crate::models::user::User;
 use crate::services::image_service::ImageService;
@@ -18,11 +18,7 @@ pub struct FeedService {
 
 impl FeedService {
     #[must_use]
-    pub fn new(
-        pool: PgPool,
-        image_service: ImageService,
-        s3_service: S3Service,
-    ) -> Self {
+    pub fn new(pool: PgPool, image_service: ImageService, s3_service: S3Service) -> Self {
         Self {
             pool,
             image_service,
@@ -74,7 +70,10 @@ impl FeedService {
         let mut image_urls = Vec::new();
         for (position, image_base64) in request.images.iter().enumerate() {
             // Process image (compress to WebP, etc.)
-            let processed_image = self.image_service.process_image(image_base64.clone()).await?;
+            let processed_image = self
+                .image_service
+                .process_image(image_base64.clone())
+                .await?;
 
             // Upload to S3
             let image_url = self
@@ -133,7 +132,11 @@ impl FeedService {
     }
 
     /// Get paginated feed posts
-    pub async fn get_feed(&self, offset: i32, limit: i32) -> Result<Vec<FeedPostResponse>, AppError> {
+    pub async fn get_feed(
+        &self,
+        offset: i32,
+        limit: i32,
+    ) -> Result<Vec<FeedPostResponse>, AppError> {
         let limit = limit.clamp(1, 100);
         let offset = offset.max(0);
 
@@ -287,7 +290,10 @@ impl FeedService {
         // Upload new images
         let mut image_urls = Vec::new();
         for (position, image_base64) in request.images.iter().enumerate() {
-            let processed_image = self.image_service.process_image(image_base64.clone()).await?;
+            let processed_image = self
+                .image_service
+                .process_image(image_base64.clone())
+                .await?;
             let image_url = self
                 .s3_service
                 .upload_image(processed_image, "feed/posts")
@@ -388,7 +394,10 @@ impl FeedService {
     }
 
     /// Get comments for a post (internal helper)
-    async fn get_comments_for_post(&self, post_id: Uuid) -> Result<Vec<FeedCommentResponse>, AppError> {
+    async fn get_comments_for_post(
+        &self,
+        post_id: Uuid,
+    ) -> Result<Vec<FeedCommentResponse>, AppError> {
         let comments = sqlx::query!(
             r#"
             SELECT fc.id, fc.post_id, fc.user_id, fc.content, fc.is_deleted,
@@ -409,7 +418,11 @@ impl FeedService {
                 id: c.id,
                 post_id: c.post_id,
                 user_id: if c.is_deleted { None } else { Some(c.user_id) },
-                author_name: if c.is_deleted { None } else { Some(c.full_name) },
+                author_name: if c.is_deleted {
+                    None
+                } else {
+                    Some(c.full_name)
+                },
                 author_avatar: None,
                 content: if c.is_deleted {
                     "[deleted]".to_string()
@@ -444,10 +457,13 @@ impl FeedService {
         request: UpdateFeedCommentRequest,
     ) -> Result<FeedComment, AppError> {
         // Verify ownership
-        let comment = sqlx::query!("SELECT user_id FROM feed_comments WHERE id = $1", comment_id)
-            .fetch_optional(&self.pool)
-            .await?
-            .ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
+        let comment = sqlx::query!(
+            "SELECT user_id FROM feed_comments WHERE id = $1",
+            comment_id
+        )
+        .fetch_optional(&self.pool)
+        .await?
+        .ok_or_else(|| AppError::NotFound("Comment not found".to_string()))?;
 
         if comment.user_id != user_id {
             return Err(AppError::Forbidden(

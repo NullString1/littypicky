@@ -57,7 +57,8 @@ async fn build_test_router(config: config::Config, pool: sqlx::PgPool) -> Router
     let email_service =
         services::EmailService::new(config.email.clone()).expect("Failed to create email service");
     let image_service = services::ImageService::new(config.image.clone());
-    let report_service = services::ReportService::new(pool.clone(), image_service.clone(), s3_service.clone());
+    let report_service =
+        services::ReportService::new(pool.clone(), image_service.clone(), s3_service.clone());
     let feed_service = services::FeedService::new(pool.clone(), image_service, s3_service.clone());
     let scoring_service = services::ScoringService::new(pool.clone(), config.scoring.clone());
 
@@ -170,7 +171,10 @@ async fn build_test_router(config: config::Config, pool: sqlx::PgPool) -> Router
         .route("/api/feed/:id", get(handlers::get_post))
         .route("/api/feed/:id", patch(handlers::update_post))
         .route("/api/feed/:id", delete(handlers::delete_post))
-        .route("/api/feed/:post_id/comments", post(handlers::create_comment))
+        .route(
+            "/api/feed/:post_id/comments",
+            post(handlers::create_comment),
+        )
         .route("/api/feed/:post_id/comments", get(handlers::get_comments))
         .route(
             "/api/feed/comments/:comment_id",

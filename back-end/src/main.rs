@@ -1,7 +1,9 @@
 use back_end::{auth, config, db, handlers, openapi::ApiDoc, services};
 
 use axum::{
-    Router, extract::DefaultBodyLimit, routing::{delete, get, patch, post, put}
+    extract::DefaultBodyLimit,
+    routing::{delete, get, patch, post, put},
+    Router,
 };
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -45,9 +47,11 @@ async fn main() -> anyhow::Result<()> {
     let jwt_service = auth::JwtService::new(config.jwt.clone());
     let email_service = services::EmailService::new(config.email.clone())?;
     let image_service = services::ImageService::new(config.image.clone());
-    let report_service = services::ReportService::new(pool.clone(), image_service.clone(), s3_service.clone());
+    let report_service =
+        services::ReportService::new(pool.clone(), image_service.clone(), s3_service.clone());
     let scoring_service = services::ScoringService::new(pool.clone(), config.scoring.clone());
-    let feed_service = services::FeedService::new(pool.clone(), image_service.clone(), s3_service.clone());
+    let feed_service =
+        services::FeedService::new(pool.clone(), image_service.clone(), s3_service.clone());
     let oauth_service = Arc::new(services::OAuthService::new(config.oauth.clone()).await?);
 
     let auth_service = Arc::new(services::AuthService::new(
@@ -219,7 +223,7 @@ async fn main() -> anyhow::Result<()> {
         .with_state(image_state);
 
     // Test helper routes (only enabled in test/dev environments)
-    
+
     // Feed routes (public read)
     let feed_public_routes = Router::new()
         .route("/api/feed", get(handlers::get_feed))
@@ -232,7 +236,10 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/feed", post(handlers::create_post))
         .route("/api/feed/:id", patch(handlers::update_post))
         .route("/api/feed/:id", delete(handlers::delete_post))
-        .route("/api/feed/:post_id/comments", post(handlers::create_comment))
+        .route(
+            "/api/feed/:post_id/comments",
+            post(handlers::create_comment),
+        )
         .route(
             "/api/feed/comments/:comment_id",
             patch(handlers::update_comment),
@@ -278,7 +285,7 @@ async fn main() -> anyhow::Result<()> {
     // Conditionally add test helper routes
     if config.enable_test_helpers {
         tracing::warn!("⚠️  TEST HELPER ENDPOINTS ARE ENABLED - DO NOT USE IN PRODUCTION!");
-        
+
         let test_helper_state = Arc::new(handlers::TestHelperState {
             pool: pool.clone(),
             auth_service: auth_service.clone(),
@@ -353,7 +360,7 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("  Documentation:");
     tracing::info!("    GET  /api/openapi.json - OpenAPI 3.0 specification");
     tracing::info!("    GET  /swagger-ui - Interactive API documentation");
-    
+
     if config.enable_test_helpers {
         tracing::info!("  Test Helpers (⚠️  TESTING ONLY - DO NOT USE IN PRODUCTION):");
         tracing::info!("    GET    /api/test/status");
@@ -362,12 +369,14 @@ async fn main() -> anyhow::Result<()> {
     }
 
     if let Some(tls) = &config.tls {
-        let tls_config = axum_server::tls_rustls::RustlsConfig::from_pem_file(
-            &tls.cert_path,
-            &tls.key_path,
-        )
-        .await?;
-        tracing::info!("TLS enabled with cert: {}, key: {}", tls.cert_path, tls.key_path);
+        let tls_config =
+            axum_server::tls_rustls::RustlsConfig::from_pem_file(&tls.cert_path, &tls.key_path)
+                .await?;
+        tracing::info!(
+            "TLS enabled with cert: {}, key: {}",
+            tls.cert_path,
+            tls.key_path
+        );
         axum_server::bind_rustls(addr, tls_config)
             .serve(app.into_make_service())
             .await?;

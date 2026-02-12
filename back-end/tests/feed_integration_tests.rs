@@ -61,7 +61,7 @@ async fn create_user_and_get_token(app: &mut axum::Router, email: &str) -> (Uuid
         .unwrap();
     let body_str = String::from_utf8_lossy(&body);
     let json: Value = serde_json::from_str(&body_str).unwrap();
-    
+
     let token = json["access_token"].as_str().unwrap().to_string();
     let user_id = json["user"]["id"].as_str().unwrap();
     let user_id = Uuid::parse_str(user_id).unwrap();
@@ -99,12 +99,12 @@ async fn test_create_post_success() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::CREATED);
-    
+
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
     let json: Value = serde_json::from_str(&String::from_utf8_lossy(&body)).unwrap();
-    
+
     assert_eq!(json["content"].as_str().unwrap(), "Test post content");
     assert_eq!(json["like_count"].as_i64().unwrap(), 0);
     assert_eq!(json["comment_count"].as_i64().unwrap(), 0);
@@ -622,7 +622,7 @@ async fn test_create_comment_success() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::CREATED);
-    
+
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
@@ -744,7 +744,7 @@ async fn test_delete_comment_soft_delete() {
         .await
         .unwrap();
     let comments: Vec<Value> = serde_json::from_str(&String::from_utf8_lossy(&body)).unwrap();
-    
+
     assert_eq!(comments.len(), 1);
     assert!(comments[0]["is_deleted"].as_bool().unwrap());
 }

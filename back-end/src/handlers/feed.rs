@@ -45,8 +45,14 @@ pub async fn create_post(
     auth_user: AuthUser,
     Json(request): Json<CreateFeedPostRequest>,
 ) -> Result<impl IntoResponse, AppError> {
-    println!("Creating post for user_id: {}, content: {}, images: {:?}", auth_user.id, request.content, request.images);
-    let post = state.feed_service.create_post(auth_user.id, request).await?;
+    println!(
+        "Creating post for user_id: {}, content: {}, images: {:?}",
+        auth_user.id, request.content, request.images
+    );
+    let post = state
+        .feed_service
+        .create_post(auth_user.id, request)
+        .await?;
     Ok((StatusCode::CREATED, Json(post)))
 }
 
@@ -336,6 +342,9 @@ pub async fn unlike_post(
     auth_user: AuthUser,
     Path(post_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
-    state.feed_service.unlike_post(post_id, auth_user.id).await?;
+    state
+        .feed_service
+        .unlike_post(post_id, auth_user.id)
+        .await?;
     Ok(StatusCode::NO_CONTENT)
 }

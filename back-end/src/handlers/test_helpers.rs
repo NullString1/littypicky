@@ -1,14 +1,11 @@
+use crate::{error::AppError, services::AuthService};
 use axum::{
     extract::{Path, State},
     Json,
 };
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 use sqlx::PgPool;
-use crate::{
-    error::AppError,
-    services::AuthService,
-};
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct TestHelperState {
@@ -24,7 +21,7 @@ pub struct TestHelperResponse {
 
 /// Verify an email address for testing purposes
 /// This bypasses the normal email verification flow
-/// 
+///
 /// **WARNING: This endpoint should ONLY be enabled in test/development environments**
 #[utoipa::path(
     post,
@@ -74,7 +71,10 @@ pub async fn verify_email_for_testing(
             message: format!("Email {} verified successfully", email),
         }))
     } else {
-        Err(AppError::NotFound(format!("User with email {} not found", email)))
+        Err(AppError::NotFound(format!(
+            "User with email {} not found",
+            email
+        )))
     }
 }
 
@@ -85,7 +85,7 @@ pub struct CleanupRequest {
 
 /// Clean up all test data for a specific user
 /// Deletes the user and all associated data (reports, verifications, etc.)
-/// 
+///
 /// **WARNING: This endpoint should ONLY be enabled in test/development environments**
 #[utoipa::path(
     delete,
@@ -104,20 +104,20 @@ pub async fn cleanup_test_data(
     let mut tx = state.pool.begin().await?;
 
     // Get user ID
-    let user = sqlx::query!(
-        "SELECT id FROM users WHERE email = $1",
-        payload.email
-    )
-    .fetch_optional(&mut *tx)
-    .await?;
+    let user = sqlx::query!("SELECT id FROM users WHERE email = $1", payload.email)
+        .fetch_optional(&mut *tx)
+        .await?;
 
     if let Some(user) = user {
         let user_id = user.id;
 
         // Delete verifications by this user
-        sqlx::query!("DELETE FROM report_verifications WHERE verifier_id = $1", user_id)
-            .execute(&mut *tx)
-            .await?;
+        sqlx::query!(
+            "DELETE FROM report_verifications WHERE verifier_id = $1",
+            user_id
+        )
+        .execute(&mut *tx)
+        .await?;
 
         // Delete verifications for reports created by this user
         sqlx::query!(
@@ -136,14 +136,20 @@ pub async fn cleanup_test_data(
         .await?;
 
         // Delete email verification tokens
-        sqlx::query!("DELETE FROM email_verification_tokens WHERE user_id = $1", user_id)
-            .execute(&mut *tx)
-            .await?;
+        sqlx::query!(
+            "DELETE FROM email_verification_tokens WHERE user_id = $1",
+            user_id
+        )
+        .execute(&mut *tx)
+        .await?;
 
         // Delete password reset tokens
-        sqlx::query!("DELETE FROM password_reset_tokens WHERE user_id = $1", user_id)
-            .execute(&mut *tx)
-            .await?;
+        sqlx::query!(
+            "DELETE FROM password_reset_tokens WHERE user_id = $1",
+            user_id
+        )
+        .execute(&mut *tx)
+        .await?;
 
         // Delete refresh tokens
         sqlx::query!("DELETE FROM refresh_tokens WHERE user_id = $1", user_id)

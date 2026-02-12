@@ -4,2081 +4,2081 @@
  */
 
 export interface paths {
-    "/api/admin/reports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get all reports (not just nearby)
-         * @description GET /api/admin/reports
-         */
-        get: operations["list_all_reports"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/api/admin/reports": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/admin/reports/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Delete a report (for spam/inappropriate content)
-         * @description DELETE /api/admin/reports/:id
-         */
-        delete: operations["delete_report"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get all reports (not just nearby)
+     * @description GET /api/admin/reports
+     */
+    get: operations["list_all_reports"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/admin/reports/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/admin/users": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get all users (paginated)
-         * @description GET /api/admin/users?page=1&limit=20
-         */
-        get: operations["list_users"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Delete a report (for spam/inappropriate content)
+     * @description DELETE /api/admin/reports/:id
+     */
+    delete: operations["delete_report"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/admin/users": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/admin/users/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get user by ID
-         * @description GET /api/admin/users/:id
-         */
-        get: operations["get_user_by_id"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get all users (paginated)
+     * @description GET /api/admin/users?page=1&limit=20
+     */
+    get: operations["list_users"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/admin/users/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/admin/users/{id}/ban": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["toggle_user_ban"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get user by ID
+     * @description GET /api/admin/users/:id
+     */
+    get: operations["get_user_by_id"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/admin/users/{id}/ban": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/forgot-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["forgot_password"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put: operations["toggle_user_ban"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/forgot-password": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/google": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Initiate Google OAuth login
-         * @description GET /api/auth/google
-         */
-        get: operations["google_login"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations["forgot_password"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/google": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/google/callback": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Handle Google OAuth callback
-         * @description GET /api/auth/google/callback
-         */
-        get: operations["google_callback"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Initiate Google OAuth login
+     * @description GET /api/auth/google
+     */
+    get: operations["google_login"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/google/callback": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["login"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Handle Google OAuth callback
+     * @description GET /api/auth/google/callback
+     */
+    get: operations["google_callback"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/login": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["logout"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations["login"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/logout": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["refresh_token"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations["logout"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/refresh": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/register": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["register"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations["refresh_token"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/register": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/resend-verification": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["resend_verification"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations["register"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/resend-verification": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/reset-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["reset_password"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations["resend_verification"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/reset-password": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/verify-email": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["verify_email"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations["reset_password"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/verify-email": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/images/reports/{id}/after": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get report after photo
-         * @description GET /api/images/reports/:id/after
-         */
-        get: operations["get_report_after_photo"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations["verify_email"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/images/reports/{id}/after": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/images/reports/{id}/before": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get report before photo
-         * @description GET /api/images/reports/:id/before
-         */
-        get: operations["get_report_before_photo"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get report after photo
+     * @description GET /api/images/reports/:id/after
+     */
+    get: operations["get_report_after_photo"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/images/reports/{id}/before": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/leaderboards": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get global leaderboard
-         * @description GET /api/leaderboards?period=weekly
-         */
-        get: operations["get_global_leaderboard"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get report before photo
+     * @description GET /api/images/reports/:id/before
+     */
+    get: operations["get_report_before_photo"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/leaderboards": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/leaderboards/city/{city}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get leaderboard by city
-         * @description GET /api/leaderboards/city/:city?period=weekly
-         */
-        get: operations["get_city_leaderboard"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get global leaderboard
+     * @description GET /api/leaderboards?period=weekly
+     */
+    get: operations["get_global_leaderboard"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/leaderboards/city/{city}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/leaderboards/country/{country}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get leaderboard by country
-         * @description GET /api/leaderboards/country/:country?period=weekly
-         */
-        get: operations["get_country_leaderboard"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get leaderboard by city
+     * @description GET /api/leaderboards/city/:city?period=weekly
+     */
+    get: operations["get_city_leaderboard"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/leaderboards/country/{country}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/reports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Create a new litter report
-         * @description POST /api/reports
-         */
-        post: operations["create_report"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get leaderboard by country
+     * @description GET /api/leaderboards/country/:country?period=weekly
+     */
+    get: operations["get_country_leaderboard"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/reports": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/reports/my-clears": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get all reports cleared by the current user
-         * @description GET /api/reports/my-clears
-         */
-        get: operations["get_my_cleared_reports"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Create a new litter report
+     * @description POST /api/reports
+     */
+    post: operations["create_report"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/reports/my-clears": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/reports/my-reports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get all reports created by the current user
-         * @description GET /api/reports/my-reports
-         */
-        get: operations["get_my_reports"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get all reports cleared by the current user
+     * @description GET /api/reports/my-clears
+     */
+    get: operations["get_my_cleared_reports"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/reports/my-reports": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/reports/nearby": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get nearby reports
-         * @description GET /`api/reports/nearby?latitude=X&longitude=Y&radius_km=Z`
-         */
-        get: operations["get_nearby_reports"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get all reports created by the current user
+     * @description GET /api/reports/my-reports
+     */
+    get: operations["get_my_reports"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/reports/nearby": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/reports/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get a single report by ID
-         * @description GET /api/reports/:id
-         */
-        get: operations["get_report"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get nearby reports
+     * @description GET /`api/reports/nearby?latitude=X&longitude=Y&radius_km=Z`
+     */
+    get: operations["get_nearby_reports"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/reports/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/reports/{id}/claim": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Claim a report for cleanup
-         * @description POST /api/reports/:id/claim
-         */
-        post: operations["claim_report"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get a single report by ID
+     * @description GET /api/reports/:id
+     */
+    get: operations["get_report"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/reports/{id}/claim": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/reports/{id}/clear": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Clear a report with after photo
-         * @description POST /api/reports/:id/clear
-         */
-        post: operations["clear_report"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Claim a report for cleanup
+     * @description POST /api/reports/:id/claim
+     */
+    post: operations["claim_report"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/reports/{id}/clear": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/reports/{id}/verifications": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get all verifications for a report
-         * @description GET /api/reports/:id/verifications
-         */
-        get: operations["get_report_verifications"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Clear a report with after photo
+     * @description POST /api/reports/:id/clear
+     */
+    post: operations["clear_report"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/reports/{id}/verifications": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/reports/{id}/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Verify a cleared report
-         * @description POST /api/reports/:id/verify
-         */
-        post: operations["verify_report"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get all verifications for a report
+     * @description GET /api/reports/:id/verifications
+     */
+    get: operations["get_report_verifications"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/reports/{id}/verify": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/test/cleanup": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Clean up all test data for a specific user
-         * @description Deletes the user and all associated data (reports, verifications, etc.)
-         *
-         *     **WARNING: This endpoint should ONLY be enabled in test/development environments**
-         */
-        delete: operations["cleanup_test_data"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Verify a cleared report
+     * @description POST /api/reports/:id/verify
+     */
+    post: operations["verify_report"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/test/cleanup": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/test/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get the current test environment status */
-        get: operations["test_status"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Clean up all test data for a specific user
+     * @description Deletes the user and all associated data (reports, verifications, etc.)
+     *
+     *     **WARNING: This endpoint should ONLY be enabled in test/development environments**
+     */
+    delete: operations["cleanup_test_data"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/test/status": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/test/verify-email/{email}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Verify an email address for testing purposes
-         * @description This bypasses the normal email verification flow
-         *
-         *     **WARNING: This endpoint should ONLY be enabled in test/development environments**
-         */
-        post: operations["verify_email_for_testing"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Get the current test environment status */
+    get: operations["test_status"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/test/verify-email/{email}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/users/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get current authenticated user's profile
-         * @description GET /api/users/me
-         */
-        get: operations["get_current_user"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Update current user's profile
-         * @description PATCH /api/users/me
-         */
-        patch: operations["update_current_user"];
-        trace?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Verify an email address for testing purposes
+     * @description This bypasses the normal email verification flow
+     *
+     *     **WARNING: This endpoint should ONLY be enabled in test/development environments**
+     */
+    post: operations["verify_email_for_testing"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/users/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/users/me/score": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get user's score and statistics
-         * @description GET /api/users/me/score
-         */
-        get: operations["get_current_user_score"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Get current authenticated user's profile
+     * @description GET /api/users/me
+     */
+    get: operations["get_current_user"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Update current user's profile
+     * @description PATCH /api/users/me
+     */
+    patch: operations["update_current_user"];
+    trace?: never;
+  };
+  "/api/users/me/score": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    /**
+     * Get user's score and statistics
+     * @description GET /api/users/me/score
+     */
+    get: operations["get_current_user_score"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        AdminReportView: {
-            /** Format: date-time */
-            claimed_at?: string | null;
-            /** Format: uuid */
-            claimed_by?: string | null;
-            /** Format: date-time */
-            cleared_at?: string | null;
-            /** Format: uuid */
-            cleared_by?: string | null;
-            /** Format: date-time */
-            created_at: string;
-            description?: string | null;
-            /** Format: uuid */
-            id: string;
-            /** Format: double */
-            latitude: number;
-            /** Format: double */
-            longitude: number;
-            reporter_email: string;
-            /** Format: uuid */
-            reporter_id: string;
-            reporter_name: string;
-            status: components["schemas"]["ReportStatus"];
-        };
-        AuthTokens: {
-            /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
-            access_token: string;
-            /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
-            refresh_token: string;
-            user: components["schemas"]["UserResponse"];
-        };
-        /**
-         * @description Ban/unban a user
-         *     PUT /api/admin/users/:id/ban
-         */
-        BanUserRequest: {
-            /** @example false */
-            is_active: boolean;
-        };
-        CleanupRequest: {
-            email: string;
-        };
-        ClearReportRequest: {
-            /** @example data:image/jpeg;base64,... */
-            photo_base64: string;
-        };
-        CreateReportRequest: {
-            /** @example Plastic bottles near the park entrance */
-            description?: string | null;
-            /**
-             * Format: double
-             * @example 51.5074
-             */
-            latitude: number;
-            /**
-             * Format: double
-             * @example -0.1278
-             */
-            longitude: number;
-            /** @example data:image/jpeg;base64,... */
-            photo_base64: string;
-        };
-        CreateVerificationRequest: {
-            /** @example Good job! */
-            comment?: string | null;
-            /** @example true */
-            is_verified: boolean;
-        };
-        ForgotPasswordRequest: {
-            /** @example user@example.com */
-            email: string;
-        };
-        LeaderboardEntry: {
-            city: string;
-            country: string;
-            /** Format: int32 */
-            current_streak: number;
-            full_name: string;
-            /** Format: int64 */
-            rank: number;
-            /** Format: int32 */
-            reports_cleared: number;
-            /** Format: int32 */
-            total_points: number;
-            /** Format: uuid */
-            user_id: string;
-        };
-        ListUsersQuery: {
-            /**
-             * Format: int64
-             * @example 20
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @example 1
-             */
-            page?: number | null;
-        };
-        LitterReport: {
-            address?: string | null;
-            /** Format: date-time */
-            claimed_at?: string | null;
-            /** Format: uuid */
-            claimed_by?: string | null;
-            /** Format: date-time */
-            cleared_at?: string | null;
-            /** Format: uuid */
-            cleared_by?: string | null;
-            /** Format: date-time */
-            created_at: string;
-            description?: string | null;
-            /** Format: uuid */
-            id: string;
-            /** Format: double */
-            latitude: number;
-            /** Format: double */
-            longitude: number;
-            photo_after?: string | null;
-            photo_before?: string | null;
-            /** Format: uuid */
-            reporter_id: string;
-            status: components["schemas"]["ReportStatus"];
-            /** Format: date-time */
-            updated_at: string;
-        };
-        LoginRequest: {
-            /** @example user@example.com */
-            email: string;
-            /** @example SecurePassword123 */
-            password: string;
-        };
-        MessageResponse: {
-            /** @example Operation successful */
-            message: string;
-        };
-        /** @description Response for OAuth login */
-        OAuthLoginResponse: {
-            /** @example https://accounts.google.com/o/oauth2/v2/auth?... */
-            auth_url: string;
-        };
-        RefreshTokenRequest: {
-            /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
-            refresh_token: string;
-        };
-        RefreshTokenResponse: {
-            /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
-            access_token: string;
-        };
-        RegisterRequest: {
-            /** @example London */
-            city: string;
-            /** @example UK */
-            country: string;
-            /** @example user@example.com */
-            email: string;
-            /** @example John Doe */
-            full_name: string;
-            /** @example SecurePassword123 */
-            password: string;
-        };
-        ReportResponse: {
-            address?: string | null;
-            /** Format: date-time */
-            claimed_at?: string | null;
-            /** Format: uuid */
-            claimed_by?: string | null;
-            /** Format: date-time */
-            cleared_at?: string | null;
-            /** Format: uuid */
-            cleared_by?: string | null;
-            /** Format: date-time */
-            created_at: string;
-            description?: string | null;
-            /** Format: uuid */
-            id: string;
-            /** Format: double */
-            latitude: number;
-            /** Format: double */
-            longitude: number;
-            photo_after?: string | null;
-            photo_before?: string | null;
-            /** Format: uuid */
-            reporter_id: string;
-            status: components["schemas"]["ReportStatus"];
-            /** Format: date-time */
-            updated_at: string;
-        };
-        /** @enum {string} */
-        ReportStatus: "pending" | "claimed" | "cleared" | "verified";
-        ReportVerification: {
-            comment?: string | null;
-            /** Format: date-time */
-            created_at: string;
-            /** Format: uuid */
-            id: string;
-            is_verified: boolean;
-            /** Format: uuid */
-            report_id: string;
-            /** Format: uuid */
-            verifier_id: string;
-        };
-        ResendVerificationRequest: {
-            /** @example user@example.com */
-            email: string;
-        };
-        ResetPasswordRequest: {
-            /** @example NewSecurePassword123 */
-            new_password: string;
-            /** @example VGhpc0lzQVRva2Vu... */
-            token: string;
-        };
-        ScoreResponse: {
-            /** Format: int32 */
-            current_streak: number;
-            /** Format: int32 */
-            longest_streak: number;
-            /** Format: int32 */
-            reports_cleared: number;
-            /** Format: int32 */
-            total_points: number;
-            /** Format: uuid */
-            user_id: string;
-        };
-        TestHelperResponse: {
-            message: string;
-            success: boolean;
-        };
-        UpdateUserRequest: {
-            /** @example Manchester */
-            city?: string | null;
-            /** @example UK */
-            country?: string | null;
-            /** @example Jane Doe */
-            full_name?: string | null;
-            /**
-             * Format: int32
-             * @example 10
-             */
-            search_radius_km?: number | null;
-        };
-        User: {
-            city: string;
-            country: string;
-            /** Format: date-time */
-            created_at: string;
-            email: string;
-            email_verified: boolean;
-            /** Format: date-time */
-            email_verified_at?: string | null;
-            full_name: string;
-            /** Format: uuid */
-            id: string;
-            is_active: boolean;
-            oauth_provider?: string | null;
-            oauth_subject?: string | null;
-            role: components["schemas"]["UserRole"];
-            /** Format: int32 */
-            search_radius_km: number;
-            /** Format: date-time */
-            updated_at: string;
-        };
-        UserResponse: {
-            city: string;
-            country: string;
-            /** Format: date-time */
-            created_at: string;
-            email: string;
-            email_verified: boolean;
-            full_name: string;
-            /** Format: uuid */
-            id: string;
-            role: components["schemas"]["UserRole"];
-            /** Format: int32 */
-            search_radius_km: number;
-        };
-        /** @enum {string} */
-        UserRole: "user" | "admin";
-        UserScore: {
-            /** Format: date-time */
-            created_at: string;
-            /** Format: int32 */
-            current_streak: number;
-            /** Format: uuid */
-            id: string;
-            /** Format: date */
-            last_cleared_date?: string | null;
-            /** Format: int32 */
-            longest_streak: number;
-            /** Format: int32 */
-            reports_cleared: number;
-            /** Format: int32 */
-            total_clears: number;
-            /** Format: int32 */
-            total_points: number;
-            /** Format: int32 */
-            total_reports: number;
-            /** Format: int32 */
-            total_verifications: number;
-            /** Format: date-time */
-            updated_at: string;
-            /** Format: uuid */
-            user_id: string;
-        };
-        UserScoreRecord: {
-            /** Format: int32 */
-            current_streak: number;
-            /** Format: date */
-            last_clear_date?: string | null;
-            /** Format: int32 */
-            longest_streak: number;
-            /** Format: int32 */
-            total_clears: number;
-            /** Format: int32 */
-            total_points: number;
-            /** Format: int32 */
-            total_reports: number;
-            /** Format: int32 */
-            total_verifications: number;
-        };
-        VerificationResponse: {
-            comment?: string | null;
-            /** Format: date-time */
-            created_at: string;
-            /** Format: uuid */
-            id: string;
-            is_verified: boolean;
-            /** Format: uuid */
-            report_id: string;
-            /** Format: uuid */
-            verifier_id: string;
-        };
-        VerifyEmailRequest: {
-            /** @example VGhpc0lzQVRva2Vu... */
-            token: string;
-        };
+  schemas: {
+    AdminReportView: {
+      /** Format: date-time */
+      claimed_at?: string | null;
+      /** Format: uuid */
+      claimed_by?: string | null;
+      /** Format: date-time */
+      cleared_at?: string | null;
+      /** Format: uuid */
+      cleared_by?: string | null;
+      /** Format: date-time */
+      created_at: string;
+      description?: string | null;
+      /** Format: uuid */
+      id: string;
+      /** Format: double */
+      latitude: number;
+      /** Format: double */
+      longitude: number;
+      reporter_email: string;
+      /** Format: uuid */
+      reporter_id: string;
+      reporter_name: string;
+      status: components["schemas"]["ReportStatus"];
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    AuthTokens: {
+      /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
+      access_token: string;
+      /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
+      refresh_token: string;
+      user: components["schemas"]["UserResponse"];
+    };
+    /**
+     * @description Ban/unban a user
+     *     PUT /api/admin/users/:id/ban
+     */
+    BanUserRequest: {
+      /** @example false */
+      is_active: boolean;
+    };
+    CleanupRequest: {
+      email: string;
+    };
+    ClearReportRequest: {
+      /** @example data:image/jpeg;base64,... */
+      photo_base64: string;
+    };
+    CreateReportRequest: {
+      /** @example Plastic bottles near the park entrance */
+      description?: string | null;
+      /**
+       * Format: double
+       * @example 51.5074
+       */
+      latitude: number;
+      /**
+       * Format: double
+       * @example -0.1278
+       */
+      longitude: number;
+      /** @example data:image/jpeg;base64,... */
+      photo_base64: string;
+    };
+    CreateVerificationRequest: {
+      /** @example Good job! */
+      comment?: string | null;
+      /** @example true */
+      is_verified: boolean;
+    };
+    ForgotPasswordRequest: {
+      /** @example user@example.com */
+      email: string;
+    };
+    LeaderboardEntry: {
+      city: string;
+      country: string;
+      /** Format: int32 */
+      current_streak: number;
+      full_name: string;
+      /** Format: int64 */
+      rank: number;
+      /** Format: int32 */
+      reports_cleared: number;
+      /** Format: int32 */
+      total_points: number;
+      /** Format: uuid */
+      user_id: string;
+    };
+    ListUsersQuery: {
+      /**
+       * Format: int64
+       * @example 20
+       */
+      limit?: number | null;
+      /**
+       * Format: int64
+       * @example 1
+       */
+      page?: number | null;
+    };
+    LitterReport: {
+      address?: string | null;
+      /** Format: date-time */
+      claimed_at?: string | null;
+      /** Format: uuid */
+      claimed_by?: string | null;
+      /** Format: date-time */
+      cleared_at?: string | null;
+      /** Format: uuid */
+      cleared_by?: string | null;
+      /** Format: date-time */
+      created_at: string;
+      description?: string | null;
+      /** Format: uuid */
+      id: string;
+      /** Format: double */
+      latitude: number;
+      /** Format: double */
+      longitude: number;
+      photo_after?: string | null;
+      photo_before?: string | null;
+      /** Format: uuid */
+      reporter_id: string;
+      status: components["schemas"]["ReportStatus"];
+      /** Format: date-time */
+      updated_at: string;
+    };
+    LoginRequest: {
+      /** @example user@example.com */
+      email: string;
+      /** @example SecurePassword123 */
+      password: string;
+    };
+    MessageResponse: {
+      /** @example Operation successful */
+      message: string;
+    };
+    /** @description Response for OAuth login */
+    OAuthLoginResponse: {
+      /** @example https://accounts.google.com/o/oauth2/v2/auth?... */
+      auth_url: string;
+    };
+    RefreshTokenRequest: {
+      /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
+      refresh_token: string;
+    };
+    RefreshTokenResponse: {
+      /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
+      access_token: string;
+    };
+    RegisterRequest: {
+      /** @example London */
+      city: string;
+      /** @example UK */
+      country: string;
+      /** @example user@example.com */
+      email: string;
+      /** @example John Doe */
+      full_name: string;
+      /** @example SecurePassword123 */
+      password: string;
+    };
+    ReportResponse: {
+      address?: string | null;
+      /** Format: date-time */
+      claimed_at?: string | null;
+      /** Format: uuid */
+      claimed_by?: string | null;
+      /** Format: date-time */
+      cleared_at?: string | null;
+      /** Format: uuid */
+      cleared_by?: string | null;
+      /** Format: date-time */
+      created_at: string;
+      description?: string | null;
+      /** Format: uuid */
+      id: string;
+      /** Format: double */
+      latitude: number;
+      /** Format: double */
+      longitude: number;
+      photo_after?: string | null;
+      photo_before?: string | null;
+      /** Format: uuid */
+      reporter_id: string;
+      status: components["schemas"]["ReportStatus"];
+      /** Format: date-time */
+      updated_at: string;
+    };
+    /** @enum {string} */
+    ReportStatus: "pending" | "claimed" | "cleared" | "verified";
+    ReportVerification: {
+      comment?: string | null;
+      /** Format: date-time */
+      created_at: string;
+      /** Format: uuid */
+      id: string;
+      is_verified: boolean;
+      /** Format: uuid */
+      report_id: string;
+      /** Format: uuid */
+      verifier_id: string;
+    };
+    ResendVerificationRequest: {
+      /** @example user@example.com */
+      email: string;
+    };
+    ResetPasswordRequest: {
+      /** @example NewSecurePassword123 */
+      new_password: string;
+      /** @example VGhpc0lzQVRva2Vu... */
+      token: string;
+    };
+    ScoreResponse: {
+      /** Format: int32 */
+      current_streak: number;
+      /** Format: int32 */
+      longest_streak: number;
+      /** Format: int32 */
+      reports_cleared: number;
+      /** Format: int32 */
+      total_points: number;
+      /** Format: uuid */
+      user_id: string;
+    };
+    TestHelperResponse: {
+      message: string;
+      success: boolean;
+    };
+    UpdateUserRequest: {
+      /** @example Manchester */
+      city?: string | null;
+      /** @example UK */
+      country?: string | null;
+      /** @example Jane Doe */
+      full_name?: string | null;
+      /**
+       * Format: int32
+       * @example 10
+       */
+      search_radius_km?: number | null;
+    };
+    User: {
+      city: string;
+      country: string;
+      /** Format: date-time */
+      created_at: string;
+      email: string;
+      email_verified: boolean;
+      /** Format: date-time */
+      email_verified_at?: string | null;
+      full_name: string;
+      /** Format: uuid */
+      id: string;
+      is_active: boolean;
+      oauth_provider?: string | null;
+      oauth_subject?: string | null;
+      role: components["schemas"]["UserRole"];
+      /** Format: int32 */
+      search_radius_km: number;
+      /** Format: date-time */
+      updated_at: string;
+    };
+    UserResponse: {
+      city: string;
+      country: string;
+      /** Format: date-time */
+      created_at: string;
+      email: string;
+      email_verified: boolean;
+      full_name: string;
+      /** Format: uuid */
+      id: string;
+      role: components["schemas"]["UserRole"];
+      /** Format: int32 */
+      search_radius_km: number;
+    };
+    /** @enum {string} */
+    UserRole: "user" | "admin";
+    UserScore: {
+      /** Format: date-time */
+      created_at: string;
+      /** Format: int32 */
+      current_streak: number;
+      /** Format: uuid */
+      id: string;
+      /** Format: date */
+      last_cleared_date?: string | null;
+      /** Format: int32 */
+      longest_streak: number;
+      /** Format: int32 */
+      reports_cleared: number;
+      /** Format: int32 */
+      total_clears: number;
+      /** Format: int32 */
+      total_points: number;
+      /** Format: int32 */
+      total_reports: number;
+      /** Format: int32 */
+      total_verifications: number;
+      /** Format: date-time */
+      updated_at: string;
+      /** Format: uuid */
+      user_id: string;
+    };
+    UserScoreRecord: {
+      /** Format: int32 */
+      current_streak: number;
+      /** Format: date */
+      last_clear_date?: string | null;
+      /** Format: int32 */
+      longest_streak: number;
+      /** Format: int32 */
+      total_clears: number;
+      /** Format: int32 */
+      total_points: number;
+      /** Format: int32 */
+      total_reports: number;
+      /** Format: int32 */
+      total_verifications: number;
+    };
+    VerificationResponse: {
+      comment?: string | null;
+      /** Format: date-time */
+      created_at: string;
+      /** Format: uuid */
+      id: string;
+      is_verified: boolean;
+      /** Format: uuid */
+      report_id: string;
+      /** Format: uuid */
+      verifier_id: string;
+    };
+    VerifyEmailRequest: {
+      /** @example VGhpc0lzQVRva2Vu... */
+      token: string;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    list_all_reports: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns all reports */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminReportView"][];
-                };
-            };
-            /** @description Admin access required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  list_all_reports: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    delete_report: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Report ID */
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Returns all reports */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Report deleted */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Admin access required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Report not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["AdminReportView"][];
         };
+      };
+      /** @description Admin access required */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
-    list_users: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns list of users */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserResponse"][];
-                };
-            };
-            /** @description Admin access required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  delete_report: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Report ID */
+        id: string;
+      };
+      cookie?: never;
     };
-    get_user_by_id: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description User ID */
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Report deleted */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Returns user details */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserResponse"];
-                };
-            };
-            /** @description Admin access required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description User not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content?: never;
+      };
+      /** @description Admin access required */
+      403: {
+        headers: {
+          [name: string]: unknown;
         };
+        content?: never;
+      };
+      /** @description Report not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
-    toggle_user_ban: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description User ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BanUserRequest"];
-            };
-        };
-        responses: {
-            /** @description User ban status updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserResponse"];
-                };
-            };
-            /** @description Admin access required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description User not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  list_users: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    forgot_password: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Returns list of users */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ForgotPasswordRequest"];
-            };
+        content: {
+          "application/json": components["schemas"]["UserResponse"][];
         };
-        responses: {
-            /** @description Password reset email sent (if email exists) */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageResponse"];
-                };
-            };
+      };
+      /** @description Admin access required */
+      403: {
+        headers: {
+          [name: string]: unknown;
         };
+        content?: never;
+      };
     };
-    google_login: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns Google OAuth authorization URL */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OAuthLoginResponse"];
-                };
-            };
-        };
+  };
+  get_user_by_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description User ID */
+        id: string;
+      };
+      cookie?: never;
     };
-    google_callback: {
-        parameters: {
-            query: {
-                code: string;
-                state: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Returns user details */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description OAuth login successful */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthTokens"];
-                };
-            };
-            /** @description Invalid or expired session */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description OAuth exchange failed */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["UserResponse"];
         };
+      };
+      /** @description Admin access required */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description User not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
-    login: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LoginRequest"];
-            };
-        };
-        responses: {
-            /** @description Login successful */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthTokens"];
-                };
-            };
-            /** @description Invalid credentials */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Email not verified */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  toggle_user_ban: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description User ID */
+        id: string;
+      };
+      cookie?: never;
     };
-    logout: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshTokenRequest"];
-            };
-        };
-        responses: {
-            /** @description Logged out successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageResponse"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BanUserRequest"];
+      };
     };
-    refresh_token: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description User ban status updated */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshTokenRequest"];
-            };
+        content: {
+          "application/json": components["schemas"]["UserResponse"];
         };
-        responses: {
-            /** @description Token refreshed successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RefreshTokenResponse"];
-                };
-            };
-            /** @description Invalid or expired refresh token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+      };
+      /** @description Admin access required */
+      403: {
+        headers: {
+          [name: string]: unknown;
         };
+        content?: never;
+      };
+      /** @description User not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
-    register: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RegisterRequest"];
-            };
-        };
-        responses: {
-            /** @description User registered successfully. Verification email sent. */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageResponse"];
-                };
-            };
-            /** @description Validation error */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Email already registered */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  forgot_password: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    resend_verification: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResendVerificationRequest"];
-            };
-        };
-        responses: {
-            /** @description Verification email sent */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageResponse"];
-                };
-            };
-            /** @description Email already verified */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description User not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ForgotPasswordRequest"];
+      };
     };
-    reset_password: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Password reset email sent (if email exists) */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResetPasswordRequest"];
-            };
+        content: {
+          "application/json": components["schemas"]["MessageResponse"];
         };
-        responses: {
-            /** @description Password reset successful */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageResponse"];
-                };
-            };
-            /** @description Invalid or expired token */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+      };
     };
-    verify_email: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["VerifyEmailRequest"];
-            };
-        };
-        responses: {
-            /** @description Email verified successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthTokens"];
-                };
-            };
-            /** @description Invalid or expired token */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  google_login: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    get_report_after_photo: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Report ID */
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Returns Google OAuth authorization URL */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Returns image */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Report or image not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["OAuthLoginResponse"];
         };
+      };
     };
-    get_report_before_photo: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Report ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns image */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Report or image not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  google_callback: {
+    parameters: {
+      query: {
+        code: string;
+        state: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    get_global_leaderboard: {
-        parameters: {
-            query?: {
-                /** @example weekly */
-                period?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description OAuth login successful */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Returns leaderboard */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LeaderboardEntry"][];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["AuthTokens"];
         };
+      };
+      /** @description Invalid or expired session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description OAuth exchange failed */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
-    get_city_leaderboard: {
-        parameters: {
-            query?: {
-                /** @example weekly */
-                period?: string | null;
-            };
-            header?: never;
-            path: {
-                /** @description City name */
-                city: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns city leaderboard */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LeaderboardEntry"][];
-                };
-            };
-        };
+  };
+  login: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    get_country_leaderboard: {
-        parameters: {
-            query?: {
-                /** @example weekly */
-                period?: string | null;
-            };
-            header?: never;
-            path: {
-                /** @description Country name */
-                country: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns country leaderboard */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LeaderboardEntry"][];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LoginRequest"];
+      };
     };
-    create_report: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Login successful */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateReportRequest"];
-            };
+        content: {
+          "application/json": components["schemas"]["AuthTokens"];
         };
-        responses: {
-            /** @description Report created successfully */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReportResponse"];
-                };
-            };
-            /** @description Invalid input or image */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Email verification required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+      };
+      /** @description Invalid credentials */
+      401: {
+        headers: {
+          [name: string]: unknown;
         };
+        content?: never;
+      };
+      /** @description Email not verified */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
-    get_my_cleared_reports: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns user's cleared reports */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReportResponse"][];
-                };
-            };
-        };
+  };
+  logout: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    get_my_reports: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns user's reports */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReportResponse"][];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RefreshTokenRequest"];
+      };
     };
-    get_nearby_reports: {
-        parameters: {
-            query: {
-                /** @example 51.5074 */
-                latitude: number;
-                /** @example -0.1278 */
-                longitude: number;
-                /** @example 5 */
-                radius_km?: number | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Logged out successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Returns reports within radius */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReportResponse"][];
-                };
-            };
-            /** @description Invalid coordinates */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["MessageResponse"];
         };
+      };
     };
-    get_report: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Report ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns report details */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReportResponse"];
-                };
-            };
-            /** @description Report not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  refresh_token: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    claim_report: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Report ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Report claimed successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReportResponse"];
-                };
-            };
-            /** @description Report already claimed or not in pending status */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Report not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RefreshTokenRequest"];
+      };
     };
-    clear_report: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Report ID */
-                id: string;
-            };
-            cookie?: never;
+    responses: {
+      /** @description Token refreshed successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ClearReportRequest"];
-            };
+        content: {
+          "application/json": components["schemas"]["RefreshTokenResponse"];
         };
-        responses: {
-            /** @description Report cleared successfully. Points awarded. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReportResponse"];
-                };
-            };
-            /** @description Report not claimed by you or invalid status */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Report not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+      };
+      /** @description Invalid or expired refresh token */
+      401: {
+        headers: {
+          [name: string]: unknown;
         };
+        content?: never;
+      };
     };
-    get_report_verifications: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Report ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns list of verifications */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VerificationResponse"][];
-                };
-            };
-            /** @description Report not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  register: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    verify_report: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Report ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateVerificationRequest"];
-            };
-        };
-        responses: {
-            /** @description Report verification submitted */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VerificationResponse"];
-                };
-            };
-            /** @description Invalid report status or self-verification */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Not enough experience to verify */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Report not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RegisterRequest"];
+      };
     };
-    cleanup_test_data: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description User registered successfully. Verification email sent. */
+      201: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CleanupRequest"];
-            };
+        content: {
+          "application/json": components["schemas"]["MessageResponse"];
         };
-        responses: {
-            /** @description Test data cleaned up successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TestHelperResponse"];
-                };
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+      };
+      /** @description Validation error */
+      400: {
+        headers: {
+          [name: string]: unknown;
         };
+        content?: never;
+      };
+      /** @description Email already registered */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
-    test_status: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Test helpers are enabled */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  resend_verification: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    verify_email_for_testing: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Email address to verify */
-                email: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Email verified successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TestHelperResponse"];
-                };
-            };
-            /** @description User not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Internal server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ResendVerificationRequest"];
+      };
     };
-    get_current_user: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Verification email sent */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Returns user profile */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserResponse"];
-                };
-            };
-            /** @description User not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          "application/json": components["schemas"]["MessageResponse"];
         };
+      };
+      /** @description Email already verified */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description User not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
-    update_current_user: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateUserRequest"];
-            };
-        };
-        responses: {
-            /** @description Profile updated successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserResponse"];
-                };
-            };
-            /** @description Invalid parameters */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  reset_password: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    get_current_user_score: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Returns user statistics and score */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserScoreRecord"];
-                };
-            };
-            /** @description Score not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ResetPasswordRequest"];
+      };
     };
+    responses: {
+      /** @description Password reset successful */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MessageResponse"];
+        };
+      };
+      /** @description Invalid or expired token */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  verify_email: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["VerifyEmailRequest"];
+      };
+    };
+    responses: {
+      /** @description Email verified successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthTokens"];
+        };
+      };
+      /** @description Invalid or expired token */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  get_report_after_photo: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Report ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns image */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Report or image not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  get_report_before_photo: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Report ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns image */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Report or image not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  get_global_leaderboard: {
+    parameters: {
+      query?: {
+        /** @example weekly */
+        period?: string | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns leaderboard */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["LeaderboardEntry"][];
+        };
+      };
+    };
+  };
+  get_city_leaderboard: {
+    parameters: {
+      query?: {
+        /** @example weekly */
+        period?: string | null;
+      };
+      header?: never;
+      path: {
+        /** @description City name */
+        city: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns city leaderboard */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["LeaderboardEntry"][];
+        };
+      };
+    };
+  };
+  get_country_leaderboard: {
+    parameters: {
+      query?: {
+        /** @example weekly */
+        period?: string | null;
+      };
+      header?: never;
+      path: {
+        /** @description Country name */
+        country: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns country leaderboard */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["LeaderboardEntry"][];
+        };
+      };
+    };
+  };
+  create_report: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateReportRequest"];
+      };
+    };
+    responses: {
+      /** @description Report created successfully */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportResponse"];
+        };
+      };
+      /** @description Invalid input or image */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Email verification required */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  get_my_cleared_reports: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns user's cleared reports */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportResponse"][];
+        };
+      };
+    };
+  };
+  get_my_reports: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns user's reports */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportResponse"][];
+        };
+      };
+    };
+  };
+  get_nearby_reports: {
+    parameters: {
+      query: {
+        /** @example 51.5074 */
+        latitude: number;
+        /** @example -0.1278 */
+        longitude: number;
+        /** @example 5 */
+        radius_km?: number | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns reports within radius */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportResponse"][];
+        };
+      };
+      /** @description Invalid coordinates */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  get_report: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Report ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns report details */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportResponse"];
+        };
+      };
+      /** @description Report not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  claim_report: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Report ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Report claimed successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportResponse"];
+        };
+      };
+      /** @description Report already claimed or not in pending status */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Report not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  clear_report: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Report ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ClearReportRequest"];
+      };
+    };
+    responses: {
+      /** @description Report cleared successfully. Points awarded. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportResponse"];
+        };
+      };
+      /** @description Report not claimed by you or invalid status */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Report not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  get_report_verifications: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Report ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns list of verifications */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["VerificationResponse"][];
+        };
+      };
+      /** @description Report not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  verify_report: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Report ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateVerificationRequest"];
+      };
+    };
+    responses: {
+      /** @description Report verification submitted */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["VerificationResponse"];
+        };
+      };
+      /** @description Invalid report status or self-verification */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Not enough experience to verify */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Report not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  cleanup_test_data: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CleanupRequest"];
+      };
+    };
+    responses: {
+      /** @description Test data cleaned up successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TestHelperResponse"];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  test_status: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Test helpers are enabled */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  verify_email_for_testing: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Email address to verify */
+        email: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Email verified successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TestHelperResponse"];
+        };
+      };
+      /** @description User not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Internal server error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  get_current_user: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns user profile */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserResponse"];
+        };
+      };
+      /** @description User not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  update_current_user: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateUserRequest"];
+      };
+    };
+    responses: {
+      /** @description Profile updated successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserResponse"];
+        };
+      };
+      /** @description Invalid parameters */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  get_current_user_score: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Returns user statistics and score */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserScoreRecord"];
+        };
+      };
+      /** @description Score not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
 }

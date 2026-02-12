@@ -15,9 +15,7 @@
   "paths": {
     "/api/admin/reports": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Get all reports (not just nearby)",
         "description": "GET /api/admin/reports",
         "operationId": "list_all_reports",
@@ -48,9 +46,7 @@
     },
     "/api/admin/reports/{id}": {
       "delete": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Delete a report (for spam/inappropriate content)",
         "description": "DELETE /api/admin/reports/:id",
         "operationId": "delete_report",
@@ -86,9 +82,7 @@
     },
     "/api/admin/users": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Get all users (paginated)",
         "description": "GET /api/admin/users?page=1&limit=20",
         "operationId": "list_users",
@@ -119,9 +113,7 @@
     },
     "/api/admin/users/{id}": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Get user by ID",
         "description": "GET /api/admin/users/:id",
         "operationId": "get_user_by_id",
@@ -164,9 +156,7 @@
     },
     "/api/admin/users/{id}/ban": {
       "put": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "operationId": "toggle_user_ban",
         "parameters": [
           {
@@ -217,9 +207,7 @@
     },
     "/api/auth/forgot-password": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "operationId": "forgot_password",
         "requestBody": {
           "content": {
@@ -247,9 +235,7 @@
     },
     "/api/auth/google": {
       "get": {
-        "tags": [
-          "OAuth"
-        ],
+        "tags": ["OAuth"],
         "summary": "Initiate Google OAuth login",
         "description": "GET /api/auth/google",
         "operationId": "google_login",
@@ -269,9 +255,7 @@
     },
     "/api/auth/google/callback": {
       "get": {
-        "tags": [
-          "OAuth"
-        ],
+        "tags": ["OAuth"],
         "summary": "Handle Google OAuth callback",
         "description": "GET /api/auth/google/callback",
         "operationId": "google_callback",
@@ -315,9 +299,7 @@
     },
     "/api/auth/login": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "operationId": "login",
         "requestBody": {
           "content": {
@@ -351,9 +333,7 @@
     },
     "/api/auth/logout": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "operationId": "logout",
         "requestBody": {
           "content": {
@@ -381,9 +361,7 @@
     },
     "/api/auth/refresh": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "operationId": "refresh_token",
         "requestBody": {
           "content": {
@@ -414,9 +392,7 @@
     },
     "/api/auth/register": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "operationId": "register",
         "requestBody": {
           "content": {
@@ -450,9 +426,7 @@
     },
     "/api/auth/resend-verification": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "operationId": "resend_verification",
         "requestBody": {
           "content": {
@@ -486,9 +460,7 @@
     },
     "/api/auth/reset-password": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "operationId": "reset_password",
         "requestBody": {
           "content": {
@@ -519,9 +491,7 @@
     },
     "/api/auth/verify-email": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "operationId": "verify_email",
         "requestBody": {
           "content": {
@@ -552,9 +522,7 @@
     },
     "/api/images/reports/{id}/after": {
       "get": {
-        "tags": [
-          "Images"
-        ],
+        "tags": ["Images"],
         "summary": "Get report after photo",
         "description": "GET /api/images/reports/:id/after",
         "operationId": "get_report_after_photo",
@@ -582,9 +550,7 @@
     },
     "/api/images/reports/{id}/before": {
       "get": {
-        "tags": [
-          "Images"
-        ],
+        "tags": ["Images"],
         "summary": "Get report before photo",
         "description": "GET /api/images/reports/:id/before",
         "operationId": "get_report_before_photo",
@@ -612,9 +578,7 @@
     },
     "/api/leaderboards": {
       "get": {
-        "tags": [
-          "Leaderboards"
-        ],
+        "tags": ["Leaderboards"],
         "summary": "Get global leaderboard",
         "description": "GET /api/leaderboards?period=weekly",
         "operationId": "get_global_leaderboard",
@@ -649,9 +613,7 @@
     },
     "/api/leaderboards/city/{city}": {
       "get": {
-        "tags": [
-          "Leaderboards"
-        ],
+        "tags": ["Leaderboards"],
         "summary": "Get leaderboard by city",
         "description": "GET /api/leaderboards/city/:city?period=weekly",
         "operationId": "get_city_leaderboard",
@@ -695,9 +657,7 @@
     },
     "/api/leaderboards/country/{country}": {
       "get": {
-        "tags": [
-          "Leaderboards"
-        ],
+        "tags": ["Leaderboards"],
         "summary": "Get leaderboard by country",
         "description": "GET /api/leaderboards/country/:country?period=weekly",
         "operationId": "get_country_leaderboard",
@@ -741,9 +701,7 @@
     },
     "/api/reports": {
       "post": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "Create a new litter report",
         "description": "POST /api/reports",
         "operationId": "create_report",
@@ -784,9 +742,7 @@
     },
     "/api/reports/my-clears": {
       "get": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "Get all reports cleared by the current user",
         "description": "GET /api/reports/my-clears",
         "operationId": "get_my_cleared_reports",
@@ -814,9 +770,7 @@
     },
     "/api/reports/my-reports": {
       "get": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "Get all reports created by the current user",
         "description": "GET /api/reports/my-reports",
         "operationId": "get_my_reports",
@@ -844,9 +798,7 @@
     },
     "/api/reports/nearby": {
       "get": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "Get nearby reports",
         "description": "GET /`api/reports/nearby?latitude=X&longitude=Y&radius_km=Z`",
         "operationId": "get_nearby_reports",
@@ -912,9 +864,7 @@
     },
     "/api/reports/{id}": {
       "get": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "Get a single report by ID",
         "description": "GET /api/reports/:id",
         "operationId": "get_report",
@@ -954,9 +904,7 @@
     },
     "/api/reports/{id}/claim": {
       "post": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "Claim a report for cleanup",
         "description": "POST /api/reports/:id/claim",
         "operationId": "claim_report",
@@ -999,9 +947,7 @@
     },
     "/api/reports/{id}/clear": {
       "post": {
-        "tags": [
-          "Reports"
-        ],
+        "tags": ["Reports"],
         "summary": "Clear a report with after photo",
         "description": "POST /api/reports/:id/clear",
         "operationId": "clear_report",
@@ -1054,9 +1000,7 @@
     },
     "/api/reports/{id}/verifications": {
       "get": {
-        "tags": [
-          "Verifications"
-        ],
+        "tags": ["Verifications"],
         "summary": "Get all verifications for a report",
         "description": "GET /api/reports/:id/verifications",
         "operationId": "get_report_verifications",
@@ -1099,9 +1043,7 @@
     },
     "/api/reports/{id}/verify": {
       "post": {
-        "tags": [
-          "Verifications"
-        ],
+        "tags": ["Verifications"],
         "summary": "Verify a cleared report",
         "description": "POST /api/reports/:id/verify",
         "operationId": "verify_report",
@@ -1157,9 +1099,7 @@
     },
     "/api/test/cleanup": {
       "delete": {
-        "tags": [
-          "test-helpers"
-        ],
+        "tags": ["test-helpers"],
         "summary": "Clean up all test data for a specific user",
         "description": "Deletes the user and all associated data (reports, verifications, etc.)\n\n**WARNING: This endpoint should ONLY be enabled in test/development environments**",
         "operationId": "cleanup_test_data",
@@ -1192,9 +1132,7 @@
     },
     "/api/test/status": {
       "get": {
-        "tags": [
-          "test-helpers"
-        ],
+        "tags": ["test-helpers"],
         "summary": "Get the current test environment status",
         "operationId": "test_status",
         "responses": {
@@ -1206,9 +1144,7 @@
     },
     "/api/test/verify-email/{email}": {
       "post": {
-        "tags": [
-          "test-helpers"
-        ],
+        "tags": ["test-helpers"],
         "summary": "Verify an email address for testing purposes",
         "description": "This bypasses the normal email verification flow\n\n**WARNING: This endpoint should ONLY be enabled in test/development environments**",
         "operationId": "verify_email_for_testing",
@@ -1245,9 +1181,7 @@
     },
     "/api/users/me": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Get current authenticated user's profile",
         "description": "GET /api/users/me",
         "operationId": "get_current_user",
@@ -1273,9 +1207,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Update current user's profile",
         "description": "PATCH /api/users/me",
         "operationId": "update_current_user",
@@ -1313,9 +1245,7 @@
     },
     "/api/users/me/score": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Get user's score and statistics",
         "description": "GET /api/users/me/score",
         "operationId": "get_current_user_score",
@@ -1414,11 +1344,7 @@
       },
       "AuthTokens": {
         "type": "object",
-        "required": [
-          "access_token",
-          "refresh_token",
-          "user"
-        ],
+        "required": ["access_token", "refresh_token", "user"],
         "properties": {
           "access_token": {
             "type": "string",
@@ -1436,9 +1362,7 @@
       "BanUserRequest": {
         "type": "object",
         "description": "Ban/unban a user\nPUT /api/admin/users/:id/ban",
-        "required": [
-          "is_active"
-        ],
+        "required": ["is_active"],
         "properties": {
           "is_active": {
             "type": "boolean",
@@ -1448,9 +1372,7 @@
       },
       "CleanupRequest": {
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "properties": {
           "email": {
             "type": "string"
@@ -1459,9 +1381,7 @@
       },
       "ClearReportRequest": {
         "type": "object",
-        "required": [
-          "photo_base64"
-        ],
+        "required": ["photo_base64"],
         "properties": {
           "photo_base64": {
             "type": "string",
@@ -1471,11 +1391,7 @@
       },
       "CreateReportRequest": {
         "type": "object",
-        "required": [
-          "latitude",
-          "longitude",
-          "photo_base64"
-        ],
+        "required": ["latitude", "longitude", "photo_base64"],
         "properties": {
           "description": {
             "type": "string",
@@ -1500,9 +1416,7 @@
       },
       "CreateVerificationRequest": {
         "type": "object",
-        "required": [
-          "is_verified"
-        ],
+        "required": ["is_verified"],
         "properties": {
           "comment": {
             "type": "string",
@@ -1517,9 +1431,7 @@
       },
       "ForgotPasswordRequest": {
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "properties": {
           "email": {
             "type": "string",
@@ -1667,10 +1579,7 @@
       },
       "LoginRequest": {
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "properties": {
           "email": {
             "type": "string",
@@ -1684,9 +1593,7 @@
       },
       "MessageResponse": {
         "type": "object",
-        "required": [
-          "message"
-        ],
+        "required": ["message"],
         "properties": {
           "message": {
             "type": "string",
@@ -1697,9 +1604,7 @@
       "OAuthLoginResponse": {
         "type": "object",
         "description": "Response for OAuth login",
-        "required": [
-          "auth_url"
-        ],
+        "required": ["auth_url"],
         "properties": {
           "auth_url": {
             "type": "string",
@@ -1709,9 +1614,7 @@
       },
       "RefreshTokenRequest": {
         "type": "object",
-        "required": [
-          "refresh_token"
-        ],
+        "required": ["refresh_token"],
         "properties": {
           "refresh_token": {
             "type": "string",
@@ -1721,9 +1624,7 @@
       },
       "RefreshTokenResponse": {
         "type": "object",
-        "required": [
-          "access_token"
-        ],
+        "required": ["access_token"],
         "properties": {
           "access_token": {
             "type": "string",
@@ -1733,13 +1634,7 @@
       },
       "RegisterRequest": {
         "type": "object",
-        "required": [
-          "email",
-          "password",
-          "full_name",
-          "city",
-          "country"
-        ],
+        "required": ["email", "password", "full_name", "city", "country"],
         "properties": {
           "city": {
             "type": "string",
@@ -1843,12 +1738,7 @@
       },
       "ReportStatus": {
         "type": "string",
-        "enum": [
-          "pending",
-          "claimed",
-          "cleared",
-          "verified"
-        ]
+        "enum": ["pending", "claimed", "cleared", "verified"]
       },
       "ReportVerification": {
         "type": "object",
@@ -1887,9 +1777,7 @@
       },
       "ResendVerificationRequest": {
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "properties": {
           "email": {
             "type": "string",
@@ -1899,10 +1787,7 @@
       },
       "ResetPasswordRequest": {
         "type": "object",
-        "required": [
-          "token",
-          "new_password"
-        ],
+        "required": ["token", "new_password"],
         "properties": {
           "new_password": {
             "type": "string",
@@ -1949,10 +1834,7 @@
       },
       "TestHelperResponse": {
         "type": "object",
-        "required": [
-          "success",
-          "message"
-        ],
+        "required": ["success", "message"],
         "properties": {
           "message": {
             "type": "string"
@@ -2106,10 +1988,7 @@
       },
       "UserRole": {
         "type": "string",
-        "enum": [
-          "user",
-          "admin"
-        ]
+        "enum": ["user", "admin"]
       },
       "UserScore": {
         "type": "object",
@@ -2257,9 +2136,7 @@
       },
       "VerifyEmailRequest": {
         "type": "object",
-        "required": [
-          "token"
-        ],
+        "required": ["token"],
         "properties": {
           "token": {
             "type": "string",

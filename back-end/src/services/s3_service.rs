@@ -21,13 +21,8 @@ impl S3Service {
     /// Create a new S3 service
     pub async fn new(config: S3Config) -> Result<Self> {
         // Create credentials
-        let credentials = Credentials::new(
-            &config.access_key,
-            &config.secret_key,
-            None,
-            None,
-            "static",
-        );
+        let credentials =
+            Credentials::new(&config.access_key, &config.secret_key, None, None, "static");
 
         // Build S3 config with custom endpoint (for MinIO)
         let shared_config = aws_config::defaults(BehaviorVersion::latest())
@@ -155,11 +150,9 @@ impl S3Service {
                 }
             })?;
 
-        let data = response
-            .body
-            .collect()
-            .await
-            .map_err(|e| AppError::Internal(anyhow::anyhow!("Failed to read S3 response: {}", e)))?;
+        let data = response.body.collect().await.map_err(|e| {
+            AppError::Internal(anyhow::anyhow!("Failed to read S3 response: {}", e))
+        })?;
 
         Ok(data.into_bytes().to_vec())
     }

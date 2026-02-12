@@ -34,14 +34,21 @@ pub async fn get_report_before_photo(
     Path(report_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
     let report = state.report_service.get_report_by_id(report_id).await?;
-    
+
     // Extract S3 key from URL
-    let key = state.s3_service.extract_key_from_url(report.photo_before.as_ref().ok_or_else(|| AppError::NotFound("Before photo not found".into()))?)
+    let key = state
+        .s3_service
+        .extract_key_from_url(
+            report
+                .photo_before
+                .as_ref()
+                .ok_or_else(|| AppError::NotFound("Before photo not found".into()))?,
+        )
         .ok_or_else(|| AppError::Internal(anyhow::anyhow!("Invalid S3 URL")))?;
-    
+
     // Get image data from S3
     let image_data = state.s3_service.get_image(&key).await?;
-    
+
     Ok((
         StatusCode::OK,
         [
@@ -71,17 +78,20 @@ pub async fn get_report_after_photo(
     Path(report_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
     let report = state.report_service.get_report_by_id(report_id).await?;
-    
-    let photo_after = report.photo_after
+
+    let photo_after = report
+        .photo_after
         .ok_or_else(|| AppError::NotFound("After photo not found".into()))?;
-    
+
     // Extract S3 key from URL
-    let key = state.s3_service.extract_key_from_url(&photo_after)
+    let key = state
+        .s3_service
+        .extract_key_from_url(&photo_after)
         .ok_or_else(|| AppError::Internal(anyhow::anyhow!("Invalid S3 URL")))?;
-    
+
     // Get image data from S3
     let image_data = state.s3_service.get_image(&key).await?;
-    
+
     Ok((
         StatusCode::OK,
         [

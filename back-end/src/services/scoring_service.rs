@@ -310,7 +310,11 @@ impl ScoringService {
     }
 
     /// Check if this is the first clear in the area (1km, 24 hours)
-    async fn is_first_clear_in_area(&self, latitude: f64, longitude: f64) -> Result<bool, AppError> {
+    async fn is_first_clear_in_area(
+        &self,
+        latitude: f64,
+        longitude: f64,
+    ) -> Result<bool, AppError> {
         let radius_meters = 1000.0; // 1km
         let time_threshold = Utc::now() - Duration::hours(24);
 

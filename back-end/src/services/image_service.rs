@@ -21,13 +21,11 @@ impl ImageService {
     /// Returns WebP bytes ready for S3 upload
     pub async fn process_image(&self, base64_input: String) -> Result<Vec<u8>> {
         let config = self.config.clone();
-        
+
         // Move CPU-intensive work to blocking thread pool
-        tokio::task::spawn_blocking(move || {
-            Self::process_image_sync(&base64_input, &config)
-        })
-        .await
-        .map_err(|e| AppError::Internal(anyhow::anyhow!("Task join error: {}", e)))?
+        tokio::task::spawn_blocking(move || Self::process_image_sync(&base64_input, &config))
+            .await
+            .map_err(|e| AppError::Internal(anyhow::anyhow!("Task join error: {}", e)))?
     }
 
     /// Synchronous image processing implementation
@@ -119,11 +117,9 @@ impl ImageService {
 
     /// Validate that input is valid base64 (async wrapper)
     pub async fn validate_base64(&self, base64_input: String) -> Result<()> {
-        tokio::task::spawn_blocking(move || {
-            Self::validate_base64_sync(&base64_input)
-        })
-        .await
-        .map_err(|e| AppError::Internal(anyhow::anyhow!("Task join error: {}", e)))?
+        tokio::task::spawn_blocking(move || Self::validate_base64_sync(&base64_input))
+            .await
+            .map_err(|e| AppError::Internal(anyhow::anyhow!("Task join error: {}", e)))?
     }
 
     /// Validate that input is valid base64 (doesn't process, just validates)

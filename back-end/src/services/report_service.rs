@@ -61,12 +61,17 @@ impl ReportService {
                     if let Some(addr) = data.address {
                         // Prioritize specific POI names if close (Nominatim handles distance logic for us somewhat by returning the specific object)
                         // We want "Tesco, Example Street" or "52 Example Street" or "Example Street"
-                        
-                        let street = addr.road.or(addr.suburb).or(addr.village).or(addr.town).or(addr.city);
-                        
+
+                        let street = addr
+                            .road
+                            .or(addr.suburb)
+                            .or(addr.village)
+                            .or(addr.town)
+                            .or(addr.city);
+
                         // Check for POI/Building
                         let poi = addr.amenity.or(addr.shop).or(addr.building);
-                        
+
                         match (poi, addr.house_number, street) {
                             (Some(p), Some(s), _) if p.eq_ignore_ascii_case(&s) => Some(p), // Avoid duplication
                             (Some(p), _, Some(s)) => Some(format!("{}, {}", p, s)),
@@ -110,10 +115,16 @@ impl ReportService {
         }
 
         // Process the image (async to avoid blocking)
-        let processed_image = self.image_service.process_image(request.photo_base64).await?;
+        let processed_image = self
+            .image_service
+            .process_image(request.photo_base64)
+            .await?;
 
         // Upload to S3
-        let photo_url = self.s3_service.upload_image(processed_image, "reports/before").await?;
+        let photo_url = self
+            .s3_service
+            .upload_image(processed_image, "reports/before")
+            .await?;
 
         // Get address from coordinates
         let address = self
@@ -343,7 +354,10 @@ impl ReportService {
         let processed_image = self.image_service.process_image(photo_base64).await?;
 
         // Upload to S3
-        let photo_url = self.s3_service.upload_image(processed_image, "reports/after").await?;
+        let photo_url = self
+            .s3_service
+            .upload_image(processed_image, "reports/after")
+            .await?;
 
         // Update the report
         let report = sqlx::query_as!(

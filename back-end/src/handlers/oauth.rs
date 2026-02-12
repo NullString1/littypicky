@@ -115,10 +115,12 @@ pub async fn google_callback(
         </script>
     </body>
     </html>"#,
-        auth_tokens.access_token, auth_tokens.refresh_token, serde_json::to_string(&auth_tokens.user).unwrap()
+        auth_tokens.access_token,
+        auth_tokens.refresh_token,
+        serde_json::to_string(&auth_tokens.user).unwrap()
     );
 
-    return Ok(axum::response::Html(html).into_response());
+    Ok(axum::response::Html(html).into_response())
 }
 
 /// Alternative: Redirect-based callback for web apps
